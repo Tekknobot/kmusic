@@ -1,5 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic;
+using System.Collections;
+using System.Collections.Generic; // Add this line for using Dictionary
 
 public class PadManager : MonoBehaviour
 {
@@ -11,6 +12,8 @@ public class PadManager : MonoBehaviour
     private Sprite currentSprite;        // Current sprite tracked by PadManager
 
     public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
+
+    private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of pads
 
     private void Awake()
     {
@@ -67,33 +70,94 @@ public class PadManager : MonoBehaviour
             // Optionally, parent the new pad under the PadManager GameObject for organization
             newPad.transform.parent = transform;
 
-            // Get the Pad component from the instantiated pad
-            Pad pad = newPad.GetComponent<Pad>();
+            // Assign a unique identifier or logic to each pad (for example, MIDI note)
+            int midiNote = i; // Example MIDI note generation
 
-            // Check if Pad component is found
-            if (pad == null)
-            {
-                Debug.LogError("Pad component not found on the prefab.");
-                continue; // Continue to the next iteration if pad component is missing
-            }
+            // Get the SpriteRenderer component from the pad
+            SpriteRenderer spriteRenderer = newPad.GetComponent<SpriteRenderer>();
 
             // Set the sprite for the pad using the sprites array
-            pad.SetSprite(sprites[i]);
+            if (spriteRenderer != null && i < sprites.Length)
+            {
+                spriteRenderer.sprite = sprites[i];
+            }
+            else
+            {
+                Debug.LogError("SpriteRenderer component not found on pad prefab or sprite array index out of bounds.");
+                continue; // Continue to the next iteration if sprite setting fails
+            }
 
-            // Optionally, you may want to assign some identifier or logic to each pad
-            // to differentiate them as needed.
+            // Store the original scale of the pad
+            originalScales[newPad] = newPad.transform.localScale;
+
+            // Attach click handler to the pad
+            PadClickHandler padClickHandler = newPad.AddComponent<PadClickHandler>();
+            padClickHandler.Initialize(this, newPad, sprites[i], midiNote);
         }
     }
 
-    // Method to notify PadManager about the clicked pad
-    public void NotifyPadClicked(Pad clickedPad)
+    // Method to handle when a pad is clicked
+    public void OnPadClicked(GameObject clickedPad)
     {
-        // Update the current sprite tracked by PadManager
-        currentSprite = clickedPad.GetCurrentSprite();
+        // Reset scale of the previously clicked pad if there was one
+        ResetPadScale();
 
-        // Notify BoardManager about the clicked pad's sprite and associated MIDI note
-        BoardManager.Instance.SaveTileSprite(currentSprite, clickedPad.midiNote);
-        BoardManager.Instance.DisplayTileSprites();
+        // Update the current sprite tracked by PadManager
+        SpriteRenderer spriteRenderer = clickedPad.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            currentSprite = spriteRenderer.sprite;
+
+            // Notify BoardManager about the clicked pad's sprite and associated MIDI note
+            BoardManager.Instance.SaveTileSprite(currentSprite, clickedPad.GetComponent<PadClickHandler>().MidiNote);
+
+            // Start scaling coroutine on the clicked pad
+            StartCoroutine(ScalePad(clickedPad));
+        }
+    }
+
+    // Coroutine to scale the clicked pad
+    private IEnumerator ScalePad(GameObject padObject)
+    {
+        float scaleUpTime = 0.1f;
+        float scaleUpSpeed = 1.2f;
+        Vector3 originalScale = padObject.transform.localScale;
+        float elapsedTime = 0f;
+
+        while (elapsedTime < scaleUpTime)
+        {
+            padObject.transform.localScale = Vector3.Lerp(originalScale, originalScale * scaleUpSpeed, elapsedTime / scaleUpTime);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+
+        padObject.transform.localScale = originalScale * scaleUpSpeed;
+
+        yield return new WaitForSeconds(0.2f);
+
+        float scaleDownTime = 0.1f;
+        float elapsedTime2 = 0f;
+
+        while (elapsedTime2 < scaleDownTime)
+        {
+            padObject.transform.localScale = Vector3.Lerp(originalScale * scaleUpSpeed, originalScale, elapsedTime2 / scaleDownTime);
+            elapsedTime2 += Time.deltaTime;
+            yield return null;
+        }
+
+        padObject.transform.localScale = originalScale;
+
+        // Store the original scale again after scaling
+        originalScales[padObject] = originalScale;
+    }
+
+    // Method to reset the scale of the previously clicked pad
+    private void ResetPadScale()
+    {
+        foreach (GameObject padObject in originalScales.Keys)
+        {
+            padObject.transform.localScale = originalScales[padObject];
+        }
     }
 
     // Method to get the current sprite tracked by PadManager

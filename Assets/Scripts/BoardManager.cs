@@ -5,17 +5,18 @@ public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance { get; private set; } // Singleton instance
 
+    [Header("Prefabs")]
     public GameObject cellPrefab;   // Reference to the cell prefab
+
+    [Header("Grid Settings")]
     public Vector2Int gridSize = new Vector2Int(8, 8);   // Size of the grid (8x8)
+
+    public Sprite defaultSprite; // Default sprite for cells
 
     private int cellStep = 0; // Variable to track the step count
     private List<Sprite> tileSprites = new List<Sprite>(); // List to store tile sprites based on cell interactions
-    private Sprite defaultSprite; // Default sprite to display
 
-    public int CellStep
-    {
-        get { return cellStep; }
-    }
+    public int CellStep => cellStep; // Expression-bodied property for cellStep
 
     private void Awake()
     {
@@ -41,6 +42,13 @@ public class BoardManager : MonoBehaviour
         // Reset cellStep to 0 each time GenerateBoard is called
         cellStep = 0;
 
+        // Validate that cellPrefab is assigned
+        if (cellPrefab == null)
+        {
+            Debug.LogError("Cell prefab is not assigned in BoardManager.");
+            return;
+        }
+
         // Loop through each cell position in the grid
         for (int y = 0; y < gridSize.y; y++)
         {
@@ -57,8 +65,8 @@ public class BoardManager : MonoBehaviour
                 newCellObject.transform.parent = transform;
                 newCellObject.name = cellStep.ToString();
 
-                // Set the default sprite from the PadManager class
-                defaultSprite = PadManager.DefaultSprite;
+                // Set the default sprite for the cell
+                newCell.GetComponent<SpriteRenderer>().sprite = defaultSprite;
 
                 // Increment cellStep for each instantiated cell
                 cellStep++;
@@ -69,7 +77,14 @@ public class BoardManager : MonoBehaviour
         DisplayDefaultSprites();
     }
 
-    public void SaveTileSprite(Sprite sprite, string midiNote)
+    // Property for defaultSprite to ensure encapsulation
+    public Sprite DefaultSprite
+    {
+        get { return defaultSprite; }
+        set { defaultSprite = value; }
+    }
+
+    public void SaveTileSprite(Sprite sprite, int midiNote)
     {
         tileSprites.Add(sprite);
     }
@@ -93,7 +108,7 @@ public class BoardManager : MonoBehaviour
             Cell cell = GetCellAtIndex(i);
             if (cell != null)
             {
-                cell.ReplaceSprite(defaultSprite); // Use default sprite from PadManager class
+                cell.ReplaceSprite(defaultSprite); // Use default sprite from BoardManager class
             }
         }
     }
