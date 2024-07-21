@@ -1,12 +1,12 @@
 using UnityEngine;
-using System.Collections;
 
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance;   // Singleton instance
     public GameObject cellPrefab;
-    
+
     private Cell[,] boardCells; // 2D array to store references to all board cells
+
 
     private void Awake()
     {
@@ -54,6 +54,8 @@ public class BoardManager : MonoBehaviour
 
                 // Store the cell in the boardCells array
                 boardCells[x, y] = cell;
+
+                // Optionally, you can store additional data or handle other cell initialization here
             }
         }
     }
@@ -97,16 +99,22 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    // Example method to handle gameplay logic when a cell is clicked
-    public void OnCellClicked(int x, int y)
+    // Method to get the position of a cell on the board
+    public Vector2Int GetCellPosition(Cell cell)
     {
-        Cell clickedCell = GetCell(x, y);
-        if (clickedCell != null)
+        for (int x = 0; x < boardCells.GetLength(0); x++)
         {
-            // Perform actions based on the clicked cell
-            // Example: Rotate the clicked cell
-            clickedCell.RotateAndReturn();
+            for (int y = 0; y < boardCells.GetLength(1); y++)
+            {
+                if (boardCells[x, y] == cell)
+                {
+                    return new Vector2Int(x, y);
+                }
+            }
         }
+
+        Debug.LogError("Cell not found on the board.");
+        return Vector2Int.zero;
     }
 
     // Method to get the size of the board (x, y)

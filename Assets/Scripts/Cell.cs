@@ -10,11 +10,12 @@ public class Cell : MonoBehaviour
     public Sprite defaultSprite; // Make sure this is public if you need to access it externally
 
     public int step;
-    public bool hasNote;
+    public bool hasNote; // Private field to store hasNote information
 
-    // Properties to store sprite and step information
+    // Properties to expose sprite and step information
     public Sprite CurrentSprite { get; private set; }
     public int CurrentStep { get; private set; }
+    public bool HasNote => hasNote; // Public property to read hasNote
 
     private void Awake()
     {
@@ -36,12 +37,12 @@ public class Cell : MonoBehaviour
         }
     }
 
-    // Method to replace the sprite with a new sprite
+    // Method to replace the sprite with a new sprite and update hasNote
     public void ReplaceSprite(Sprite newSprite)
     {
         spriteRenderer.sprite = newSprite;
         CurrentSprite = newSprite; // Update the current sprite
-        this.hasNote = true;
+        hasNote = true; // Set hasNote to true when sprite is replaced
     }
 
     // Method to rotate the cell and return to original rotation
@@ -97,5 +98,13 @@ public class Cell : MonoBehaviour
         Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition);
 
         return hitCollider != null && hitCollider.gameObject == gameObject;
+    }
+
+    // Method to reset the cell to its initial state
+    public void ResetCell()
+    {
+        SetSprite(defaultSprite);
+        hasNote = false; // Reset hasNote to false
+        // Optionally reset other properties of the cell
     }
 }

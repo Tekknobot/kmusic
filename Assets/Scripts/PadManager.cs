@@ -124,11 +124,14 @@ public class PadManager : MonoBehaviour
     // Coroutine to scale the clicked pad
     private IEnumerator ScalePad(GameObject padObject)
     {
+        Vector3 originalScale = originalScales[padObject];
         float scaleUpTime = 0.1f;
         float scaleUpSpeed = 1.2f;
-        Vector3 originalScale = padObject.transform.localScale;
+        float scaleDownTime = 0.1f;
+
         float elapsedTime = 0f;
 
+        // Scale up
         while (elapsedTime < scaleUpTime)
         {
             padObject.transform.localScale = Vector3.Lerp(originalScale, originalScale * scaleUpSpeed, elapsedTime / scaleUpTime);
@@ -140,20 +143,16 @@ public class PadManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.2f);
 
-        float scaleDownTime = 0.1f;
-        float elapsedTime2 = 0f;
-
-        while (elapsedTime2 < scaleDownTime)
+        // Scale down
+        elapsedTime = 0f;
+        while (elapsedTime < scaleDownTime)
         {
-            padObject.transform.localScale = Vector3.Lerp(originalScale * scaleUpSpeed, originalScale, elapsedTime2 / scaleDownTime);
-            elapsedTime2 += Time.deltaTime;
+            padObject.transform.localScale = Vector3.Lerp(originalScale * scaleUpSpeed, originalScale, elapsedTime / scaleDownTime);
+            elapsedTime += Time.deltaTime;
             yield return null;
         }
 
         padObject.transform.localScale = originalScale;
-
-        // Store the original scale again after scaling
-        originalScales[padObject] = originalScale;
     }
 
     // Method to reset the scale of the previously clicked pad
