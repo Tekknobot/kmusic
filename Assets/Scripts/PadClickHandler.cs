@@ -14,8 +14,6 @@ public class PadClickHandler : MonoBehaviour
         padObject = padObj;
         sprite = padSprite;
         midiNote = note;
-
-        Debug.Log($"PadClickHandler initialized with padManager: {padManager}, padObject: {padObject}, sprite: {sprite}, midiNote: {midiNote}");
     }
 
     // Method called when the pad is clicked

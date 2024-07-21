@@ -1,129 +1,118 @@
 using UnityEngine;
-using System.Collections.Generic;
+using System.Collections;
 
 public class BoardManager : MonoBehaviour
 {
-    public static BoardManager Instance { get; private set; } // Singleton instance
-
-    [Header("Prefabs")]
-    public GameObject cellPrefab;   // Reference to the cell prefab
-
-    [Header("Grid Settings")]
-    public Vector2Int gridSize = new Vector2Int(8, 8);   // Size of the grid (8x8)
-
-    public Sprite defaultSprite; // Default sprite for cells
-
-    private int cellStep = 0; // Variable to track the step count
-    private List<Sprite> tileSprites = new List<Sprite>(); // List to store tile sprites based on cell interactions
-
-    public int CellStep => cellStep; // Expression-bodied property for cellStep
+    public static BoardManager Instance;   // Singleton instance
+    public GameObject cellPrefab;
+    
+    private Cell[,] boardCells; // 2D array to store references to all board cells
 
     private void Awake()
     {
-        // Singleton pattern implementation
+        // Singleton pattern
         if (Instance == null)
         {
             Instance = this;
         }
         else
         {
-            Debug.LogWarning("Duplicate instance of BoardManager found. Destroying this instance.");
             Destroy(gameObject);
-        }
-    }
-
-    void Start()
-    {
-        GenerateBoard();
-    }
-
-    void GenerateBoard()
-    {
-        // Reset cellStep to 0 each time GenerateBoard is called
-        cellStep = 0;
-
-        // Validate that cellPrefab is assigned
-        if (cellPrefab == null)
-        {
-            Debug.LogError("Cell prefab is not assigned in BoardManager.");
             return;
         }
 
-        // Loop through each cell position in the grid
-        for (int y = 0; y < gridSize.y; y++)
+        InitializeBoard();
+    }
+
+    private void InitializeBoard()
+    {
+        // Assuming a fixed size board of 8x8 cells
+        int boardSizeX = 8;
+        int boardSizeY = 8;
+
+        // Initialize the boardCells 2D array
+        boardCells = new Cell[boardSizeX, boardSizeY];
+
+        // Loop through each cell position and instantiate a new cell
+        for (int x = 0; x < boardSizeX; x++)
         {
-            for (int x = 0; x < gridSize.x; x++)
+            for (int y = 0; y < boardSizeY; y++)
             {
-                // Calculate the position for the new cell
-                Vector3 cellPosition = new Vector3(x, y, 0);
+                Vector3 cellPosition = new Vector3(x, y, 0); // Adjust position as needed
 
-                // Instantiate a new cell from the prefab at the calculated position
-                GameObject newCellObject = Instantiate(cellPrefab, cellPosition, Quaternion.identity);
-                Cell newCell = newCellObject.GetComponent<Cell>();
+                // Instantiate a new cell prefab (assuming you have a prefab assigned in the inspector)
+                GameObject cellObject = Instantiate(cellPrefab, cellPosition, Quaternion.identity);
 
-                // Optionally, you can parent the new cell under the BoardManager GameObject for organization
-                newCellObject.transform.parent = transform;
-                newCellObject.name = cellStep.ToString();
+                // Parent the cell under the BoardManager for organization (optional)
+                cellObject.transform.parent = transform;
 
-                // Set the default sprite for the cell
-                newCell.GetComponent<SpriteRenderer>().sprite = defaultSprite;
+                // Get the Cell component from the instantiated GameObject
+                Cell cell = cellObject.GetComponent<Cell>();
 
-                // Increment cellStep for each instantiated cell
-                cellStep++;
+                // Set default sprite for the cell
+                cell.SetSprite(cell.defaultSprite);
+
+                // Store the cell in the boardCells array
+                boardCells[x, y] = cell;
             }
         }
     }
 
-    // Method to reset the board to display default sprites
+    // Example method to reset the board to its default state
     public void ResetBoard()
     {
-        for (int i = 0; i < transform.childCount; i++)
+        foreach (Cell cell in boardCells)
         {
-            Transform child = transform.GetChild(i);
-            if (child != null)
-            {
-                Cell cell = child.GetComponent<Cell>();
-                if (cell != null)
-                {
-                    cell.ReplaceSprite(defaultSprite); // Replace each cell's sprite with defaultSprite
-                }
-            }
-        }
-    }
-
-    // Method to save tile sprite
-    public void SaveTileSprite(Sprite sprite)
-    {
-        tileSprites.Add(sprite);
-    }
-
-    // Method to update the board with saved tile sprites
-    public void UpdateBoardWithSavedSprites()
-    {
-        // Clear the board
-        ResetBoard();
-
-        // Display saved tile sprites
-        for (int i = 0; i < tileSprites.Count; i++)
-        {
-            Cell cell = GetCellAtIndex(i);
             if (cell != null)
             {
-                cell.ReplaceSprite(tileSprites[i]);
+                cell.SetSprite(cell.defaultSprite);
+                // Optionally reset other properties of the cell
             }
         }
     }
 
-    private Cell GetCellAtIndex(int index)
+    // Example method to display saved tiles for a specific sprite
+    public void DisplaySavedTilesForSprite(Sprite sprite)
     {
-        if (index >= 0 && index < transform.childCount)
+        foreach (Cell cell in boardCells)
         {
-            Transform child = transform.GetChild(index);
-            if (child != null)
+            if (cell != null && cell.CurrentSprite == sprite)
             {
-                return child.GetComponent<Cell>();
+                // Implement logic to highlight or visualize cells with the given sprite
+                // Example: cell.Highlight();
             }
         }
-        return null;
+    }
+
+    // Method to get a reference to the cell at specified coordinates
+    public Cell GetCell(int x, int y)
+    {
+        if (x >= 0 && x < boardCells.GetLength(0) && y >= 0 && y < boardCells.GetLength(1))
+        {
+            return boardCells[x, y];
+        }
+        else
+        {
+            Debug.LogError("Attempted to access cell out of board bounds.");
+            return null;
+        }
+    }
+
+    // Example method to handle gameplay logic when a cell is clicked
+    public void OnCellClicked(int x, int y)
+    {
+        Cell clickedCell = GetCell(x, y);
+        if (clickedCell != null)
+        {
+            // Perform actions based on the clicked cell
+            // Example: Rotate the clicked cell
+            clickedCell.RotateAndReturn();
+        }
+    }
+
+    // Method to get the size of the board (x, y)
+    public Vector2Int GetBoardSize()
+    {
+        return new Vector2Int(boardCells.GetLength(0), boardCells.GetLength(1));
     }
 }

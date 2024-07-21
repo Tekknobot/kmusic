@@ -9,6 +9,12 @@ public class Cell : MonoBehaviour
 
     public Sprite defaultSprite; // Make sure this is public if you need to access it externally
 
+    public int step;
+
+    // Properties to store sprite and step information
+    public Sprite CurrentSprite { get; private set; }
+    public int CurrentStep { get; private set; }
+
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -21,6 +27,7 @@ public class Cell : MonoBehaviour
         if (spriteRenderer != null)
         {
             spriteRenderer.sprite = sprite;
+            CurrentSprite = sprite; // Update the current sprite
         }
         else
         {
@@ -32,37 +39,30 @@ public class Cell : MonoBehaviour
     public void ReplaceSprite(Sprite newSprite)
     {
         spriteRenderer.sprite = newSprite;
+        CurrentSprite = newSprite; // Update the current sprite
     }
 
-    private void Update()
+    // Method to rotate the cell and return to original rotation
+    public void RotateAndReturn()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (rotationCoroutine != null)
         {
-            // Check if the mouse is over this cell
-            if (IsMouseOver())
-            {
-                if (rotationCoroutine != null)
-                {
-                    StopCoroutine(rotationCoroutine);
-                }
-
-                // Immediately replace the sprite before starting rotation
-                Sprite currentSprite = PadManager.Instance.GetCurrentSprite();
-                ReplaceSprite(currentSprite);
-
-                rotationCoroutine = StartCoroutine(RotateAndReturn());
-            }
+            StopCoroutine(rotationCoroutine);
         }
+
+        // Immediately replace the sprite before starting rotation
+        Sprite currentSprite = PadManager.Instance.GetCurrentSprite();
+        ReplaceSprite(currentSprite);
+
+        rotationCoroutine = StartCoroutine(RotateCoroutine());
     }
 
-    private IEnumerator RotateAndReturn()
+    private IEnumerator RotateCoroutine()
     {
-        // Rotate 180 degrees
         Quaternion targetRotation = originalRotation * Quaternion.Euler(0, 0, 180);
         float rotationTime = 0.5f; // Adjust rotation time as needed
         float elapsedTime = 0f;
 
-        // Rotate to 180 degrees
         while (elapsedTime < rotationTime)
         {
             transform.rotation = Quaternion.Slerp(originalRotation, targetRotation, elapsedTime / rotationTime);
@@ -72,12 +72,16 @@ public class Cell : MonoBehaviour
 
         transform.rotation = targetRotation;
 
+        // Swap sprites after rotation
+        Sprite tempSprite = CurrentSprite;
+        ReplaceSprite(PadManager.Instance.GetCurrentSprite());
+        PadManager.Instance.SaveTileSprite(tempSprite, step, CurrentStep); // Pass CurrentStep as the third argument
+
         // Rotate back to original rotation
         elapsedTime = 0f;
-        Quaternion startRotation = targetRotation;
         while (elapsedTime < rotationTime)
         {
-            transform.rotation = Quaternion.Slerp(startRotation, originalRotation, elapsedTime / rotationTime);
+            transform.rotation = Quaternion.Slerp(targetRotation, originalRotation, elapsedTime / rotationTime);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
@@ -85,16 +89,11 @@ public class Cell : MonoBehaviour
         transform.rotation = originalRotation;
     }
 
-    private bool IsMouseOver()
+    public bool IsMouseOver()
     {
         Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition);
 
-        if (hitCollider != null && hitCollider.gameObject == gameObject)
-        {
-            return true;
-        }
-
-        return false;
+        return hitCollider != null && hitCollider.gameObject == gameObject;
     }
 }

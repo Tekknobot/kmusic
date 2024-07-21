@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4448757436394311977}
   - component: {fileID: 4406177758149172177}
   - component: {fileID: -4232627687747779302}
+  - component: {fileID: -1317629146768416124}
   m_Layer: 0
   m_Name: cell_default
   m_TagString: Untagged
@@ -144,3 +145,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultSprite: {fileID: 21300000, guid: 78b8217c21f460c43acdb671fc45e794, type: 3}
+  step: 0
+--- !u!114 &-1317629146768416124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1298257209045040697}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a61da5cd1e987449be5a2a0fcb32e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

@@ -15,6 +15,8 @@ public class PadManager : MonoBehaviour
 
     private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of pads
 
+    private Cell[,] boardCells; // 2D array to store references to all board cells
+
     private void Awake()
     {
         // Singleton pattern
@@ -57,6 +59,9 @@ public class PadManager : MonoBehaviour
     private void GeneratePads()
     {
         int numPadsToCreate = Mathf.Min(8, sprites.Length); // Ensure we create a maximum of 8 pads
+
+        // Initialize the boardCells 2D array
+        boardCells = new Cell[8, 8];
 
         // Loop to create exactly 8 pads
         for (int i = 0; i < numPadsToCreate; i++)
@@ -109,7 +114,7 @@ public class PadManager : MonoBehaviour
             currentSprite = spriteRenderer.sprite;
 
             // Notify BoardManager about the clicked pad's sprite
-            BoardManager.Instance.SaveTileSprite(currentSprite);
+            BoardManager.Instance.DisplaySavedTilesForSprite(currentSprite);
 
             // Scale the clicked pad temporarily
             StartCoroutine(ScalePad(clickedPad));
@@ -164,5 +169,18 @@ public class PadManager : MonoBehaviour
     public Sprite GetCurrentSprite()
     {
         return currentSprite;
+    }
+
+    // Method to save the sprite of a cell into the boardCells array
+    public void SaveTileSprite(Sprite sprite, int x, int y)
+    {
+        if (x >= 0 && x < 8 && y >= 0 && y < 8)
+        {
+            Cell cell = boardCells[x, y];
+            if (cell != null)
+            {
+                cell.ReplaceSprite(sprite);
+            }
+        }
     }
 }
