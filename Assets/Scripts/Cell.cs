@@ -10,6 +10,7 @@ public class Cell : MonoBehaviour
     public Sprite defaultSprite; // Make sure this is public if you need to access it externally
 
     public int step;
+    public bool hasNote;
 
     // Properties to store sprite and step information
     public Sprite CurrentSprite { get; private set; }
@@ -40,6 +41,7 @@ public class Cell : MonoBehaviour
     {
         spriteRenderer.sprite = newSprite;
         CurrentSprite = newSprite; // Update the current sprite
+        this.hasNote = true;
     }
 
     // Method to rotate the cell and return to original rotation

@@ -76,10 +76,9 @@ public class BoardManager : MonoBehaviour
     {
         foreach (Cell cell in boardCells)
         {
-            if (cell != null && cell.CurrentSprite == sprite)
+            if (cell != null && cell.hasNote)
             {
-                // Implement logic to highlight or visualize cells with the given sprite
-                // Example: cell.Highlight();
+                cell.ReplaceSprite(sprite);
             }
         }
     }
