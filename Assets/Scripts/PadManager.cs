@@ -113,9 +113,6 @@ public class PadManager : MonoBehaviour
         {
             currentSprite = spriteRenderer.sprite;
 
-            // Notify BoardManager about the clicked pad's sprite
-            BoardManager.Instance.DisplaySavedTilesForSprite(currentSprite);
-
             // Scale the clicked pad temporarily
             StartCoroutine(ScalePad(clickedPad));
         }

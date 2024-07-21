@@ -73,18 +73,6 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    // Example method to display saved tiles for a specific sprite
-    public void DisplaySavedTilesForSprite(Sprite sprite)
-    {
-        foreach (Cell cell in boardCells)
-        {
-            if (cell != null && cell.hasNote)
-            {
-                cell.ReplaceSprite(sprite);
-            }
-        }
-    }
-
     // Method to get a reference to the cell at specified coordinates
     public Cell GetCell(int x, int y)
     {

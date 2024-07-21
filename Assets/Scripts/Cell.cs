@@ -10,12 +10,10 @@ public class Cell : MonoBehaviour
     public Sprite defaultSprite; // Make sure this is public if you need to access it externally
 
     public int step;
-    public bool hasNote; // Private field to store hasNote information
 
     // Properties to expose sprite and step information
     public Sprite CurrentSprite { get; private set; }
     public int CurrentStep { get; private set; }
-    public bool HasNote => hasNote; // Public property to read hasNote
 
     private void Awake()
     {
@@ -42,7 +40,6 @@ public class Cell : MonoBehaviour
     {
         spriteRenderer.sprite = newSprite;
         CurrentSprite = newSprite; // Update the current sprite
-        hasNote = true; // Set hasNote to true when sprite is replaced
     }
 
     // Method to rotate the cell and return to original rotation
@@ -104,7 +101,6 @@ public class Cell : MonoBehaviour
     public void ResetCell()
     {
         SetSprite(defaultSprite);
-        hasNote = false; // Reset hasNote to false
         // Optionally reset other properties of the cell
     }
 }
