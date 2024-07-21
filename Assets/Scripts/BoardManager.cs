@@ -72,43 +72,44 @@ public class BoardManager : MonoBehaviour
                 cellStep++;
             }
         }
-
-        // Display default sprites initially since there are no saved tile sprites
-        DisplayDefaultSprites();
     }
 
-    // Property for defaultSprite to ensure encapsulation
-    public Sprite DefaultSprite
+    // Method to reset the board to display default sprites
+    public void ResetBoard()
     {
-        get { return defaultSprite; }
-        set { defaultSprite = value; }
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child != null)
+            {
+                Cell cell = child.GetComponent<Cell>();
+                if (cell != null)
+                {
+                    cell.ReplaceSprite(defaultSprite); // Replace each cell's sprite with defaultSprite
+                }
+            }
+        }
     }
 
-    public void SaveTileSprite(Sprite sprite, int midiNote)
+    // Method to save tile sprite
+    public void SaveTileSprite(Sprite sprite)
     {
         tileSprites.Add(sprite);
     }
 
-    public void DisplayTileSprites()
+    // Method to update the board with saved tile sprites
+    public void UpdateBoardWithSavedSprites()
     {
+        // Clear the board
+        ResetBoard();
+
+        // Display saved tile sprites
         for (int i = 0; i < tileSprites.Count; i++)
         {
             Cell cell = GetCellAtIndex(i);
             if (cell != null)
             {
                 cell.ReplaceSprite(tileSprites[i]);
-            }
-        }
-    }
-
-    private void DisplayDefaultSprites()
-    {
-        for (int i = 0; i < transform.childCount; i++)
-        {
-            Cell cell = GetCellAtIndex(i);
-            if (cell != null)
-            {
-                cell.ReplaceSprite(defaultSprite); // Use default sprite from BoardManager class
             }
         }
     }

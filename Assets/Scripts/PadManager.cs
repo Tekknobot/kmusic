@@ -1,6 +1,6 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic; // Add this line for using Dictionary
+using System.Collections.Generic;
 
 public class PadManager : MonoBehaviour
 {
@@ -99,8 +99,8 @@ public class PadManager : MonoBehaviour
     // Method to handle when a pad is clicked
     public void OnPadClicked(GameObject clickedPad)
     {
-        // Reset scale of the previously clicked pad if there was one
-        ResetPadScale();
+        // Reset the board to display default configuration first
+        BoardManager.Instance.ResetBoard();
 
         // Update the current sprite tracked by PadManager
         SpriteRenderer spriteRenderer = clickedPad.GetComponent<SpriteRenderer>();
@@ -108,10 +108,10 @@ public class PadManager : MonoBehaviour
         {
             currentSprite = spriteRenderer.sprite;
 
-            // Notify BoardManager about the clicked pad's sprite and associated MIDI note
-            BoardManager.Instance.SaveTileSprite(currentSprite, clickedPad.GetComponent<PadClickHandler>().MidiNote);
+            // Notify BoardManager about the clicked pad's sprite
+            BoardManager.Instance.SaveTileSprite(currentSprite);
 
-            // Start scaling coroutine on the clicked pad
+            // Scale the clicked pad temporarily
             StartCoroutine(ScalePad(clickedPad));
         }
     }
