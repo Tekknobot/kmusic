@@ -172,47 +172,58 @@ public class PadManager : MonoBehaviour
         return currentSprite;
     }
 
-    // Method to display the sprite on cells with matching step data
-    private void DisplaySpriteOnMatchingSteps(Sprite sprite)
+
+// Method to display all saved tiles for a specific sprite on matching cells
+private void DisplaySpriteOnMatchingSteps(Sprite sprite)
+{
+    Debug.Log($"Displaying all saved tiles for sprite: {sprite.name}");
+
+    // Find the group that matches the current sprite
+    if (tileDataGroups.ContainsKey(sprite.name))
     {
-        Debug.Log($"Displaying sprite on cells with matching steps for sprite: {sprite.name}");
+        List<TileData> tileDataList = tileDataGroups[sprite.name];
 
-        // Find the group that matches the current sprite
-        if (tileDataGroups.ContainsKey(sprite.name))
+        Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
+
+        // Iterate through boardCells to find cells with matching step
+        for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
         {
-            List<TileData> tileDataList = tileDataGroups[sprite.name];
-
-            Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
-
-            // Iterate through tile data for the current sprite group
-            foreach (TileData data in tileDataList)
+            for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
             {
-                int step = data.Step;
+                Cell cell = BoardManager.Instance.boardCells[x, y];
+                bool replacedSprite = false; // Flag to track if sprite has been replaced in current cell
 
-                Debug.Log($"Checking step {step}");
-
-                // Iterate through boardCells to find cells with matching step
-                for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
+                // Check each TileData entry for a match with the cell's step
+                foreach (TileData data in new List<TileData>(tileDataList)) // Create a copy to iterate safely
                 {
-                    for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
+                    if (cell != null && cell.GetComponent<Cell>().step == data.Step)
                     {
-                        Cell cell = BoardManager.Instance.boardCells[x, y];
-                        if (cell != null && cell.GetComponent<Cell>().step == step)
-                        {
-                            Debug.Log($"Found matching step {step} in cell ({x}, {y}). Replacing sprite.");
+                        Debug.Log($"Found matching step {data.Step} in cell ({x}, {y}). Replacing sprite.");
 
-                            // Replace sprite in the cell with the matching step
-                            cell.ReplaceSprite(sprite);
-                        }
+                        // Replace sprite in the cell with the matching step
+                        cell.ReplaceSprite(sprite);
+
+                        replacedSprite = true; // Mark that sprite has been replaced in this cell
+
+                        // If you only want to replace the sprite in one cell per step, break out of the foreach loop
+                        // break;
                     }
+                }
+
+                // Optional: If you only want to replace the sprite in one cell per step, uncomment the break statement above
+                // and add logic here to break the outer loops if sprite has been replaced
+                if (replacedSprite)
+                {
+                    break;
                 }
             }
         }
-        else
-        {
-            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
-        }
     }
+    else
+    {
+        Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
+    }
+}
 
 
     // Method to add tile data to history and respective group
