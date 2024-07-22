@@ -39,7 +39,7 @@ public class BoardManager : MonoBehaviour
         {
             for (int y = 0; y < boardSizeY; y++)
             {
-                Vector3 cellPosition = new Vector3(x, y, 0); // Adjust position as needed
+                Vector3 cellPosition = new Vector3(y, x, 0); // Adjust position as needed
 
                 // Instantiate a new cell prefab (assuming you have a prefab assigned in the inspector)
                 GameObject cellObject = Instantiate(cellPrefab, cellPosition, Quaternion.identity);

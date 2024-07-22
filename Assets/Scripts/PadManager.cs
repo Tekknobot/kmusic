@@ -188,26 +188,33 @@ public class PadManager : MonoBehaviour
     // Method to display the sprite on cells with matching step data
     private void DisplaySpriteOnMatchingSteps(Sprite sprite)
     {
+        // Iterate through tileDataHistory to find matches
         foreach (TileData data in tileDataHistory)
         {
             if (data.Sprite == sprite)
             {
                 int step = data.Step;
-                for (int x = 0; x < 8; x++)
+
+                // Iterate through boardCells to find cells with matching step
+                for (int x = 0; x < boardCells.GetLength(0); x++)
                 {
-                    for (int y = 0; y < 8; y++)
+                    for (int y = 0; y < boardCells.GetLength(1); y++)
                     {
                         Cell cell = boardCells[x, y];
                         if (cell != null && cell.CurrentStep == step)
                         {
+                            // Replace sprite in the cell with the matching step
                             cell.ReplaceSprite(sprite);
                         }
                     }
                 }
-                break; // Stop searching once a match is found
+
+                // Break out once a match is found (assuming only one match is needed)
+                break;
             }
         }
     }
+
 
     // Method to add tile data to history
     public void AddTileData(TileData data)
