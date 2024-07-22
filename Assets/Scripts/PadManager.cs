@@ -17,7 +17,7 @@ public class PadManager : MonoBehaviour
 
     private Cell[,] boardCells; // 2D array to store references to all board cells
 
-    private Dictionary<Sprite, List<TileData>> tileDataGroups = new Dictionary<Sprite, List<TileData>>(); // Dictionary to store TileData grouped by sprite
+    public Dictionary<string, List<TileData>> tileDataGroups = new Dictionary<string, List<TileData>>(); // Dictionary to store TileData grouped by sprite
 
     private void Awake()
     {
@@ -178,9 +178,9 @@ public class PadManager : MonoBehaviour
         Debug.Log($"Displaying sprite on cells with matching steps for sprite: {sprite.name}");
 
         // Find the group that matches the current sprite
-        if (tileDataGroups.ContainsKey(sprite))
+        if (tileDataGroups.ContainsKey(sprite.name))
         {
-            List<TileData> tileDataList = tileDataGroups[sprite];
+            List<TileData> tileDataList = tileDataGroups[sprite.name];
 
             Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
 
@@ -219,13 +219,13 @@ public class PadManager : MonoBehaviour
     public void AddTileData(TileData data)
     {
         // Check if there is already a list for this sprite, otherwise create one
-        if (!tileDataGroups.ContainsKey(data.Sprite))
+        if (!tileDataGroups.ContainsKey(data.Sprite.name))
         {
-            tileDataGroups[data.Sprite] = new List<TileData>();
+            tileDataGroups[data.Sprite.name] = new List<TileData>();
         }
 
         // Add tile data to respective sprite's group
-        tileDataGroups[data.Sprite].Add(data);
+        tileDataGroups[data.Sprite.name].Add(data);
 
         Debug.Log($"Added TileData for sprite: {data.Sprite.name}, Step: {data.Step}");
     }

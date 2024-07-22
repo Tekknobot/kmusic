@@ -12,9 +12,6 @@ public class Cell : MonoBehaviour
 
     public int step;
 
-    // Dictionary to store TileData instances grouped by sprite
-    private Dictionary<Sprite, List<TileData>> tileDataGroups = new Dictionary<Sprite, List<TileData>>();
-
     // Properties to expose sprite and step information
     public Sprite CurrentSprite { get; private set; }
     public int CurrentStep { get; private set; }
@@ -116,13 +113,13 @@ public class Cell : MonoBehaviour
         TileData data = new TileData(sprite, step);
 
         // Check if there is already a list for this sprite
-        if (!tileDataGroups.ContainsKey(sprite))
+        if (!PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
         {
-            tileDataGroups[sprite] = new List<TileData>();
+            PadManager.Instance.tileDataGroups[sprite.name] = new List<TileData>();
         }
 
         // Add the TileData to the respective sprite's group
-        tileDataGroups[sprite].Add(data);
+        PadManager.Instance.tileDataGroups[sprite.name].Add(data);
 
         Debug.Log($"Saved Tile Data: Sprite = {data.Sprite.name}, Step = {data.Step}, Group = {sprite.name}");
     }
@@ -130,9 +127,9 @@ public class Cell : MonoBehaviour
     // Method to get all saved TileData instances for a specific sprite
     public List<TileData> GetTileDataHistory(Sprite sprite)
     {
-        if (tileDataGroups.ContainsKey(sprite))
+        if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
         {
-            return tileDataGroups[sprite];
+            return PadManager.Instance.tileDataGroups[sprite.name];
         }
         else
         {
