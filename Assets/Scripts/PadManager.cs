@@ -175,15 +175,21 @@ public class PadManager : MonoBehaviour
     // Method to display the sprite on cells with matching step data
     private void DisplaySpriteOnMatchingSteps(Sprite sprite)
     {
+        Debug.Log($"Displaying sprite on cells with matching steps for sprite: {sprite.name}");
+
         // Find the group that matches the current sprite
         if (tileDataGroups.ContainsKey(sprite))
         {
             List<TileData> tileDataList = tileDataGroups[sprite];
 
+            Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
+
             // Iterate through tile data for the current sprite group
             foreach (TileData data in tileDataList)
             {
                 int step = data.Step;
+
+                Debug.Log($"Checking step {step}");
 
                 // Iterate through boardCells to find cells with matching step
                 for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
@@ -193,6 +199,8 @@ public class PadManager : MonoBehaviour
                         Cell cell = BoardManager.Instance.boardCells[x, y];
                         if (cell != null && cell.GetComponent<Cell>().step == step)
                         {
+                            Debug.Log($"Found matching step {step} in cell ({x}, {y}). Replacing sprite.");
+
                             // Replace sprite in the cell with the matching step
                             cell.ReplaceSprite(sprite);
                         }
@@ -205,6 +213,7 @@ public class PadManager : MonoBehaviour
             Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
         }
     }
+
 
     // Method to add tile data to history and respective group
     public void AddTileData(TileData data)
