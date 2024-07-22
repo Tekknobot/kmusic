@@ -226,5 +226,7 @@ public class PadManager : MonoBehaviour
 
         // Add tile data to respective sprite's group
         tileDataGroups[data.Sprite].Add(data);
+
+        Debug.Log($"Added TileData for sprite: {data.Sprite.name}, Step: {data.Step}");
     }
 }
