@@ -7,6 +7,7 @@ public class BoardManager : MonoBehaviour
 
     private Cell[,] boardCells; // 2D array to store references to all board cells
 
+    private int stepCount;
 
     private void Awake()
     {
@@ -45,6 +46,8 @@ public class BoardManager : MonoBehaviour
 
                 // Parent the cell under the BoardManager for organization (optional)
                 cellObject.transform.parent = transform;
+                cellObject.GetComponent<Cell>().step = stepCount;
+                stepCount++;
 
                 // Get the Cell component from the instantiated GameObject
                 Cell cell = cellObject.GetComponent<Cell>();
