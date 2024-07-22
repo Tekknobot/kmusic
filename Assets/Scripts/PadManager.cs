@@ -206,7 +206,7 @@ private void DisplaySpriteOnMatchingSteps(Sprite sprite)
                         replacedSprite = true; // Mark that sprite has been replaced in this cell
 
                         // If you only want to replace the sprite in one cell per step, break out of the foreach loop
-                        // break;
+                        //break;
                     }
                 }
 
@@ -214,7 +214,7 @@ private void DisplaySpriteOnMatchingSteps(Sprite sprite)
                 // and add logic here to break the outer loops if sprite has been replaced
                 if (replacedSprite)
                 {
-                    break;
+                    // break;
                 }
             }
         }
