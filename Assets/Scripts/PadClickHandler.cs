@@ -2,36 +2,25 @@ using UnityEngine;
 
 public class PadClickHandler : MonoBehaviour
 {
-    private PadManager padManager; // Reference to the PadManager
-    private GameObject padObject; // Reference to the pad GameObject
-    private Sprite sprite; // Sprite associated with the pad
-    private int midiNote; // MIDI note associated with the pad
+    private PadManager padManager;
+    private GameObject padObject;
+    private Sprite sprite;
+    private int midiNote;
 
-    // Method to initialize the click handler with necessary data
-    public void Initialize(PadManager manager, GameObject padObj, Sprite padSprite, int note)
+    public void Initialize(PadManager manager, GameObject pad, Sprite sprite, int note)
     {
         padManager = manager;
-        padObject = padObj;
-        sprite = padSprite;
+        padObject = pad;
+        this.sprite = sprite;
         midiNote = note;
     }
 
-    // Method called when the pad is clicked
     private void OnMouseDown()
     {
-        if (padManager != null && padObject != null)
-        {
-            padManager.OnPadClicked(padObject);
-        }
-        else
-        {
-            Debug.LogError("PadManager or padObject is null in PadClickHandler.");
-        }
-    }
+        padManager.OnPadClicked(padObject);
 
-    // Property to get the MIDI note associated with the pad
-    public int MidiNote
-    {
-        get { return midiNote; }
+        // Optionally, add to history or perform other actions
+        TileData data = new TileData(sprite, midiNote);
+        padManager.AddTileData(data);
     }
 }

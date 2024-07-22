@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Cell : MonoBehaviour
 {
@@ -10,6 +11,9 @@ public class Cell : MonoBehaviour
     public Sprite defaultSprite; // Make sure this is public if you need to access it externally
 
     public int step;
+
+    // List to store TileData instances for each sprite change
+    private List<TileData> tileDataHistory = new List<TileData>();
 
     // Properties to expose sprite and step information
     public Sprite CurrentSprite { get; private set; }
@@ -35,11 +39,14 @@ public class Cell : MonoBehaviour
         }
     }
 
-    // Method to replace the sprite with a new sprite and update hasNote
+    // Method to replace the sprite with a new sprite and save sprite/step information
     public void ReplaceSprite(Sprite newSprite)
     {
         spriteRenderer.sprite = newSprite;
         CurrentSprite = newSprite; // Update the current sprite
+
+        // Save sprite and step information
+        SaveTileData(CurrentSprite, step);
     }
 
     // Method to rotate the cell and return to original rotation
@@ -75,7 +82,6 @@ public class Cell : MonoBehaviour
         // Swap sprites after rotation
         Sprite tempSprite = CurrentSprite;
         ReplaceSprite(PadManager.Instance.GetCurrentSprite());
-        PadManager.Instance.SaveTileSprite(tempSprite, step, CurrentStep); // Pass CurrentStep as the third argument
 
         // Rotate back to original rotation
         elapsedTime = 0f;
@@ -102,5 +108,32 @@ public class Cell : MonoBehaviour
     {
         SetSprite(defaultSprite);
         // Optionally reset other properties of the cell
+    }
+
+    // Method to save sprite and step information in TileData history
+    private void SaveTileData(Sprite sprite, int step)
+    {
+        TileData data = new TileData(sprite, step);
+        tileDataHistory.Add(data);
+        Debug.Log($"Saved Tile Data: Sprite = {data.Sprite}, Step = {data.Step}");
+    }
+
+    // Method to get all saved TileData instances
+    public List<TileData> GetTileDataHistory()
+    {
+        return tileDataHistory;
+    }
+}
+
+// Data structure to hold sprite and step information
+public class TileData
+{
+    public Sprite Sprite { get; private set; }
+    public int Step { get; private set; }
+
+    public TileData(Sprite sprite, int step)
+    {
+        Sprite = sprite;
+        Step = step;
     }
 }

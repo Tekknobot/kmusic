@@ -17,6 +17,8 @@ public class PadManager : MonoBehaviour
 
     private Cell[,] boardCells; // 2D array to store references to all board cells
 
+    private List<TileData> tileDataHistory = new List<TileData>(); // List to store tile data history
+
     private void Awake()
     {
         // Singleton pattern
@@ -115,6 +117,9 @@ public class PadManager : MonoBehaviour
 
             // Scale the clicked pad temporarily
             StartCoroutine(ScalePad(clickedPad));
+
+            // Display the sprite on cells with matching step data
+            DisplaySpriteOnMatchingSteps(currentSprite);
         }
     }
 
@@ -178,5 +183,41 @@ public class PadManager : MonoBehaviour
                 cell.ReplaceSprite(sprite);
             }
         }
+    }
+
+    // Method to display the sprite on cells with matching step data
+    private void DisplaySpriteOnMatchingSteps(Sprite sprite)
+    {
+        foreach (TileData data in tileDataHistory)
+        {
+            if (data.Sprite == sprite)
+            {
+                int step = data.Step;
+                for (int x = 0; x < 8; x++)
+                {
+                    for (int y = 0; y < 8; y++)
+                    {
+                        Cell cell = boardCells[x, y];
+                        if (cell != null && cell.CurrentStep == step)
+                        {
+                            cell.ReplaceSprite(sprite);
+                        }
+                    }
+                }
+                break; // Stop searching once a match is found
+            }
+        }
+    }
+
+    // Method to add tile data to history
+    public void AddTileData(TileData data)
+    {
+        tileDataHistory.Add(data);
+    }
+
+    // Method to get all tile data history
+    public List<TileData> GetTileDataHistory()
+    {
+        return tileDataHistory;
     }
 }
