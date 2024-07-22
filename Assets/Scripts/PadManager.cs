@@ -17,7 +17,7 @@ public class PadManager : MonoBehaviour
 
     private Cell[,] boardCells; // 2D array to store references to all board cells
 
-    private List<TileData> tileDataHistory = new List<TileData>(); // List to store tile data history
+    private Dictionary<Sprite, List<TileData>> tileDataGroups = new Dictionary<Sprite, List<TileData>>(); // Dictionary to store TileData grouped by sprite
 
     private void Awake()
     {
@@ -172,59 +172,50 @@ public class PadManager : MonoBehaviour
         return currentSprite;
     }
 
-    // Method to save the sprite of a cell into the boardCells array
-    public void SaveTileSprite(Sprite sprite, int x, int y)
-    {
-        if (x >= 0 && x < 8 && y >= 0 && y < 8)
-        {
-            Cell cell = boardCells[x, y];
-            if (cell != null)
-            {
-                cell.ReplaceSprite(sprite);
-            }
-        }
-    }
-
     // Method to display the sprite on cells with matching step data
     private void DisplaySpriteOnMatchingSteps(Sprite sprite)
     {
-        // Iterate through tileDataHistory to find matches
-        foreach (TileData data in tileDataHistory)
+        // Find the group that matches the current sprite
+        if (tileDataGroups.ContainsKey(sprite))
         {
-            if (data.Sprite == sprite)
+            List<TileData> tileDataList = tileDataGroups[sprite];
+
+            // Iterate through tile data for the current sprite group
+            foreach (TileData data in tileDataList)
             {
                 int step = data.Step;
 
                 // Iterate through boardCells to find cells with matching step
-                for (int x = 0; x < boardCells.GetLength(0); x++)
+                for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
                 {
-                    for (int y = 0; y < boardCells.GetLength(1); y++)
+                    for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
                     {
-                        Cell cell = boardCells[x, y];
-                        if (cell != null && cell.CurrentStep == step)
+                        Cell cell = BoardManager.Instance.boardCells[x, y];
+                        if (cell != null && cell.GetComponent<Cell>().step == step)
                         {
                             // Replace sprite in the cell with the matching step
                             cell.ReplaceSprite(sprite);
                         }
                     }
                 }
-
-                // Break out once a match is found (assuming only one match is needed)
-                break;
             }
+        }
+        else
+        {
+            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
         }
     }
 
-
-    // Method to add tile data to history
+    // Method to add tile data to history and respective group
     public void AddTileData(TileData data)
     {
-        tileDataHistory.Add(data);
-    }
+        // Check if there is already a list for this sprite, otherwise create one
+        if (!tileDataGroups.ContainsKey(data.Sprite))
+        {
+            tileDataGroups[data.Sprite] = new List<TileData>();
+        }
 
-    // Method to get all tile data history
-    public List<TileData> GetTileDataHistory()
-    {
-        return tileDataHistory;
+        // Add tile data to respective sprite's group
+        tileDataGroups[data.Sprite].Add(data);
     }
 }

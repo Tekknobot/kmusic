@@ -5,7 +5,7 @@ public class BoardManager : MonoBehaviour
     public static BoardManager Instance;   // Singleton instance
     public GameObject cellPrefab;
 
-    private Cell[,] boardCells; // 2D array to store references to all board cells
+    public Cell[,] boardCells; // 2D array to store references to all board cells
 
     private int stepCount;
 

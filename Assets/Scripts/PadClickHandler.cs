@@ -18,9 +18,5 @@ public class PadClickHandler : MonoBehaviour
     private void OnMouseDown()
     {
         padManager.OnPadClicked(padObject);
-
-        // Optionally, add to history or perform other actions
-        TileData data = new TileData(sprite, midiNote);
-        padManager.AddTileData(data);
     }
 }
