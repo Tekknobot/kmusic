@@ -46,6 +46,7 @@ public class BoardManager : MonoBehaviour
 
                 // Parent the cell under the BoardManager for organization (optional)
                 cellObject.transform.parent = transform;
+                cellObject.name = stepCount.ToString();
                 cellObject.GetComponent<Cell>().step = stepCount;
                 stepCount++;
 
