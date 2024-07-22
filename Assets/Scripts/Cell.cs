@@ -12,8 +12,8 @@ public class Cell : MonoBehaviour
 
     public int step;
 
-    // List to store TileData instances for each sprite change
-    private List<TileData> tileDataHistory = new List<TileData>();
+    // Dictionary to store TileData instances grouped by sprite
+    private Dictionary<Sprite, List<TileData>> tileDataGroups = new Dictionary<Sprite, List<TileData>>();
 
     // Properties to expose sprite and step information
     public Sprite CurrentSprite { get; private set; }
@@ -45,7 +45,7 @@ public class Cell : MonoBehaviour
         spriteRenderer.sprite = newSprite;
         CurrentSprite = newSprite; // Update the current sprite
 
-        // Save sprite and step information
+        // Save sprite and step information into respective group
         SaveTileData(CurrentSprite, step);
     }
 
@@ -110,18 +110,35 @@ public class Cell : MonoBehaviour
         // Optionally reset other properties of the cell
     }
 
-    // Method to save sprite and step information in TileData history
+    // Method to save sprite and step information in TileData history, grouped by sprite
     private void SaveTileData(Sprite sprite, int step)
     {
         TileData data = new TileData(sprite, step);
-        tileDataHistory.Add(data);
-        Debug.Log($"Saved Tile Data: Sprite = {data.Sprite}, Step = {data.Step}");
+
+        // Check if there is already a list for this sprite
+        if (!tileDataGroups.ContainsKey(sprite))
+        {
+            tileDataGroups[sprite] = new List<TileData>();
+        }
+
+        // Add the TileData to the respective sprite's group
+        tileDataGroups[sprite].Add(data);
+
+        Debug.Log($"Saved Tile Data: Sprite = {data.Sprite.name}, Step = {data.Step}, Group = {sprite.name}");
     }
 
-    // Method to get all saved TileData instances
-    public List<TileData> GetTileDataHistory()
+    // Method to get all saved TileData instances for a specific sprite
+    public List<TileData> GetTileDataHistory(Sprite sprite)
     {
-        return tileDataHistory;
+        if (tileDataGroups.ContainsKey(sprite))
+        {
+            return tileDataGroups[sprite];
+        }
+        else
+        {
+            Debug.LogWarning($"No TileData found for sprite: {sprite.name}");
+            return new List<TileData>();
+        }
     }
 }
 
