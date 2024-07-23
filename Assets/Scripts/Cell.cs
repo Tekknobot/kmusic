@@ -44,20 +44,33 @@ public class Cell : MonoBehaviour
     // Method to replace the sprite with a new sprite and save sprite/step information
     public void ReplaceSprite(Sprite newSprite)
     {
-        spriteRenderer.sprite = newSprite;
-        CurrentSprite = newSprite; // Update the current sprite
+        // Check if the current sprite is not the default sprite
+        if (spriteRenderer.sprite != defaultSprite)
+        {
+            // Remove the tile data for the current step and default sprite
+            RemoveTileData(spriteRenderer.sprite, step);
 
-        // Save sprite and step information into respective group
-        SaveTileData(CurrentSprite, step);
+            // Replace with the default sprite
+            spriteRenderer.sprite = defaultSprite;
+            CurrentSprite = defaultSprite; // Update the current sprite
+
+            // Save the default sprite data
+            SaveTileData(defaultSprite, step);
+        }
+        else
+        {
+            spriteRenderer.sprite = newSprite;
+            CurrentSprite = newSprite; // Update the current sprite
+
+            // Save the new sprite data
+            SaveTileData(newSprite, step);
+        }
 
         // Add note to sequencer with pitch, at step, and duration of 1 step
         if (sequencer != null)
         {
-            for (int i = 0; i < 8; i++) {
-                if (PadManager.Instance.GetComponent<PadManager>().public_clickedPad.GetComponent<PadClickHandler>().midiNote == 48 + i) {
-                    sequencer.GetComponent<SampleSequencer>().AddNote(48 + i, step, step + 1, 1.0f); // Ensure duration is passed correctly
-                }
-            }
+            int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+            sequencer.GetComponent<SampleSequencer>().AddNote(midiNote, step, step + 1, 1.0f); // Ensure duration is passed correctly
         }
         else
         {
@@ -150,6 +163,24 @@ public class Cell : MonoBehaviour
         {
             Debug.LogWarning($"No TileData found for sprite: {sprite.name}");
             return new List<TileData>();
+        }
+    }
+
+    // Method to remove tile data for a specific sprite and step
+    private void RemoveTileData(Sprite sprite, int step)
+    {
+        if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
+        {
+            List<TileData> tileDataList = PadManager.Instance.tileDataGroups[sprite.name];
+            tileDataList.RemoveAll(data => data.Step == step);
+
+            // Remove the list if it's empty
+            if (tileDataList.Count == 0)
+            {
+                PadManager.Instance.tileDataGroups.Remove(sprite.name);
+            }
+
+            Debug.Log($"Removed Tile Data for Sprite: {sprite.name}, Step: {step}");
         }
     }
 }
