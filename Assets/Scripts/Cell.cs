@@ -54,8 +54,17 @@ public class Cell : MonoBehaviour
             spriteRenderer.sprite = defaultSprite;
             CurrentSprite = defaultSprite; // Update the current sprite
 
-            // Save the default sprite data
-            SaveTileData(defaultSprite, step);
+            // Remove note
+            if (sequencer != null)
+            {
+                int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+                sequencer.GetComponent<SampleSequencer>().RemoveNotesInRange(midiNote, step, step + 1); // Ensure duration is passed correctly
+                Debug.Log("Removed MIDI " + midiNote);
+            }
+            else
+            {
+                Debug.LogError("Sequencer is not assigned in BoardManager.");
+            }            
         }
         else
         {
