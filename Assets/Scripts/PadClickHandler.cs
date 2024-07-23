@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PadClickHandler : MonoBehaviour
 {
-    private PadManager padManager;
+    public PadManager padManager;
     private GameObject padObject;
     private Sprite sprite;
     public int midiNote;
