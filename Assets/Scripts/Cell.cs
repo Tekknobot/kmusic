@@ -45,7 +45,7 @@ public class Cell : MonoBehaviour
         // Save sprite and step information into respective group
         SaveTileData(CurrentSprite, step);
 
-        // Add note to sequencer with pitch 48, at step, and duration of 1 step
+        // Add note to sequencer with pitch, at step, and duration of 1 step
         if (BoardManager.Instance.sequencer != null)
         {
             BoardManager.Instance.sequencer.AddNote(48, step, step + 1, 1.0f); // Ensure duration is passed correctly
@@ -55,7 +55,7 @@ public class Cell : MonoBehaviour
             Debug.LogError("Sequencer is not assigned in BoardManager.");
         }
     }
-    
+
     // Method to rotate the cell and return to original rotation
     public void RotateAndReturn()
     {

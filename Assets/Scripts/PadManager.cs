@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using AudioHelm;
 
 public class PadManager : MonoBehaviour
 {
@@ -78,7 +79,7 @@ public class PadManager : MonoBehaviour
             newPad.transform.parent = transform;
 
             // Assign a unique identifier or logic to each pad (for example, MIDI note)
-            int midiNote = i; // Example MIDI note generation
+            int midiNote = 48 + i; // Example MIDI note generation
 
             // Get the SpriteRenderer component from the pad
             SpriteRenderer spriteRenderer = newPad.GetComponent<SpriteRenderer>();
@@ -120,6 +121,15 @@ public class PadManager : MonoBehaviour
 
             // Display the sprite on cells with matching step data
             DisplaySpriteOnMatchingSteps(currentSprite);
+        }
+
+        for (int i = 0; i < 8; i++) {
+            if (clickedPad.GetComponent<PadClickHandler>().midiNote == 48 + i) {
+                BoardManager.Instance.sequencer.NoteOn(clickedPad.GetComponent<PadClickHandler>().midiNote, 1.0f);
+                
+                // Console midi note
+                Debug.Log("MIDI " + clickedPad.GetComponent<PadClickHandler>().midiNote);
+            }
         }
     }
 

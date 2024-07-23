@@ -5,7 +5,7 @@ public class PadClickHandler : MonoBehaviour
     private PadManager padManager;
     private GameObject padObject;
     private Sprite sprite;
-    private int midiNote;
+    public int midiNote;
 
     public void Initialize(PadManager manager, GameObject pad, Sprite sprite, int note)
     {
