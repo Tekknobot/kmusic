@@ -20,6 +20,8 @@ public class PadManager : MonoBehaviour
 
     public Dictionary<string, List<TileData>> tileDataGroups = new Dictionary<string, List<TileData>>(); // Dictionary to store TileData grouped by sprite
 
+    public GameObject public_clickedPad;
+
     private void Awake()
     {
         // Singleton pattern
@@ -107,6 +109,8 @@ public class PadManager : MonoBehaviour
     // Method to handle when a pad is clicked
     public void OnPadClicked(GameObject clickedPad)
     {
+        public_clickedPad = clickedPad;
+
         // Reset the board to display default configuration first
         BoardManager.Instance.ResetBoard();
 

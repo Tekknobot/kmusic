@@ -48,7 +48,11 @@ public class Cell : MonoBehaviour
         // Add note to sequencer with pitch, at step, and duration of 1 step
         if (BoardManager.Instance.sequencer != null)
         {
-            BoardManager.Instance.sequencer.AddNote(48, step, step + 1, 1.0f); // Ensure duration is passed correctly
+            for (int i = 0; i < 8; i++) {
+                if (PadManager.Instance.GetComponent<PadManager>().public_clickedPad.GetComponent<PadClickHandler>().midiNote == 48 + i) {
+                    BoardManager.Instance.sequencer.AddNote(48 + i, step, step + 1, 1.0f); // Ensure duration is passed correctly
+                }
+            }
         }
         else
         {
