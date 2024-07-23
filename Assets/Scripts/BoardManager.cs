@@ -5,7 +5,7 @@ public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance;   // Singleton instance
     public GameObject cellPrefab;
-    public SampleSequencer sequencer;
+    public AudioHelm.SampleSequencer sequencer;
 
     public Cell[,] boardCells; // 2D array to store references to all board cells
 
@@ -28,7 +28,7 @@ public class BoardManager : MonoBehaviour
     }
 
     void Start() {
-        sequencer = GameObject.Find("Sequencer").GetComponent<SampleSequencer>();
+        sequencer = GameObject.Find("Sequencer").GetComponent<AudioHelm.SampleSequencer>();
     }
 
     void Update() {
