@@ -44,7 +44,16 @@ public class Cell : MonoBehaviour
 
         // Save sprite and step information into respective group
         SaveTileData(CurrentSprite, step);
-        BoardManager.Instance.sequencer.AddNote(48, (float)step, (float)step+1);
+
+        // Add note to sequencer
+        if (BoardManager.Instance.sequencer != null)
+        {
+            BoardManager.Instance.sequencer.AddNote(48, step, step + 1);
+        }
+        else
+        {
+            Debug.LogError("Sequencer is not assigned in BoardManager.");
+        }
     }
 
     // Method to rotate the cell and return to original rotation
