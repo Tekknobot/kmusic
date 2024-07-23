@@ -123,6 +123,7 @@ public class PadManager : MonoBehaviour
             DisplaySpriteOnMatchingSteps(currentSprite);
         }
 
+        // Play sample
         for (int i = 0; i < 8; i++) {
             if (clickedPad.GetComponent<PadClickHandler>().midiNote == 48 + i) {
                 BoardManager.Instance.sequencer.NoteOn(clickedPad.GetComponent<PadClickHandler>().midiNote, 1.0f);
