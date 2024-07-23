@@ -34,6 +34,7 @@ public class Cell : MonoBehaviour
         {
             spriteRenderer.sprite = sprite;
             CurrentSprite = sprite; // Update the current sprite
+            Debug.Log($"SetSprite called: Step = {step}, Sprite = {sprite.name}");
         }
         else
         {
@@ -44,22 +45,19 @@ public class Cell : MonoBehaviour
     // Method to replace the sprite with a new sprite and save sprite/step information
     public void ReplaceSprite(Sprite newSprite)
     {
-        // Check if the current sprite is not the default sprite
+        Debug.Log($"ReplaceSprite called: Old Sprite = {spriteRenderer.sprite?.name ?? "None"}, New Sprite = {newSprite.name}, Step = {step}");
+
         if (spriteRenderer.sprite != defaultSprite)
         {
-            // Remove the tile data for the current step and default sprite
             RemoveTileData(spriteRenderer.sprite, step);
-
-            // Replace with the default sprite
             spriteRenderer.sprite = defaultSprite;
             CurrentSprite = defaultSprite; // Update the current sprite
 
-            // Remove note
             if (sequencer != null)
             {
                 int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
                 sequencer.GetComponent<SampleSequencer>().RemoveNotesInRange(midiNote, step, step + 1); // Ensure duration is passed correctly
-                Debug.Log("Removed MIDI " + midiNote);
+                Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
             }
             else
             {
@@ -71,19 +69,18 @@ public class Cell : MonoBehaviour
             spriteRenderer.sprite = newSprite;
             CurrentSprite = newSprite; // Update the current sprite
 
-            // Save the new sprite data
             SaveTileData(newSprite, step);
-        }
 
-        // Add note to sequencer with pitch, at step, and duration of 1 step
-        if (sequencer != null)
-        {
-            int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
-            sequencer.GetComponent<SampleSequencer>().AddNote(midiNote, step, step + 1, 1.0f); // Ensure duration is passed correctly
-        }
-        else
-        {
-            Debug.LogError("Sequencer is not assigned in BoardManager.");
+            if (sequencer != null)
+            {
+                int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+                sequencer.GetComponent<AudioHelm.SampleSequencer>().AddNote(midiNote, step, step + 1, 1.0f); // Ensure duration is passed correctly
+                Debug.Log($"Added MIDI {midiNote} at Step = {step}");
+            }
+            else
+            {
+                Debug.LogError("Sequencer is not assigned in BoardManager.");
+            }
         }
     }
 
@@ -95,8 +92,9 @@ public class Cell : MonoBehaviour
             StopCoroutine(rotationCoroutine);
         }
 
-        // Immediately replace the sprite before starting rotation
         Sprite currentSprite = PadManager.Instance.GetCurrentSprite();
+        Debug.Log($"RotateAndReturn called: Current Sprite = {currentSprite.name}, Step = {step}");
+
         ReplaceSprite(currentSprite);
 
         rotationCoroutine = StartCoroutine(RotateCoroutine());
