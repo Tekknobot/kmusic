@@ -417,7 +417,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 121986153}
-  - component: {fileID: 121986152}
   - component: {fileID: 121986154}
   m_Layer: 0
   m_Name: PadManager
@@ -426,18 +425,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &121986152
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 121986151}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1d1f7eebb43167b428e89a2e1ab97ac3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &121986153
 Transform:
   m_ObjectHideFlags: 0
@@ -5584,7 +5571,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cellPrefab: {fileID: 1298257209045040697, guid: fa3e306d0c222e343a1f3854bbbfe0f6, type: 3}
-  sequencer: {fileID: 0}
+  sequencer: {fileID: 1983356395}
 --- !u!4 &1307356743
 Transform:
   m_ObjectHideFlags: 0
@@ -7680,69 +7667,69 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   keyzones:
   - audioClip: {fileID: 8300000, guid: 3616c36168adce749901e295940f515b, type: 3}
-    mixer: {fileID: 0}
+    mixer: {fileID: -1199032771859049976, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
     rootKey: 60
     minKey: 60
     maxKey: 60
     minVelocity: 0
     maxVelocity: 1
-    lastScheduled: 0
+    lastScheduled: 5447.488
   - audioClip: {fileID: 8300000, guid: 16b7987c7feb1a14da50f17b7b21085e, type: 3}
-    mixer: {fileID: 0}
+    mixer: {fileID: 7513032977959403587, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
     rootKey: 61
     minKey: 61
     maxKey: 61
     minVelocity: 0
     maxVelocity: 1
-    lastScheduled: 0
+    lastScheduled: 5448.938666666667
   - audioClip: {fileID: 8300000, guid: 785e52e99ae3e0d48b08161770753f94, type: 3}
-    mixer: {fileID: 0}
+    mixer: {fileID: -2138738300229627601, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
     rootKey: 62
     minKey: 62
     maxKey: 62
     minVelocity: 0
     maxVelocity: 1
-    lastScheduled: 0
+    lastScheduled: 5450.346666666666
   - audioClip: {fileID: 8300000, guid: 0626eeb7178d2e64fbff7f4cf54af1be, type: 3}
-    mixer: {fileID: 0}
+    mixer: {fileID: -5905947948193952293, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
     rootKey: 63
     minKey: 63
     maxKey: 63
     minVelocity: 0
     maxVelocity: 1
-    lastScheduled: 0
+    lastScheduled: 5451.669333333333
   - audioClip: {fileID: 8300000, guid: 6015f563e8ef73c429605751775d4d32, type: 3}
-    mixer: {fileID: 0}
+    mixer: {fileID: 3520564538346911926, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
     rootKey: 64
     minKey: 64
     maxKey: 64
     minVelocity: 0
     maxVelocity: 1
-    lastScheduled: 0
+    lastScheduled: 5453.034666666666
   - audioClip: {fileID: 8300000, guid: a1056fe4ec64da5458f4e80910f2d243, type: 3}
-    mixer: {fileID: 0}
+    mixer: {fileID: -6963098807853842899, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
     rootKey: 65
     minKey: 65
     maxKey: 65
     minVelocity: 0
     maxVelocity: 1
-    lastScheduled: 0
+    lastScheduled: 5454.442666666667
   - audioClip: {fileID: 8300000, guid: a9b3e4e4c160cf84f96ede86d2205dd1, type: 3}
-    mixer: {fileID: 0}
+    mixer: {fileID: 2904419586886411499, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
     rootKey: 66
     minKey: 66
     maxKey: 66
     minVelocity: 0
     maxVelocity: 1
-    lastScheduled: 0
+    lastScheduled: 5455.850666666666
   - audioClip: {fileID: 8300000, guid: 3aea2a6d3ae4791459f41020769b8634, type: 3}
-    mixer: {fileID: 0}
+    mixer: {fileID: -6399834031866290787, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
     rootKey: 67
     minKey: 67
     maxKey: 67
     minVelocity: 0
     maxVelocity: 1
-    lastScheduled: 0
+    lastScheduled: 5458.112
   keyzonePlayMode: 0
   velocityTracking: 1
   numVoices: 8
@@ -7756,8 +7743,8 @@ AudioSource:
   m_GameObject: {fileID: 1983356394}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -6399834031866290787, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
+  m_audioClip: {fileID: 8300000, guid: 3aea2a6d3ae4791459f41020769b8634, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1

@@ -103,6 +103,9 @@ public class PadManager : MonoBehaviour
             // Attach click handler to the pad
             PadClickHandler padClickHandler = newPad.AddComponent<PadClickHandler>();
             padClickHandler.Initialize(this, newPad, sprites[i], midiNote);
+
+            // Change name of pad
+            newPad.name = sprites[i].name;
         }
     }
 
@@ -128,13 +131,21 @@ public class PadManager : MonoBehaviour
         }
 
         // Play sample
-        for (int i = 0; i < 8; i++) {
-            if (clickedPad.GetComponent<PadClickHandler>().midiNote == 48 + i) {
-                BoardManager.Instance.sequencer.NoteOn(clickedPad.GetComponent<PadClickHandler>().midiNote, 1.0f);
-                
-                // Console midi note
-                Debug.Log("MIDI " + clickedPad.GetComponent<PadClickHandler>().midiNote);
-            }
+        PadClickHandler padClickHandler = clickedPad.GetComponent<PadClickHandler>();
+        if (padClickHandler != null)
+        {
+            int midiNote = padClickHandler.midiNote;
+            BoardManager.Instance.sequencer.NoteOn(midiNote, 1.0f);
+
+            // Console midi note
+            Debug.Log("MIDI Note On: " + midiNote);
+
+            // Additional debug information
+            Debug.Log($"Clicked Pad: {clickedPad.name}, MIDI Note: {midiNote}");
+        }
+        else
+        {
+            Debug.LogError("PadClickHandler component not found on clicked pad.");
         }
     }
 
@@ -227,8 +238,6 @@ public class PadManager : MonoBehaviour
             }
         }
     }
-
-
 
     // Method to add tile data to history and respective group
     public void AddTileData(TileData data)
