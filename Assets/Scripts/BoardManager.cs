@@ -6,6 +6,7 @@ public class BoardManager : MonoBehaviour
     public static BoardManager Instance;   // Singleton instance
     public GameObject cellPrefab;
     public AudioHelm.SampleSequencer sequencer;
+    public GameObject sampler;
 
     public Cell[,] boardCells; // 2D array to store references to all board cells
 
@@ -22,6 +23,11 @@ public class BoardManager : MonoBehaviour
         {
             Destroy(gameObject);
             return;
+        }
+
+        if (sequencer == null)
+        {
+            Debug.LogError("Sequencer is not assigned in BoardManager.");
         }
 
         InitializeBoard();

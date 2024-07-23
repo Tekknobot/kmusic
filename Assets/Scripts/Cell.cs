@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using AudioHelm;
 
 public class Cell : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class Cell : MonoBehaviour
     private Coroutine rotationCoroutine;
 
     public Sprite defaultSprite; // Make sure this is public if you need to access it externally
+
+    public GameObject sequencer;
 
     public int step;
 
@@ -20,6 +23,8 @@ public class Cell : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         originalRotation = transform.rotation;
+
+        sequencer = GameObject.Find("Sequencer");
     }
 
     // Method to set the sprite for the Cell
@@ -46,11 +51,11 @@ public class Cell : MonoBehaviour
         SaveTileData(CurrentSprite, step);
 
         // Add note to sequencer with pitch, at step, and duration of 1 step
-        if (BoardManager.Instance.sequencer != null)
+        if (sequencer != null)
         {
             for (int i = 0; i < 8; i++) {
                 if (PadManager.Instance.GetComponent<PadManager>().public_clickedPad.GetComponent<PadClickHandler>().midiNote == 48 + i) {
-                    BoardManager.Instance.sequencer.AddNote(48 + i, step, step + 1, 1.0f); // Ensure duration is passed correctly
+                    sequencer.GetComponent<SampleSequencer>().AddNote(48 + i, step, step + 1, 1.0f); // Ensure duration is passed correctly
                 }
             }
         }
@@ -89,10 +94,6 @@ public class Cell : MonoBehaviour
         }
 
         transform.rotation = targetRotation;
-
-        // Swap sprites after rotation
-        Sprite tempSprite = CurrentSprite;
-        ReplaceSprite(PadManager.Instance.GetCurrentSprite());
 
         // Rotate back to original rotation
         elapsedTime = 0f;

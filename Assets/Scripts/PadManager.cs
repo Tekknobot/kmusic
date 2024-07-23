@@ -135,7 +135,7 @@ public class PadManager : MonoBehaviour
         if (padClickHandler != null)
         {
             int midiNote = padClickHandler.midiNote;
-            BoardManager.Instance.sequencer.NoteOn(midiNote, 1.0f);
+            BoardManager.Instance.sampler.GetComponent<Sampler>().NoteOn(midiNote, 1.0f);
 
             // Additional debug information
             Debug.Log($"Clicked Pad: {clickedPad.name}, MIDI Note: {midiNote}");
