@@ -1,9 +1,11 @@
 using UnityEngine;
+using AudioHelm;
 
 public class BoardManager : MonoBehaviour
 {
     public static BoardManager Instance;   // Singleton instance
     public GameObject cellPrefab;
+    public AudioHelm.SampleSequencer sequencer;
 
     public Cell[,] boardCells; // 2D array to store references to all board cells
 
@@ -23,6 +25,25 @@ public class BoardManager : MonoBehaviour
         }
 
         InitializeBoard();
+    }
+
+    void Start() {
+        sequencer = GameObject.Find("Sequencer").GetComponent<SampleSequencer>();
+    }
+
+    void Update() {
+        foreach (Cell cell in boardCells)
+        {
+            if (cell != null)
+            {        
+                if (sequencer.currentIndex == cell.step) {
+                    HighlightCellOnStep(sequencer.currentIndex);
+                }
+                else {
+                    cell.GetComponent<SpriteRenderer>().color = Color.white;
+                }
+            }
+        }
     }
 
     private void InitializeBoard()
@@ -114,4 +135,36 @@ public class BoardManager : MonoBehaviour
     {
         return new Vector2Int(boardCells.GetLength(0), boardCells.GetLength(1));
     }
+
+    // Method to highlight a cell when sequencer.currentIndex matches cell step
+    private void HighlightCellOnStep(int stepIndex)
+    {
+        // Iterate through all board cells
+        for (int x = 0; x < boardCells.GetLength(0); x++)
+        {
+            for (int y = 0; y < boardCells.GetLength(1); y++)
+            {
+                Cell cell = boardCells[x, y];
+                if (cell != null && cell.step == stepIndex)
+                {
+                    HighlightCell(cell);
+                }
+            }
+        }
+    }
+
+    // Method to highlight a single cell by changing its sprite color to grey
+    private void HighlightCell(Cell cell)
+    {
+        // Change sprite color to grey
+        SpriteRenderer spriteRenderer = cell.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = Color.grey;
+        }
+        else
+        {
+            Debug.LogError("SpriteRenderer component not found on cell.");
+        }
+    }    
 }
