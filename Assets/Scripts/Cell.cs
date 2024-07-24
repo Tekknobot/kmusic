@@ -108,13 +108,24 @@ public class Cell : MonoBehaviour
             StopCoroutine(rotationCoroutine);
         }
 
+        // Retrieve the current sprite from PadManager
         Sprite currentSprite = PadManager.Instance.GetCurrentSprite();
+        
+        // Check if currentSprite is null
+        if (currentSprite == null)
+        {
+            Debug.LogError("Current sprite is null. Cannot rotate and replace sprite.");
+            return; // Exit the method early if currentSprite is null
+        }
+
+        // Proceed if currentSprite is not null
         Debug.Log($"RotateAndReturn called: Current Sprite = {currentSprite.name}, Step = {step}");
 
         ReplaceSprite(currentSprite);
 
         rotationCoroutine = StartCoroutine(RotateCoroutine());
     }
+
 
     private IEnumerator RotateCoroutine()
     {
