@@ -31,17 +31,6 @@ public class Cell : MonoBehaviour
                 return;
             }
         }
-
-        // Test AddNote (Remove this after confirming functionality)
-        var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
-        if (sampleSequencer != null)
-        {
-            sampleSequencer.AddNote(63, step, step + 1, 1.0f);
-        }
-        else
-        {
-            Debug.LogError("SampleSequencer component not found on Sequencer.");
-        }
     }
 
     public void SetSprite(Sprite sprite)

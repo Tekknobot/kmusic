@@ -81,7 +81,7 @@ public class PadManager : MonoBehaviour
             newPad.transform.parent = transform;
 
             // Assign a unique identifier or logic to each pad (for example, MIDI note)
-            int midiNote = 48 + i; // Example MIDI note generation
+            int midiNote = 60 + i; // Example MIDI note generation
 
             // Get the SpriteRenderer component from the pad
             SpriteRenderer spriteRenderer = newPad.GetComponent<SpriteRenderer>();
