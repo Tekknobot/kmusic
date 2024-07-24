@@ -16,11 +16,7 @@ public class CellDownHandler : MonoBehaviour
 
     private void OnMouseDown()
     {
-        // Check if the mouse is over this cell
-        if (cell.IsMouseOver())
-        {
-            // Rotate and return the cell
-            cell.RotateAndReturn();
-        }
+        // Rotate and return the cell
+         cell.RotateAndReturn();
     }
 }

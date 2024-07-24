@@ -36,7 +36,7 @@ public class Cell : MonoBehaviour
         var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
         if (sampleSequencer != null)
         {
-            sampleSequencer.AddNote(63, 1, 2, 1.0f);
+            sampleSequencer.AddNote(63, step, step + 1, 1.0f);
         }
         else
         {
@@ -142,19 +142,6 @@ public class Cell : MonoBehaviour
         transform.rotation = originalRotation;
     }
 
-    public bool IsMouseOver()
-    {
-        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Collider2D hitCollider = Physics2D.OverlapPoint(mousePosition);
-
-        return hitCollider != null && hitCollider.gameObject == gameObject;
-    }
-
-    public void ResetCell()
-    {
-        SetSprite(defaultSprite);
-    }
-
     private void SaveTileData(Sprite sprite, float step)
     {
         TileData data = new TileData(sprite, step);
@@ -167,19 +154,6 @@ public class Cell : MonoBehaviour
         PadManager.Instance.tileDataGroups[sprite.name].Add(data);
 
         Debug.Log($"Saved Tile Data: Sprite = {data.Sprite.name}, Step = {data.Step}, Group = {sprite.name}");
-    }
-
-    public List<TileData> GetTileDataHistory(Sprite sprite)
-    {
-        if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
-        {
-            return PadManager.Instance.tileDataGroups[sprite.name];
-        }
-        else
-        {
-            Debug.LogWarning($"No TileData found for sprite: {sprite.name}");
-            return new List<TileData>();
-        }
     }
 
     private void RemoveTileData(Sprite sprite, float step)
