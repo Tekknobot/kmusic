@@ -9,13 +9,10 @@ public class Cell : MonoBehaviour
     private Quaternion originalRotation;
     private Coroutine rotationCoroutine;
 
-    public Sprite defaultSprite; // Make sure this is public if you need to access it externally
-
+    public Sprite defaultSprite;
     public GameObject sequencer;
-
     public float step;
 
-    // Properties to expose sprite and step information
     public Sprite CurrentSprite { get; private set; }
     public int CurrentStep { get; private set; }
 
@@ -24,16 +21,35 @@ public class Cell : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         originalRotation = transform.rotation;
 
-        sequencer = GameObject.Find("Sequencer");
+        // Attempt to find the sequencer if not assigned
+        if (sequencer == null)
+        {
+            sequencer = GameObject.Find("Sequencer");
+            if (sequencer == null)
+            {
+                Debug.LogError("Sequencer GameObject not found in scene.");
+                return;
+            }
+        }
+
+        // Test AddNote (Remove this after confirming functionality)
+        var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
+        if (sampleSequencer != null)
+        {
+            sampleSequencer.AddNote(63, 1, 2, 1.0f);
+        }
+        else
+        {
+            Debug.LogError("SampleSequencer component not found on Sequencer.");
+        }
     }
 
-    // Method to set the sprite for the Cell
     public void SetSprite(Sprite sprite)
     {
         if (spriteRenderer != null)
         {
             spriteRenderer.sprite = sprite;
-            CurrentSprite = sprite; // Update the current sprite
+            CurrentSprite = sprite;
             Debug.Log($"SetSprite called: Step = {step}, Sprite = {sprite.name}");
         }
         else
@@ -42,7 +58,6 @@ public class Cell : MonoBehaviour
         }
     }
 
-    // Method to replace the sprite with a new sprite and save sprite/step information
     public void ReplaceSprite(Sprite newSprite)
     {
         Debug.Log($"ReplaceSprite called: Old Sprite = {spriteRenderer.sprite?.name ?? "None"}, New Sprite = {newSprite.name}, Step = {step}");
@@ -51,41 +66,41 @@ public class Cell : MonoBehaviour
         {
             RemoveTileData(spriteRenderer.sprite, step);
             spriteRenderer.sprite = defaultSprite;
-            CurrentSprite = defaultSprite; // Update the current sprite
+            CurrentSprite = defaultSprite;
 
-            if (sequencer != null)
+            var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
+            if (sampleSequencer != null)
             {
                 int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
-                sequencer.GetComponent<SampleSequencer>().RemoveNotesInRange(midiNote, step, step + 1); // Ensure duration is passed correctly
+                sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
                 Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
             }
             else
             {
-                Debug.LogError("Sequencer is not assigned in BoardManager.");
-            }            
+                Debug.LogError("SampleSequencer component not found on Sequencer.");
+            }
         }
         else
         {
             spriteRenderer.sprite = newSprite;
-            CurrentSprite = newSprite; // Update the current sprite
+            CurrentSprite = newSprite;
 
             SaveTileData(newSprite, step);
 
-            // Add note to sequencer
-            if (sequencer != null)
+            var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
+            if (sampleSequencer != null)
             {
                 int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
-                sequencer.GetComponent<AudioHelm.SampleSequencer>().AddNote(midiNote, step, step + 1, 1.0f); // Ensure duration is passed correctly
+                sampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
                 Debug.Log($"Added MIDI {midiNote} at Step = {step}");
             }
             else
             {
-                Debug.LogError("Sequencer is not assigned in BoardManager.");
+                Debug.LogError("SampleSequencer component not found on Sequencer.");
             }
         }
     }
 
-    // Method to rotate the cell and return to original rotation
     public void RotateAndReturn()
     {
         if (rotationCoroutine != null)
@@ -104,7 +119,7 @@ public class Cell : MonoBehaviour
     private IEnumerator RotateCoroutine()
     {
         Quaternion targetRotation = originalRotation * Quaternion.Euler(0, 0, 180);
-        float rotationTime = 0.5f; // Adjust rotation time as needed
+        float rotationTime = 0.5f;
         float elapsedTime = 0f;
 
         while (elapsedTime < rotationTime)
@@ -116,7 +131,6 @@ public class Cell : MonoBehaviour
 
         transform.rotation = targetRotation;
 
-        // Rotate back to original rotation
         elapsedTime = 0f;
         while (elapsedTime < rotationTime)
         {
@@ -136,31 +150,25 @@ public class Cell : MonoBehaviour
         return hitCollider != null && hitCollider.gameObject == gameObject;
     }
 
-    // Method to reset the cell to its initial state
     public void ResetCell()
     {
         SetSprite(defaultSprite);
-        // Optionally reset other properties of the cell
     }
 
-    // Method to save sprite and step information in TileData history, grouped by sprite
     private void SaveTileData(Sprite sprite, float step)
     {
         TileData data = new TileData(sprite, step);
 
-        // Check if there is already a list for this sprite
         if (!PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
         {
             PadManager.Instance.tileDataGroups[sprite.name] = new List<TileData>();
         }
 
-        // Add the TileData to the respective sprite's group
         PadManager.Instance.tileDataGroups[sprite.name].Add(data);
 
         Debug.Log($"Saved Tile Data: Sprite = {data.Sprite.name}, Step = {data.Step}, Group = {sprite.name}");
     }
 
-    // Method to get all saved TileData instances for a specific sprite
     public List<TileData> GetTileDataHistory(Sprite sprite)
     {
         if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
@@ -174,7 +182,6 @@ public class Cell : MonoBehaviour
         }
     }
 
-    // Method to remove tile data for a specific sprite and step
     private void RemoveTileData(Sprite sprite, float step)
     {
         if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
@@ -182,7 +189,6 @@ public class Cell : MonoBehaviour
             List<TileData> tileDataList = PadManager.Instance.tileDataGroups[sprite.name];
             tileDataList.RemoveAll(data => data.Step == step);
 
-            // Remove the list if it's empty
             if (tileDataList.Count == 0)
             {
                 PadManager.Instance.tileDataGroups.Remove(sprite.name);
@@ -193,7 +199,6 @@ public class Cell : MonoBehaviour
     }
 }
 
-// Data structure to hold sprite and step information
 public class TileData
 {
     public Sprite Sprite { get; private set; }

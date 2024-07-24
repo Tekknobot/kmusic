@@ -10,7 +10,7 @@ public class BoardManager : MonoBehaviour
 
     public Cell[,] boardCells; // 2D array to store references to all board cells
 
-    private int stepCount;
+    private float stepCount;
 
     private void Awake()
     {
