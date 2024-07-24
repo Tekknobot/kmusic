@@ -1,4 +1,4 @@
-Shader "Custom/RainbowUI"
+Shader "Custom/SoftRainbowUI"
 {
     Properties
     {
@@ -38,21 +38,30 @@ Shader "Custom/RainbowUI"
                 return o;
             }
 
-            float3 RainbowColor(float t)
+            float3 SoftRainbowColor(float t)
             {
+                // Normalize time to [0, 1] range
                 float3 color;
-                color = float3(0.5 + 0.5 * sin(t + 0.0), 0.5 + 0.5 * sin(t + 2.0), 0.5 + 0.5 * sin(t + 4.0));
+                float phase = t * 0.1; // Adjust the phase speed
+                color = float3(
+                    0.5 + 0.5 * sin(phase + 0.0) * 0.7,
+                    0.5 + 0.5 * sin(phase + 2.0) * 0.7,
+                    0.5 + 0.5 * sin(phase + 4.0) * 0.7
+                );
                 return color;
             }
 
             half4 frag (v2f i) : SV_Target
             {
+                // Calculate time-based color transition
                 float t = _Time.y * _Speed;
-                float3 rainbowColor = RainbowColor(t);
+                float3 softRainbowColor = SoftRainbowColor(t);
                 
+                // Sample the texture color
                 half4 texColor = tex2D(_MainTex, i.uv);
                 
-                return half4(rainbowColor * texColor.rgb, texColor.a);
+                // Blend the soft rainbow color with the texture color
+                return half4(softRainbowColor * texColor.rgb, texColor.a);
             }
             ENDCG
         }
