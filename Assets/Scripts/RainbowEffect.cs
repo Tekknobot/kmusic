@@ -16,6 +16,9 @@ public class RainbowEffect : MonoBehaviour
         {
             Debug.LogError("RainbowEffect script requires a SpriteRenderer component.");
         }
+
+        // Initialize time with a random value between 0 and 2π
+        time = Random.Range(0f, 2 * Mathf.PI);
     }
 
     void Update()
