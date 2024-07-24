@@ -12,7 +12,7 @@ public class KitButton : MonoBehaviour
     void Start()
     {
         sampler = GameObject.Find("Sequencer").GetComponent<Sampler>();
-        drumSamples = drumSamples.GetComponent<DrumSamples>(); // Get the DrumSamples component
+        drumSamples = GameObject.Find("DrumSamples").GetComponent<DrumSamples>(); // Get the DrumSamples component
     }
 
     // Method to handle button click event
@@ -20,8 +20,14 @@ public class KitButton : MonoBehaviour
     {
         if (gameObject.name == "707")
         {
-            //SwapSamplesWithRockArray();
+            SwapSamplesWithRockArray();
         }
+    }
+
+    // Method to swap the keyzones with the Rock array
+    private void SwapSamplesWithRockArray()
+    {
+
     }
 
     // Update is called once per frame
