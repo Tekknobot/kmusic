@@ -13,7 +13,7 @@ public class Cell : MonoBehaviour
 
     public GameObject sequencer;
 
-    public int step;
+    public float step;
 
     // Properties to expose sprite and step information
     public Sprite CurrentSprite { get; private set; }
@@ -71,6 +71,7 @@ public class Cell : MonoBehaviour
 
             SaveTileData(newSprite, step);
 
+            // Add note to sequencer
             if (sequencer != null)
             {
                 int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
@@ -143,7 +144,7 @@ public class Cell : MonoBehaviour
     }
 
     // Method to save sprite and step information in TileData history, grouped by sprite
-    private void SaveTileData(Sprite sprite, int step)
+    private void SaveTileData(Sprite sprite, float step)
     {
         TileData data = new TileData(sprite, step);
 
@@ -174,7 +175,7 @@ public class Cell : MonoBehaviour
     }
 
     // Method to remove tile data for a specific sprite and step
-    private void RemoveTileData(Sprite sprite, int step)
+    private void RemoveTileData(Sprite sprite, float step)
     {
         if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
         {
@@ -196,9 +197,9 @@ public class Cell : MonoBehaviour
 public class TileData
 {
     public Sprite Sprite { get; private set; }
-    public int Step { get; private set; }
+    public float Step { get; private set; }
 
-    public TileData(Sprite sprite, int step)
+    public TileData(Sprite sprite, float step)
     {
         Sprite = sprite;
         Step = step;
