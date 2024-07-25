@@ -87,6 +87,8 @@ public class Cell : MonoBehaviour
             {
                 Debug.LogError("SampleSequencer component not found on Sequencer.");
             }
+
+            DataManager.SaveTileDataToFile(PadManager.Instance.tileDataGroups);
         }
     }
 
@@ -144,7 +146,7 @@ public class Cell : MonoBehaviour
 
     private void SaveTileData(Sprite sprite, float step)
     {
-        TileData data = new TileData(sprite, step);
+        TileData data = new TileData(sprite.name, step);
 
         if (!PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
         {
@@ -153,7 +155,7 @@ public class Cell : MonoBehaviour
 
         PadManager.Instance.tileDataGroups[sprite.name].Add(data);
 
-        Debug.Log($"Saved Tile Data: Sprite = {data.Sprite.name}, Step = {data.Step}, Group = {sprite.name}");
+        Debug.Log($"Saved Tile Data: Sprite = {data.SpriteName}, Step = {data.Step}, Group = {sprite.name}");
     }
 
     private void RemoveTileData(Sprite sprite, float step)
@@ -173,14 +175,18 @@ public class Cell : MonoBehaviour
     }
 }
 
+[System.Serializable]
 public class TileData
 {
-    public Sprite Sprite { get; private set; }
-    public float Step { get; private set; }
+    public string SpriteName; // Store sprite name instead of sprite object
+    public float Step;
 
-    public TileData(Sprite sprite, float step)
+    public TileData(string spriteName, float step)
     {
-        Sprite = sprite;
+        SpriteName = spriteName;
         Step = step;
     }
+
+    // Parameterless constructor for deserialization
+    public TileData() {}
 }

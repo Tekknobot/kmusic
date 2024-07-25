@@ -59,6 +59,7 @@ public class PadManager : MonoBehaviour
         }
 
         GeneratePads();
+        tileDataGroups = DataManager.LoadTileDataFromFile();
     }
 
     private void GeneratePads()
@@ -240,14 +241,14 @@ public class PadManager : MonoBehaviour
     public void AddTileData(TileData data)
     {
         // Check if there is already a list for this sprite, otherwise create one
-        if (!tileDataGroups.ContainsKey(data.Sprite.name))
+        if (!tileDataGroups.ContainsKey(data.SpriteName))
         {
-            tileDataGroups[data.Sprite.name] = new List<TileData>();
+            tileDataGroups[data.SpriteName] = new List<TileData>();
         }
 
         // Add tile data to respective sprite's group
-        tileDataGroups[data.Sprite.name].Add(data);
+        tileDataGroups[data.SpriteName].Add(data);
 
-        Debug.Log($"Added TileData for sprite: {data.Sprite.name}, Step: {data.Step}");
+        Debug.Log($"Added TileData for sprite: {data.SpriteName}, Step: {data.Step}");
     }
 }
