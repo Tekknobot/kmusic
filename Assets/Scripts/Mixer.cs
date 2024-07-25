@@ -51,17 +51,6 @@ public class Mixer : MonoBehaviour
                 Debug.LogError($"Mute button at index {i} is not assigned.");
             }
 
-            Toggle soloButton = soloButtons[i];
-            if (soloButton != null)
-            {
-                int index = i; // Capture the index for use in the lambda
-                soloButton.onValueChanged.AddListener(delegate { OnSoloButtonValueChanged(soloButton, index); });
-            }
-            else
-            {
-                Debug.LogError($"Solo button at index {i} is not assigned.");
-            }
-
             // Store the name of each group
             groupNames[i] = sliders[i].name; // Assuming slider names match group names
         }
@@ -82,12 +71,12 @@ public class Mixer : MonoBehaviour
         // Assuming the slider's name matches the exposed parameter name in the AudioMixer
         string parameterName = changedSlider.name;
 
-        // Use the slider value directly
-        float sliderValue = changedSlider.value;
+        // Convert slider value to dB value
+        float dBValue = Mathf.Lerp(-80f, 20f, changedSlider.value); // Assuming slider value range 0 to 1 maps to -80dB to +20dB
 
         if (mixer != null)
         {
-            bool result = mixer.SetFloat(parameterName, sliderValue);
+            bool result = mixer.SetFloat(parameterName, dBValue);
             if (!result)
             {
                 Debug.LogError($"Failed to set AudioMixer parameter '{parameterName}'. Ensure the parameter is exposed and the name matches.");
@@ -101,60 +90,15 @@ public class Mixer : MonoBehaviour
 
     void OnMuteButtonValueChanged(Toggle changedToggle, int index)
     {
+        // Get the group name corresponding to the button
         string groupName = groupNames[index];
         bool isMuted = changedToggle.isOn;
 
         if (mixer != null)
         {
-            float value = isMuted ? 0f : originalVolumes[groupName]; // Mute to 0, unmute to original volume
-            mixer.SetFloat(groupName, value);
-        }
-        else
-        {
-            Debug.LogError("AudioMixer is not assigned.");
-        }
-    }
-
-    void OnSoloButtonValueChanged(Toggle changedToggle, int index)
-    {
-        string soloGroupName = groupNames[index];
-        bool isSolo = changedToggle.isOn;
-
-        if (mixer != null)
-        {
-            if (isSolo)
-            {
-                // Save the previously soloed group, if any
-                if (this.soloGroupName != null)
-                {
-                    // Reset the previous soloed group
-                    mixer.SetFloat(this.soloGroupName, originalVolumes[this.soloGroupName]);
-                }
-
-                // Mute all groups except the soloed one
-                foreach (string groupName in groupNames)
-                {
-                    if (groupName != soloGroupName)
-                    {
-                        mixer.SetFloat(groupName, 0f); // Mute all other groups
-                    }
-                }
-
-                // Unmute the solo group
-                mixer.SetFloat(soloGroupName, originalVolumes[soloGroupName]); // Restore original volume of the soloed group
-
-                // Set the current soloed group
-                this.soloGroupName = soloGroupName;
-            }
-            else
-            {
-                // Unmute the soloed group if it was muted before
-                if (soloGroupName == this.soloGroupName)
-                {
-                    mixer.SetFloat(soloGroupName, originalVolumes[soloGroupName]);
-                    this.soloGroupName = null; // Reset the solo group
-                }
-            }
+            // Set volume to -80dB if muted, or restore original volume if unmuted
+            float dBValue = isMuted ? -80f : originalVolumes[groupName];
+            mixer.SetFloat(groupName, dBValue);
         }
         else
         {
