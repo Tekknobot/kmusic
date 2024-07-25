@@ -625,7 +625,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 87625001}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 87625003}
+        m_TargetAssemblyTypeName: KitButton, Assembly-CSharp
+        m_MethodName: OnButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &87625001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -677,7 +689,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampler: {fileID: 1983356396}
-  drumSamples: {fileID: 255873514}
+  drumSamples: {fileID: 255873515}
 --- !u!1 &121986151
 GameObject:
   m_ObjectHideFlags: 0
@@ -1409,17 +1421,12 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 244921789}
   m_CullTransparentMesh: 1
---- !u!1 &255873514 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5085402438987919277, guid: 6d4b0d6761277964bb15b93ac7884230, type: 3}
-  m_PrefabInstance: {fileID: 1805243213462269946}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &255873515 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4274001074342082389, guid: 6d4b0d6761277964bb15b93ac7884230, type: 3}
   m_PrefabInstance: {fileID: 1805243213462269946}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 255873514}
+  m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4f696041e04f42af802cd73d107c6bc, type: 3}
@@ -6137,7 +6144,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1198401763}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1198401765}
+        m_TargetAssemblyTypeName: KitButton, Assembly-CSharp
+        m_MethodName: OnButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1198401763
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6621,7 +6640,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1378642314}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1378642316}
+        m_TargetAssemblyTypeName: KitButton, Assembly-CSharp
+        m_MethodName: OnButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1378642314
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6673,7 +6704,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampler: {fileID: 1983356396}
-  drumSamples: {fileID: 255873514}
+  drumSamples: {fileID: 255873515}
 --- !u!1 &1408951125
 GameObject:
   m_ObjectHideFlags: 0
@@ -7089,7 +7120,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1430659140}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1430659142}
+        m_TargetAssemblyTypeName: KitButton, Assembly-CSharp
+        m_MethodName: OnButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1430659140
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7141,7 +7184,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampler: {fileID: 1983356396}
-  drumSamples: {fileID: 255873514}
+  drumSamples: {fileID: 255873515}
 --- !u!1 &1438789476
 GameObject:
   m_ObjectHideFlags: 0
@@ -7859,7 +7902,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1655429375}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1655429377}
+        m_TargetAssemblyTypeName: KitButton, Assembly-CSharp
+        m_MethodName: OnButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1655429375
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7911,7 +7966,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampler: {fileID: 1983356396}
-  drumSamples: {fileID: 255873514}
+  drumSamples: {fileID: 255873515}
 --- !u!1 &1657225815
 GameObject:
   m_ObjectHideFlags: 0
@@ -8070,7 +8125,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1669152132}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1669152134}
+        m_TargetAssemblyTypeName: KitButton, Assembly-CSharp
+        m_MethodName: OnButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1669152132
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8122,7 +8189,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampler: {fileID: 1983356396}
-  drumSamples: {fileID: 255873514}
+  drumSamples: {fileID: 255873515}
 --- !u!1 &1705894171
 GameObject:
   m_ObjectHideFlags: 0
@@ -9954,7 +10021,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1983453373}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1983453375}
+        m_TargetAssemblyTypeName: KitButton, Assembly-CSharp
+        m_MethodName: OnButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1983453373
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10006,7 +10085,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sampler: {fileID: 1983356396}
-  drumSamples: {fileID: 255873514}
+  drumSamples: {fileID: 255873515}
 --- !u!1 &1988804876
 GameObject:
   m_ObjectHideFlags: 0
