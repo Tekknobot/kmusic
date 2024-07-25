@@ -169,7 +169,7 @@ GameObject:
   - component: {fileID: 35093893}
   - component: {fileID: 35093894}
   m_Layer: 5
-  m_Name: Slider (1)
+  m_Name: SnareSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1267,7 +1267,7 @@ GameObject:
   - component: {fileID: 233743122}
   - component: {fileID: 233743123}
   m_Layer: 5
-  m_Name: Slider (4)
+  m_Name: ClapSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2119,7 +2119,7 @@ GameObject:
   - component: {fileID: 396069452}
   - component: {fileID: 396069453}
   m_Layer: 5
-  m_Name: Slider
+  m_Name: KickSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2692,7 +2692,7 @@ GameObject:
   - component: {fileID: 582832382}
   - component: {fileID: 582832383}
   m_Layer: 5
-  m_Name: Slider (2)
+  m_Name: ClosedSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5821,7 +5821,7 @@ GameObject:
   - component: {fileID: 1133661136}
   - component: {fileID: 1133661137}
   m_Layer: 5
-  m_Name: Slider (5)
+  m_Name: CrashSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9005,7 +9005,7 @@ GameObject:
   - component: {fileID: 1924200512}
   - component: {fileID: 1924200513}
   m_Layer: 5
-  m_Name: Slider (7)
+  m_Name: RimSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9406,7 +9406,7 @@ GameObject:
   - component: {fileID: 1973787292}
   - component: {fileID: 1973787293}
   m_Layer: 5
-  m_Name: Slider (3)
+  m_Name: OpenSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11209,7 +11209,7 @@ GameObject:
   - component: {fileID: 2134870990}
   - component: {fileID: 2134870991}
   m_Layer: 5
-  m_Name: Slider (6)
+  m_Name: RideSlider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
