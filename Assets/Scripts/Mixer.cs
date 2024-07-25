@@ -58,7 +58,6 @@ public class Mixer : MonoBehaviour
 
         // Load saved values
         LoadSliderValues();
-        LoadMuteStates();
 
         // Store original volumes of each group
         foreach (string groupName in groupNames)
@@ -109,8 +108,6 @@ public class Mixer : MonoBehaviour
             float dBValue = isMuted ? -80f : originalVolumes[groupName];
             mixer.SetFloat(groupName, dBValue);
 
-            // Save mute state
-            SaveMuteState(groupName, isMuted);
         }
         else
         {
@@ -121,12 +118,6 @@ public class Mixer : MonoBehaviour
     void SaveSliderValue(string parameterName, float value)
     {
         PlayerPrefs.SetFloat(PLAYER_PREFS_PREFIX + parameterName, value);
-        PlayerPrefs.Save();
-    }
-
-    void SaveMuteState(string groupName, bool isMuted)
-    {
-        PlayerPrefs.SetInt(PLAYER_PREFS_PREFIX + groupName + "_Muted", isMuted ? 1 : 0);
         PlayerPrefs.Save();
     }
 
@@ -144,27 +135,6 @@ public class Mixer : MonoBehaviour
                     {
                         slider.value = savedValue;
                         OnSliderValueChanged(slider); // Update AudioMixer
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    void LoadMuteStates()
-    {
-        foreach (string groupName in groupNames)
-        {
-            string key = PLAYER_PREFS_PREFIX + groupName + "_Muted";
-            if (PlayerPrefs.HasKey(key))
-            {
-                bool isMuted = PlayerPrefs.GetInt(key) == 1;
-                foreach (Toggle muteButton in muteButtons)
-                {
-                    if (muteButton.name == groupName)
-                    {
-                        muteButton.isOn = isMuted;
-                        OnMuteButtonValueChanged(muteButton, System.Array.IndexOf(muteButtons, muteButton)); // Update AudioMixer
                         break;
                     }
                 }
