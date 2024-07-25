@@ -180,7 +180,23 @@ AudioMixerController:
   m_SuspendThreshold: -80
   m_EnableSuspend: 1
   m_UpdateMode: 0
-  m_ExposedParameters: []
+  m_ExposedParameters:
+  - guid: 33ba59ca21a66994893bf40e39eadf06
+    name: Clap
+  - guid: cd406322a771ed5488dd1e5e3852f9e2
+    name: Closed
+  - guid: d9957c615379cce4fae89b61730253eb
+    name: Crash
+  - guid: 07bbc58af77df9f45b5d7144abc8e355
+    name: Kick
+  - guid: f7f333032c36ea24c8442de1bd0bd330
+    name: Open
+  - guid: d2f6a54f95d33e3428056bf06bbe8b4b
+    name: Ride
+  - guid: 59c75593166b0b246a6d2b7daaeae027
+    name: Rim
+  - guid: 0bcebbc1dddca784c83e71898f2874c3
+    name: Snare
   m_AudioMixerGroupViews:
   - guids:
     - 50be11cf7827fb344a460767ed034de6

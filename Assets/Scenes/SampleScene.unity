@@ -155,7 +155,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25, y: 0}
   m_AnchorMax: {x: 0.75, y: 1}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &35093892
@@ -169,7 +169,7 @@ GameObject:
   - component: {fileID: 35093893}
   - component: {fileID: 35093894}
   m_Layer: 5
-  m_Name: SnareSlider
+  m_Name: Snare
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -240,9 +240,9 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2094670705}
   m_FillRect: {fileID: 1951229908}
   m_HandleRect: {fileID: 2094670704}
-  m_Direction: 3
-  m_MinValue: 0
-  m_MaxValue: 1
+  m_Direction: 2
+  m_MinValue: -80
+  m_MaxValue: 20
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -853,7 +853,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25, y: 0}
   m_AnchorMax: {x: 0.75, y: 1}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &141208915
@@ -1267,7 +1267,7 @@ GameObject:
   - component: {fileID: 233743122}
   - component: {fileID: 233743123}
   m_Layer: 5
-  m_Name: ClapSlider
+  m_Name: Clap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1338,9 +1338,9 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 721098401}
   m_FillRect: {fileID: 2116204518}
   m_HandleRect: {fileID: 721098400}
-  m_Direction: 3
-  m_MinValue: 0
-  m_MaxValue: 1
+  m_Direction: 2
+  m_MinValue: -80
+  m_MaxValue: 20
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -2119,7 +2119,7 @@ GameObject:
   - component: {fileID: 396069452}
   - component: {fileID: 396069453}
   m_Layer: 5
-  m_Name: KickSlider
+  m_Name: Kick
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2190,9 +2190,9 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 338572836}
   m_FillRect: {fileID: 836834741}
   m_HandleRect: {fileID: 338572835}
-  m_Direction: 3
-  m_MinValue: 0
-  m_MaxValue: 1
+  m_Direction: 2
+  m_MinValue: -80
+  m_MaxValue: 20
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -2306,7 +2306,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25, y: 0}
   m_AnchorMax: {x: 0.75, y: 1}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &446244308
@@ -2692,7 +2692,7 @@ GameObject:
   - component: {fileID: 582832382}
   - component: {fileID: 582832383}
   m_Layer: 5
-  m_Name: ClosedSlider
+  m_Name: Closed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2763,9 +2763,9 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2097967624}
   m_FillRect: {fileID: 915216012}
   m_HandleRect: {fileID: 2097967623}
-  m_Direction: 3
-  m_MinValue: 0
-  m_MaxValue: 1
+  m_Direction: 2
+  m_MinValue: -80
+  m_MaxValue: 20
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -4162,7 +4162,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25, y: 0}
   m_AnchorMax: {x: 0.75, y: 1}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &801282923
@@ -4678,7 +4678,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25, y: 0}
   m_AnchorMax: {x: 0.75, y: 1}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &905542882
@@ -5421,7 +5421,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25, y: 0}
   m_AnchorMax: {x: 0.75, y: 1}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1057649214
@@ -5821,7 +5821,7 @@ GameObject:
   - component: {fileID: 1133661136}
   - component: {fileID: 1133661137}
   m_Layer: 5
-  m_Name: CrashSlider
+  m_Name: Crash
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5892,9 +5892,9 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 593212931}
   m_FillRect: {fileID: 913042808}
   m_HandleRect: {fileID: 593212930}
-  m_Direction: 3
-  m_MinValue: 0
-  m_MaxValue: 1
+  m_Direction: 2
+  m_MinValue: -80
+  m_MaxValue: 20
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -8223,7 +8223,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25, y: 0}
   m_AnchorMax: {x: 0.75, y: 1}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1709390118
@@ -8235,8 +8235,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1709390119}
+  - component: {fileID: 1709390120}
   m_Layer: 5
-  m_Name: Mixers
+  m_Name: Mixer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8269,6 +8270,28 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1709390120
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709390118}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb7d7157c73ff57458800c73fbc3d4d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sliders:
+  - {fileID: 396069453}
+  - {fileID: 35093894}
+  - {fileID: 582832383}
+  - {fileID: 1973787293}
+  - {fileID: 233743123}
+  - {fileID: 1133661137}
+  - {fileID: 2134870991}
+  - {fileID: 1924200513}
+  mixer: {fileID: 24100000, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
 --- !u!1 &1721282774
 GameObject:
   m_ObjectHideFlags: 0
@@ -8831,7 +8854,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.25, y: 0}
   m_AnchorMax: {x: 0.75, y: 1}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: -5}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1891547928
@@ -9005,7 +9028,7 @@ GameObject:
   - component: {fileID: 1924200512}
   - component: {fileID: 1924200513}
   m_Layer: 5
-  m_Name: RimSlider
+  m_Name: Rim
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9076,9 +9099,9 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2042341796}
   m_FillRect: {fileID: 164340320}
   m_HandleRect: {fileID: 2042341795}
-  m_Direction: 3
-  m_MinValue: 0
-  m_MaxValue: 1
+  m_Direction: 2
+  m_MinValue: -80
+  m_MaxValue: 20
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -9406,7 +9429,7 @@ GameObject:
   - component: {fileID: 1973787292}
   - component: {fileID: 1973787293}
   m_Layer: 5
-  m_Name: OpenSlider
+  m_Name: Open
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9477,9 +9500,9 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1721282776}
   m_FillRect: {fileID: 2032019455}
   m_HandleRect: {fileID: 1721282775}
-  m_Direction: 3
-  m_MinValue: 0
-  m_MaxValue: 1
+  m_Direction: 2
+  m_MinValue: -80
+  m_MaxValue: 20
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
@@ -11209,7 +11232,7 @@ GameObject:
   - component: {fileID: 2134870990}
   - component: {fileID: 2134870991}
   m_Layer: 5
-  m_Name: RideSlider
+  m_Name: Ride
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11280,9 +11303,9 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 641557870}
   m_FillRect: {fileID: 279548466}
   m_HandleRect: {fileID: 641557869}
-  m_Direction: 3
-  m_MinValue: 0
-  m_MaxValue: 1
+  m_Direction: 2
+  m_MinValue: -80
+  m_MaxValue: 20
   m_WholeNumbers: 0
   m_Value: 0
   m_OnValueChanged:
