@@ -82,7 +82,7 @@ public class KeyManager : MonoBehaviour
             newKey.transform.parent = transform;
 
             // Assign a unique identifier or logic to each key (for example, MIDI note)
-            int midiNote = 60 + i; // Example MIDI note generation
+            int midiNote = 21 + i; // Example MIDI note generation
 
             // Get the SpriteRenderer component from the key
             SpriteRenderer spriteRenderer = newKey.GetComponent<SpriteRenderer>();
@@ -131,15 +131,39 @@ public class KeyManager : MonoBehaviour
             DisplaySpriteOnMatchingSteps(currentSprite);
         }
 
-        // Play sample
+        // Additional debug information
+        Debug.Log($"Clicked Key: {clickedKey.name}");
+    }
+
+    // Method to handle when a key is pressed down
+    public void OnKeyPressDown(GameObject clickedKey)
+    {
         KeyClickHandler keyClickHandler = clickedKey.GetComponent<KeyClickHandler>();
         if (keyClickHandler != null)
         {
             int midiNote = keyClickHandler.midiNote;
-            BoardManager.Instance.sampler.GetComponent<Sampler>().NoteOn(midiNote, 1.0f);
+            BoardManager.Instance.helm.GetComponent<HelmSequencer>().NoteOn(midiNote + 50, 1.0f);
 
             // Additional debug information
-            Debug.Log($"Clicked Key: {clickedKey.name}, MIDI Note: {midiNote}");
+            Debug.Log($"Key Pressed Down: {clickedKey.name}, MIDI Note: {midiNote}");
+        }
+        else
+        {
+            Debug.LogError("KeyClickHandler component not found on clicked key.");
+        }
+    }
+
+    // Method to handle when a key is released
+    public void OnKeyRelease(GameObject clickedKey)
+    {
+        KeyClickHandler keyClickHandler = clickedKey.GetComponent<KeyClickHandler>();
+        if (keyClickHandler != null)
+        {
+            int midiNote = keyClickHandler.midiNote;
+            BoardManager.Instance.helm.GetComponent<HelmSequencer>().NoteOff(midiNote + 50);
+
+            // Additional debug information
+            Debug.Log($"Key Released: {clickedKey.name}, MIDI Note: {midiNote}");
         }
         else
         {
@@ -249,27 +273,5 @@ public class KeyManager : MonoBehaviour
         tileDataGroups[data.SpriteName].Add(data);
 
         Debug.Log($"Added TileData for sprite: {data.SpriteName}, Step: {data.Step}");
-    }
-}
-
-// KeyClickHandler script to handle key click events
-public class KeyClickHandler : MonoBehaviour
-{
-    private KeyManager keyManager;
-    private GameObject keyObject;
-    private Sprite keySprite;
-    public int midiNote;
-
-    public void Initialize(KeyManager manager, GameObject key, Sprite sprite, int note)
-    {
-        keyManager = manager;
-        keyObject = key;
-        keySprite = sprite;
-        midiNote = note;
-    }
-
-    private void OnMouseDown()
-    {
-        keyManager.OnKeyClicked(keyObject);
     }
 }

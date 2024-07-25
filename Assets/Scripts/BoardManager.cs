@@ -6,6 +6,7 @@ public class BoardManager : MonoBehaviour
     public static BoardManager Instance;   // Singleton instance
     public GameObject cellPrefab;
     public AudioHelm.SampleSequencer sequencer;
+    public AudioHelm.HelmSequencer helm;
     public GameObject sampler;
 
     public Cell[,] boardCells; // 2D array to store references to all board cells
