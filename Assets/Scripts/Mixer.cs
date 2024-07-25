@@ -71,12 +71,13 @@ public class Mixer : MonoBehaviour
         // Assuming the slider's name matches the exposed parameter name in the AudioMixer
         string parameterName = changedSlider.name;
 
-        // Convert slider value to dB value
-        float dBValue = Mathf.Lerp(-80f, 20f, changedSlider.value); // Assuming slider value range 0 to 1 maps to -80dB to +20dB
+        // Directly use slider value (assumed to be in range -80 to 20)
+        float sliderValue = changedSlider.value;
 
         if (mixer != null)
         {
-            bool result = mixer.SetFloat(parameterName, dBValue);
+            // Set the value directly as the volume
+            bool result = mixer.SetFloat(parameterName, sliderValue);
             if (!result)
             {
                 Debug.LogError($"Failed to set AudioMixer parameter '{parameterName}'. Ensure the parameter is exposed and the name matches.");
