@@ -18,16 +18,52 @@ public class KitButton : MonoBehaviour
     // Method to handle button click event
     public void OnButtonClick()
     {
-        if (gameObject.name == "707")
+        switch (gameObject.name)
         {
-            SwapSamplesWithRockArray();
+            case "707":
+                SwapSamples(drumSamples.Rock);
+                break;
+            case "808":
+                SwapSamples(drumSamples.Hiphop);
+                break;
+            case "909":
+                SwapSamples(drumSamples.House);
+                break;
+            case "Boombap":
+                SwapSamples(drumSamples.Boombap);
+                break;
+            case "Lofi":
+                SwapSamples(drumSamples.Lofi);
+                break;
+            case "Techno":
+                SwapSamples(drumSamples.Techno);
+                break;
+            case "Trip":
+                SwapSamples(drumSamples.Trip);
+                break;
+            default:
+                Debug.LogError("Unknown kit name: " + gameObject.name);
+                break;
         }
     }
 
-    // Method to swap the keyzones with the Rock array
-    private void SwapSamplesWithRockArray()
+    // Generic method to swap the keyzones with the given array
+    private void SwapSamples(AudioHelm.Keyzone[] keyzones)
     {
+        if (sampler == null || drumSamples == null)
+        {
+            Debug.LogError("Sampler or DrumSamples component not found.");
+            return;
+        }
 
+        // Clear the current keyzones in the sampler
+        sampler.keyzones.Clear();
+
+        // Add the keyzones from the provided array to the sampler
+        for (int i = 0; i < keyzones.Length; i++)
+        {
+            sampler.keyzones.Add(keyzones[i]);
+        }
     }
 
     // Update is called once per frame
