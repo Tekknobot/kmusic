@@ -12,7 +12,8 @@ public class Mixer : MonoBehaviour
 
     private string[] groupNames = new string[8]; // To store the names of the audio mixer groups
     private Dictionary<string, float> originalVolumes = new Dictionary<string, float>(); // To store original volumes
-    private string soloGroupName = null; // The currently soloed group
+
+    private const string PLAYER_PREFS_PREFIX = "Mixer_"; // Prefix for PlayerPrefs keys
 
     void Start()
     {
@@ -55,6 +56,10 @@ public class Mixer : MonoBehaviour
             groupNames[i] = sliders[i].name; // Assuming slider names match group names
         }
 
+        // Load saved values
+        LoadSliderValues();
+        LoadMuteStates();
+
         // Store original volumes of each group
         foreach (string groupName in groupNames)
         {
@@ -71,7 +76,7 @@ public class Mixer : MonoBehaviour
         // Assuming the slider's name matches the exposed parameter name in the AudioMixer
         string parameterName = changedSlider.name;
 
-        // Directly use slider value (assumed to be in range -80 to 20)
+        // Directly use slider value
         float sliderValue = changedSlider.value;
 
         if (mixer != null)
@@ -82,6 +87,9 @@ public class Mixer : MonoBehaviour
             {
                 Debug.LogError($"Failed to set AudioMixer parameter '{parameterName}'. Ensure the parameter is exposed and the name matches.");
             }
+
+            // Save the slider value
+            SaveSliderValue(parameterName, sliderValue);
         }
         else
         {
@@ -100,10 +108,67 @@ public class Mixer : MonoBehaviour
             // Set volume to -80dB if muted, or restore original volume if unmuted
             float dBValue = isMuted ? -80f : originalVolumes[groupName];
             mixer.SetFloat(groupName, dBValue);
+
+            // Save mute state
+            SaveMuteState(groupName, isMuted);
         }
         else
         {
             Debug.LogError("AudioMixer is not assigned.");
+        }
+    }
+
+    void SaveSliderValue(string parameterName, float value)
+    {
+        PlayerPrefs.SetFloat(PLAYER_PREFS_PREFIX + parameterName, value);
+        PlayerPrefs.Save();
+    }
+
+    void SaveMuteState(string groupName, bool isMuted)
+    {
+        PlayerPrefs.SetInt(PLAYER_PREFS_PREFIX + groupName + "_Muted", isMuted ? 1 : 0);
+        PlayerPrefs.Save();
+    }
+
+    void LoadSliderValues()
+    {
+        foreach (string groupName in groupNames)
+        {
+            string key = PLAYER_PREFS_PREFIX + groupName;
+            if (PlayerPrefs.HasKey(key))
+            {
+                float savedValue = PlayerPrefs.GetFloat(key);
+                foreach (Slider slider in sliders)
+                {
+                    if (slider.name == groupName)
+                    {
+                        slider.value = savedValue;
+                        OnSliderValueChanged(slider); // Update AudioMixer
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    void LoadMuteStates()
+    {
+        foreach (string groupName in groupNames)
+        {
+            string key = PLAYER_PREFS_PREFIX + groupName + "_Muted";
+            if (PlayerPrefs.HasKey(key))
+            {
+                bool isMuted = PlayerPrefs.GetInt(key) == 1;
+                foreach (Toggle muteButton in muteButtons)
+                {
+                    if (muteButton.name == groupName)
+                    {
+                        muteButton.isOn = isMuted;
+                        OnMuteButtonValueChanged(muteButton, System.Array.IndexOf(muteButtons, muteButton)); // Update AudioMixer
+                        break;
+                    }
+                }
+            }
         }
     }
 }
