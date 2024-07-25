@@ -64,16 +64,22 @@ public class KeyManager : MonoBehaviour
 
     private void GenerateKeys()
     {
-        int numKeysToCreate = Mathf.Min(8, sprites.Length); // Ensure we create a maximum of 8 keys
+        int numKeysPerRow = 8; // Number of keys per row
+        int numRows = 8; // Number of rows
+
+        // Ensure we have enough sprites to fill the grid
+        int numKeysToCreate = Mathf.Min(numRows * numKeysPerRow, sprites.Length); 
 
         // Initialize the boardCells 2D array
         boardCells = new Cell[8, 8];
 
-        // Loop to create exactly 8 keys
+        // Loop to create keys
         for (int i = 0; i < numKeysToCreate; i++)
         {
             // Calculate position for the new key
-            Vector3 keyPosition = new Vector3(i, -3, 0); // Adjust Y position as needed
+            int row = i / numKeysPerRow;
+            int col = i % numKeysPerRow;
+            Vector3 keyPosition = new Vector3(col, (-row)-4, 0); // Adjust Y position as needed
 
             // Instantiate a new key from the prefab at the calculated position
             GameObject newKey = Instantiate(keyPrefab, keyPosition, Quaternion.identity);
@@ -82,7 +88,7 @@ public class KeyManager : MonoBehaviour
             newKey.transform.parent = transform;
 
             // Assign a unique identifier or logic to each key (for example, MIDI note)
-            int midiNote = 21 + i; // Example MIDI note generation
+            int midiNote = i; // Example MIDI note generation
 
             // Get the SpriteRenderer component from the key
             SpriteRenderer spriteRenderer = newKey.GetComponent<SpriteRenderer>();
