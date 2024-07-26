@@ -122,13 +122,25 @@ public class PadManager : MonoBehaviour
         SpriteRenderer spriteRenderer = clickedPad.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            currentSprite = spriteRenderer.sprite;
+            Sprite clickedSprite = spriteRenderer.sprite;
+            if (IsSpriteInArray(clickedSprite))
+            {
+                currentSprite = clickedSprite;
 
-            // Scale the clicked pad temporarily
-            StartCoroutine(ScalePad(clickedPad));
+                // Scale the clicked pad temporarily
+                StartCoroutine(ScalePad(clickedPad));
 
-            // Display the sprite on cells with matching step data
-            DisplaySpriteOnMatchingSteps(currentSprite);
+                // Display the sprite on cells with matching step data
+                DisplaySpriteOnMatchingSteps(clickedPad.GetComponent<SpriteRenderer>().sprite);
+            }
+            else
+            {
+                Debug.LogError($"Sprite {clickedSprite.name} is not in the sprites array.");
+            }
+        }
+        else
+        {
+            Debug.LogError("SpriteRenderer component not found on clicked pad.");
         }
 
         // Play sample
@@ -196,41 +208,66 @@ public class PadManager : MonoBehaviour
         return currentSprite;
     }
 
+    // Method to check if a sprite is in the sprites array
+    private bool IsSpriteInArray(Sprite sprite)
+    {
+        foreach (Sprite s in sprites)
+        {
+            if (s == sprite)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    // Method to display all saved tiles for a specific sprite on matching cells
+    // Method to display all saved tiles for a specific pad sprite on matching cells
     private void DisplaySpriteOnMatchingSteps(Sprite sprite)
     {
         Debug.Log($"Displaying all saved tiles for sprite: {sprite.name}");
 
-        // Find the group that matches the current sprite
-        if (!tileDataGroups.ContainsKey(sprite.name))
+        // Ensure we're only handling pad sprites
+        if (!sprite.name.Contains("cell"))
         {
-            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
+            Debug.LogWarning($"Sprite {sprite.name} is not a pad. Skipping display.");
             return;
         }
 
-        List<TileData> tileDataList = tileDataGroups[sprite.name];
+        // Use PadManager's tile data for pads
+        Dictionary<string, List<TileData>> tileDataDictionary = PadManager.Instance.tileDataGroups;
+
+        // Check if there is tile data for the specified sprite
+        if (!tileDataDictionary.ContainsKey(sprite.name))
+        {
+            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
+            return; // Exit if no tile data exists for the sprite
+        }
+
+        // Retrieve the list of tile data entries for the sprite
+        List<TileData> tileDataList = tileDataDictionary[sprite.name];
         Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
 
-        // Iterate through boardCells to find cells with matching step
+        // Iterate over all cells on the board
         for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
         {
             for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
             {
+                // Get the cell at the current position
                 Cell cell = BoardManager.Instance.boardCells[x, y];
                 if (cell == null)
                 {
-                    continue; // Skip null cells
+                    continue; // Skip if the cell is null
                 }
 
-                // Check each TileData entry for a match with the cell's step
-                foreach (TileData data in tileDataList)
+                // Check if the cell's step matches any of the tile data entries
+                foreach (TileData tileData in tileDataList)
                 {
-                    if (cell.GetComponent<Cell>().step == data.Step)
+                    if (cell.step == tileData.Step)
                     {
-                        Debug.Log($"Found matching step {data.Step} in cell ({x}, {y}). Replacing sprite.");
+                        // Log the match and replace the sprite in the cell
+                        Debug.Log($"Found matching step {tileData.Step} in cell ({x}, {y}). Replacing sprite.");
                         cell.ReplaceSprite(sprite);
-                        break; // Replace sprite in only one cell per step match
+                        break; // Stop checking further tile data entries for this cell
                     }
                 }
             }

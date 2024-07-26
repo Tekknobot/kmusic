@@ -10,7 +10,7 @@ public class KeyManager : MonoBehaviour
     public GameObject keyPrefab;         // Reference to the key prefab
     public Sprite[] sprites;             // Array of sprites to assign to each key
 
-    private Sprite currentSprite;        // Current sprite tracked by KeyManager
+    public Sprite currentSprite;        // Current sprite tracked by KeyManager
     private Sprite lastClickedSprite;    // Last clicked sprite
 
     public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
@@ -123,7 +123,7 @@ public class KeyManager : MonoBehaviour
         public_clickedKey = clickedKey;
 
         // Reset the board to display default configuration first
-        BoardManager.Instance.ResetBoard();
+        //BoardManager.Instance.ResetBoard();
 
         // Update the current sprite tracked by KeyManager
         SpriteRenderer spriteRenderer = clickedKey.GetComponent<SpriteRenderer>();

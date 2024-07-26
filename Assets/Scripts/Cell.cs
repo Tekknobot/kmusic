@@ -107,8 +107,14 @@ public class Cell : MonoBehaviour
             spriteRenderer.sprite = newSprite;
             CurrentSprite = newSprite;
 
-            // Save tile data for the new sprite
-            SaveTileData(newSprite, step);
+            if (CurrentSprite.name.Contains("cell")) {
+                // Save tile data for the new sprite
+                SaveTileData(newSprite, step, false);     
+            }
+            else {
+                SaveTileData(newSprite, step, true);
+            }
+
 
             // Determine which sequencer to use
             if (KeyManager.Instance.GetLastClickedSprite() != null)
@@ -197,19 +203,38 @@ public class Cell : MonoBehaviour
         transform.rotation = originalRotation;
     }
 
-    private void SaveTileData(Sprite sprite, float step)
+    public void SaveTileData(Sprite sprite, float step, bool isKey)
     {
         TileData data = new TileData(sprite.name, step);
 
-        if (!PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
+        // Determine which dictionary to use based on the `isKey` flag
+        Dictionary<string, List<TileData>> targetDictionary;
+
+        if (isKey)
         {
-            PadManager.Instance.tileDataGroups[sprite.name] = new List<TileData>();
+            // Use KeyManager's tile data groups
+            targetDictionary = KeyManager.Instance.tileDataGroups;
+            Debug.Log("Saving to KeyManager's tile data groups.");
+        }
+        else
+        {
+            // Use PadManager's tile data groups
+            targetDictionary = PadManager.Instance.tileDataGroups;
+            Debug.Log("Saving to PadManager's tile data groups.");
         }
 
-        PadManager.Instance.tileDataGroups[sprite.name].Add(data);
+        // Ensure the dictionary contains a list for this sprite
+        if (!targetDictionary.ContainsKey(sprite.name))
+        {
+            targetDictionary[sprite.name] = new List<TileData>();
+        }
 
-        Debug.Log($"Saved Tile Data: Sprite = {data.SpriteName}, Step = {data.Step}, Group = {sprite.name}");
+        // Add the new tile data to the list
+        targetDictionary[sprite.name].Add(data);
+
+        Debug.Log($"Saved Tile Data: Sprite = {data.SpriteName}, Step = {data.Step}, Dictionary = {(isKey ? "KeyManager" : "PadManager")}");
     }
+
 
     private void RemoveTileData(Sprite sprite, float step)
     {
