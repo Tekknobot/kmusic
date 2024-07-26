@@ -47,7 +47,7 @@ public class Cell : MonoBehaviour
         }
     }
 
-    public void ReplaceSprite(Sprite newSprite)
+    public void ReplaceSprite(Sprite newSprite, int midiNote)
     {
         Debug.Log($"ReplaceSprite called: Old Sprite = {spriteRenderer.sprite?.name ?? "None"}, New Sprite = {newSprite.name}, Step = {step}");
 
@@ -74,7 +74,7 @@ public class Cell : MonoBehaviour
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
-                    int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+                    //int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
                     helmSequencer.NoteOff(midiNote + 50);
                     DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
@@ -90,7 +90,7 @@ public class Cell : MonoBehaviour
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
-                    int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+                    //int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
                     sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
                     DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
@@ -123,7 +123,7 @@ public class Cell : MonoBehaviour
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
-                    int midiNote = KeyManager.Instance.public_clickedKey.GetComponent<KeyClickHandler>().midiNote;
+                    //int midiNote = KeyManager.Instance.public_clickedKey.GetComponent<KeyClickHandler>().midiNote;
                     helmSequencer.AddNote(midiNote + 50, step, step + 1, 1.0f);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
@@ -138,7 +138,7 @@ public class Cell : MonoBehaviour
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
-                    int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+                    //int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
                     sampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
@@ -172,7 +172,7 @@ public class Cell : MonoBehaviour
         // Proceed if currentSprite is not null
         Debug.Log($"RotateAndReturn called: Current Sprite = {currentSprite.name}, Step = {step}");
 
-        ReplaceSprite(currentSprite);
+        ReplaceSprite(currentSprite, PadManager.Instance.midiNote);
 
         rotationCoroutine = StartCoroutine(RotateCoroutine());
     }

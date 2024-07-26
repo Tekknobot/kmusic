@@ -120,16 +120,16 @@ public class KeyManager : MonoBehaviour
     // Method to handle when a key is clicked
     public void OnKeyClicked(GameObject clickedKey)
     {
-        public_clickedKey = clickedKey;
+        //public_clickedKey = clickedKey;
 
         // Reset the board to display default configuration first
-        //BoardManager.Instance.ResetBoard();
+        BoardManager.Instance.ResetBoard();
 
         // Update the current sprite tracked by KeyManager
         SpriteRenderer spriteRenderer = clickedKey.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            lastClickedSprite = spriteRenderer.sprite; // Update last clicked sprite
+            //lastClickedSprite = spriteRenderer.sprite; // Update last clicked sprite
             currentSprite = spriteRenderer.sprite;
 
             // Scale the clicked key temporarily
@@ -270,7 +270,7 @@ public class KeyManager : MonoBehaviour
                     if (cell.GetComponent<Cell>().step == data.Step)
                     {
                         Debug.Log($"Found matching step {data.Step} in cell ({x}, {y}). Replacing sprite.");
-                        cell.ReplaceSprite(sprite);
+                        cell.ReplaceSprite(sprite, 4);
                         break; // Replace sprite in only one cell per step match
                     }
                 }

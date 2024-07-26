@@ -20,7 +20,7 @@ public class PadManager : MonoBehaviour
 
     public Dictionary<string, List<TileData>> tileDataGroups = new Dictionary<string, List<TileData>>(); // Dictionary to store TileData grouped by sprite
 
-    public GameObject public_clickedPad;
+    public int midiNote;
 
     private void Awake()
     {
@@ -60,6 +60,10 @@ public class PadManager : MonoBehaviour
 
         GeneratePads();
         tileDataGroups = DataManager.LoadTileDataFromFile();
+    }
+
+    void Update() {
+        //Debug.Log(public_clickedPad.GetComponent<SpriteRenderer>().sprite);
     }
 
     private void GeneratePads()
@@ -113,7 +117,7 @@ public class PadManager : MonoBehaviour
     // Method to handle when a pad is clicked
     public void OnPadClicked(GameObject clickedPad)
     {
-        public_clickedPad = clickedPad;
+        midiNote = clickedPad.GetComponent<PadClickHandler>().midiNote;
 
         // Reset the board to display default configuration first
         BoardManager.Instance.ResetBoard();
@@ -131,7 +135,7 @@ public class PadManager : MonoBehaviour
                 StartCoroutine(ScalePad(clickedPad));
 
                 // Display the sprite on cells with matching step data
-                DisplaySpriteOnMatchingSteps(clickedSprite);
+                DisplaySpriteOnMatchingSteps(clickedSprite, midiNote);
             }
             else
             {
@@ -147,7 +151,7 @@ public class PadManager : MonoBehaviour
         PadClickHandler padClickHandler = clickedPad.GetComponent<PadClickHandler>();
         if (padClickHandler != null)
         {
-            int midiNote = padClickHandler.midiNote;
+            midiNote = clickedPad.GetComponent<PadClickHandler>().midiNote;
             BoardManager.Instance.sampler.GetComponent<Sampler>().NoteOn(midiNote, 1.0f);
 
             // Additional debug information
@@ -222,12 +226,12 @@ public class PadManager : MonoBehaviour
     }
 
     // Method to display all saved tiles for a specific pad sprite on matching cells
-    private void DisplaySpriteOnMatchingSteps(Sprite sprite)
+    private void DisplaySpriteOnMatchingSteps(Sprite sprite, int midiNote)
     {
         Debug.Log($"Displaying all saved tiles for sprite: {sprite.name}");
 
         // Ensure we're only handling pad sprites
-        if (!sprite.name.Contains("cell"))
+        if (!IsSpriteInArray(sprite))
         {
             Debug.LogWarning($"Sprite {sprite.name} is not a pad. Skipping display.");
             return;
@@ -266,7 +270,7 @@ public class PadManager : MonoBehaviour
                     {
                         // Log the match and replace the sprite in the cell
                         Debug.Log($"Found matching step {tileData.Step} in cell ({x}, {y}). Replacing sprite.");
-                        cell.ReplaceSprite(sprite);
+                        cell.ReplaceSprite(sprite, midiNote);
                         break; // Stop checking further tile data entries for this cell
                     }
                 }
