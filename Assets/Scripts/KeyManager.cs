@@ -11,6 +11,7 @@ public class KeyManager : MonoBehaviour
     public Sprite[] sprites;             // Array of sprites to assign to each key
 
     private Sprite currentSprite;        // Current sprite tracked by KeyManager
+    private Sprite lastClickedSprite;    // Last clicked sprite
 
     public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
 
@@ -59,7 +60,7 @@ public class KeyManager : MonoBehaviour
         }
 
         GenerateKeys();
-        tileDataGroups = DataManager.LoadTileDataFromFile();
+        tileDataGroups = DataManager.LoadTileDataFromFile();       
     }
 
     private void GenerateKeys()
@@ -128,6 +129,7 @@ public class KeyManager : MonoBehaviour
         SpriteRenderer spriteRenderer = clickedKey.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
+            lastClickedSprite = spriteRenderer.sprite; // Update last clicked sprite
             currentSprite = spriteRenderer.sprite;
 
             // Scale the clicked key temporarily
@@ -136,6 +138,10 @@ public class KeyManager : MonoBehaviour
             // Display the sprite on cells with matching step data
             DisplaySpriteOnMatchingSteps(currentSprite);
         }
+
+        // Example of using DataManager static methods correctly
+        DataManager.EraseDataFile("tileData.txt");
+        DataManager.ClearAllData();
 
         // Additional debug information
         Debug.Log($"Clicked Key: {clickedKey.name}");
@@ -224,6 +230,12 @@ public class KeyManager : MonoBehaviour
     public Sprite GetCurrentSprite()
     {
         return currentSprite;
+    }
+
+    // Method to get the last clicked sprite
+    public Sprite GetLastClickedSprite()
+    {
+        return lastClickedSprite;
     }
 
     // Method to display all saved tiles for a specific sprite on matching cells

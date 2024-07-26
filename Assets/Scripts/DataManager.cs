@@ -3,13 +3,14 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
-public static class DataManager
+public class DataManager : MonoBehaviour
 {
     // Save tile data to a file
     public static void SaveTileDataToFile(Dictionary<string, List<TileData>> tileDataGroups)
     {
         string path = Path.Combine(Application.persistentDataPath, "tileData.dat");
-
+        Debug.Log("Persistent Data Path: " + Application.persistentDataPath);
+        
         try
         {
             using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -107,4 +108,55 @@ public static class DataManager
         }
     }
 
+    // Method to erase a data file
+    public static void EraseDataFile(string fileName)
+    {
+        string filePath = Path.Combine(Application.persistentDataPath, fileName);
+
+        if (File.Exists(filePath))
+        {
+            try
+            {
+                File.Delete(filePath);
+                Debug.Log($"File {fileName} successfully deleted from {Application.persistentDataPath}.");
+            }
+            catch (IOException e)
+            {
+                Debug.LogError($"Failed to delete file {fileName}: {e.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"File {fileName} does not exist in {Application.persistentDataPath}.");
+        }
+    }
+
+    public static void ClearAllData()
+    {
+        string directoryPath = Application.persistentDataPath;
+
+        if (Directory.Exists(directoryPath))
+        {
+            try
+            {
+                // Get all files in the directory
+                string[] files = Directory.GetFiles(directoryPath);
+
+                // Delete each file
+                foreach (string file in files)
+                {
+                    File.Delete(file);
+                    Debug.Log($"File {Path.GetFileName(file)} successfully deleted from {directoryPath}.");
+                }
+            }
+            catch (IOException e)
+            {
+                Debug.LogError($"Failed to delete files in directory {directoryPath}: {e.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Directory {directoryPath} does not exist.");
+        }
+    }
 }

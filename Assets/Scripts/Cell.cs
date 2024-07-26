@@ -51,42 +51,95 @@ public class Cell : MonoBehaviour
     {
         Debug.Log($"ReplaceSprite called: Old Sprite = {spriteRenderer.sprite?.name ?? "None"}, New Sprite = {newSprite.name}, Step = {step}");
 
+        // Check if the last clicked sprite from KeyManager should be used
+        if (KeyManager.Instance.GetLastClickedSprite() != null)
+        {
+            // Use the sprite from KeyManager but don't add notes yet
+            newSprite = KeyManager.Instance.GetLastClickedSprite();
+            Debug.Log($"ReplaceSprite using KeyManager's last clicked sprite: {newSprite.name}");
+        }
+
+        // If the current sprite is not the default sprite
         if (spriteRenderer.sprite != defaultSprite)
         {
+            // Remove tile data related to the current sprite
             RemoveTileData(spriteRenderer.sprite, step);
             spriteRenderer.sprite = defaultSprite;
             CurrentSprite = defaultSprite;
 
-            var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
-            if (sampleSequencer != null)
+            // Determine which sequencer to use
+            if (KeyManager.Instance.GetLastClickedSprite() != null)
             {
-                int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
-                sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
-                DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
-                Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
+                // Use HelmSequencer if the last clicked sprite is not null
+                var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
+                if (helmSequencer != null)
+                {
+                    int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+                    helmSequencer.NoteOff(midiNote + 50);
+                    DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
+                    Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
+                }
+                else
+                {
+                    Debug.LogError("HelmSequencer component not found on Helm.");
+                }
             }
             else
             {
-                Debug.LogError("SampleSequencer component not found on Sequencer.");
+                // Use SampleSequencer if the last clicked sprite is null
+                var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
+                if (sampleSequencer != null)
+                {
+                    int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+                    sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
+                    DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
+                    Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
+                }
+                else
+                {
+                    Debug.LogError("SampleSequencer component not found on Sequencer.");
+                }
             }
         }
         else
         {
+            // Set the new sprite
             spriteRenderer.sprite = newSprite;
             CurrentSprite = newSprite;
 
+            // Save tile data for the new sprite
             SaveTileData(newSprite, step);
 
-            var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
-            if (sampleSequencer != null)
+            // Determine which sequencer to use
+            if (KeyManager.Instance.GetLastClickedSprite() != null)
             {
-                int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
-                sampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
-                Debug.Log($"Added MIDI {midiNote} at Step = {step}");
+                // Use HelmSequencer if the last clicked sprite is not null
+                var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
+                if (helmSequencer != null)
+                {
+                    int midiNote = KeyManager.Instance.public_clickedKey.GetComponent<KeyClickHandler>().midiNote;
+                    helmSequencer.AddNote(midiNote + 50, step, step + 1, 1.0f);
+                    Debug.Log($"Added MIDI {midiNote} at Step = {step}");
+                }
+                else
+                {
+                    Debug.LogError("HelmSequencer component not found on Helm.");
+                }
             }
             else
             {
-                Debug.LogError("SampleSequencer component not found on Sequencer.");
+                // Use SampleSequencer if the last clicked sprite is null
+                var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
+                if (sampleSequencer != null)
+                {
+                    int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
+                    sampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    Debug.Log($"Added MIDI {midiNote} at Step = {step}");
+                }
+                else
+                {
+                    Debug.LogError("SampleSequencer component not found on Sequencer.");
+                }
             }
 
             DataManager.SaveTileDataToFile(PadManager.Instance.tileDataGroups);
@@ -117,7 +170,6 @@ public class Cell : MonoBehaviour
 
         rotationCoroutine = StartCoroutine(RotateCoroutine());
     }
-
 
     private IEnumerator RotateCoroutine()
     {
