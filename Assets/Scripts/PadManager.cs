@@ -131,7 +131,7 @@ public class PadManager : MonoBehaviour
                 StartCoroutine(ScalePad(clickedPad));
 
                 // Display the sprite on cells with matching step data
-                DisplaySpriteOnMatchingSteps(clickedPad.GetComponent<SpriteRenderer>().sprite);
+                DisplaySpriteOnMatchingSteps(clickedSprite);
             }
             else
             {
