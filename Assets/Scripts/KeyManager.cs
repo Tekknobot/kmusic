@@ -21,7 +21,7 @@ public class KeyManager : MonoBehaviour
 
     public Dictionary<string, List<TileData>> tileDataGroups = new Dictionary<string, List<TileData>>(); // Dictionary to store TileData grouped by sprite
 
-    public GameObject public_clickedKey;
+    public int midiNote;
 
     private void Awake()
     {
@@ -120,7 +120,7 @@ public class KeyManager : MonoBehaviour
     // Method to handle when a key is clicked
     public void OnKeyClicked(GameObject clickedKey)
     {
-        //public_clickedKey = clickedKey;
+        midiNote = clickedKey.GetComponent<KeyClickHandler>().midiNote;
 
         // Reset the board to display default configuration first
         BoardManager.Instance.ResetBoard();

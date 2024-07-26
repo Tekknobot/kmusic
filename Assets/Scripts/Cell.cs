@@ -51,12 +51,13 @@ public class Cell : MonoBehaviour
     {
         Debug.Log($"ReplaceSprite called: Old Sprite = {spriteRenderer.sprite?.name ?? "None"}, New Sprite = {newSprite.name}, Step = {step}");
 
-        // Check if the last clicked sprite from KeyManager should be used
-        if (KeyManager.Instance.GetLastClickedSprite() != null)
+        // Check if the last clicked sprite from KeyManager or PadManager should be used
+        Sprite lastClickedSprite = KeyManager.Instance.GetLastClickedSprite() ?? PadManager.Instance.GetCurrentSprite();
+
+        if (lastClickedSprite != null)
         {
-            // Use the sprite from KeyManager but don't add notes yet
-            newSprite = KeyManager.Instance.GetLastClickedSprite();
-            Debug.Log($"ReplaceSprite using KeyManager's last clicked sprite: {newSprite.name}");
+            newSprite = lastClickedSprite;
+            Debug.Log($"ReplaceSprite using last clicked sprite: {newSprite.name}");
         }
 
         // If the current sprite is not the default sprite
@@ -74,7 +75,6 @@ public class Cell : MonoBehaviour
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
-                    //int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
                     helmSequencer.NoteOff(midiNote + 50);
                     DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
@@ -90,7 +90,6 @@ public class Cell : MonoBehaviour
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
-                    //int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
                     sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
                     DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
@@ -107,14 +106,10 @@ public class Cell : MonoBehaviour
             spriteRenderer.sprite = newSprite;
             CurrentSprite = newSprite;
 
-            if (CurrentSprite.name.Contains("cell")) {
-                // Save tile data for the new sprite
-                SaveTileData(newSprite, step, false);     
-            }
-            else {
-                SaveTileData(newSprite, step, true);
-            }
+            bool isKey = CurrentSprite.name.Contains("cell") ? false : true;
 
+            // Save tile data for the new sprite
+            SaveTileData(newSprite, step, isKey);
 
             // Determine which sequencer to use
             if (KeyManager.Instance.GetLastClickedSprite() != null)
@@ -123,7 +118,6 @@ public class Cell : MonoBehaviour
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
-                    //int midiNote = KeyManager.Instance.public_clickedKey.GetComponent<KeyClickHandler>().midiNote;
                     helmSequencer.AddNote(midiNote + 50, step, step + 1, 1.0f);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
@@ -138,7 +132,6 @@ public class Cell : MonoBehaviour
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
-                    //int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
                     sampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
@@ -159,8 +152,11 @@ public class Cell : MonoBehaviour
             StopCoroutine(rotationCoroutine);
         }
 
-        // Retrieve the current sprite from PadManager
-        Sprite currentSprite = PadManager.Instance.GetCurrentSprite();
+        // Retrieve the current sprite and midiNote from KeyManager or PadManager
+        Sprite currentSprite = KeyManager.Instance.GetLastClickedSprite() ?? PadManager.Instance.GetCurrentSprite();
+        int midiNote = KeyManager.Instance.GetLastClickedSprite() != null 
+            ? KeyManager.Instance.midiNote 
+            : PadManager.Instance.midiNote;
         
         // Check if currentSprite is null
         if (currentSprite == null)
@@ -172,7 +168,7 @@ public class Cell : MonoBehaviour
         // Proceed if currentSprite is not null
         Debug.Log($"RotateAndReturn called: Current Sprite = {currentSprite.name}, Step = {step}");
 
-        ReplaceSprite(currentSprite, PadManager.Instance.midiNote);
+        ReplaceSprite(currentSprite, midiNote);
 
         rotationCoroutine = StartCoroutine(RotateCoroutine());
     }
@@ -234,7 +230,6 @@ public class Cell : MonoBehaviour
 
         Debug.Log($"Saved Tile Data: Sprite = {data.SpriteName}, Step = {data.Step}, Dictionary = {(isKey ? "KeyManager" : "PadManager")}");
     }
-
 
     private void RemoveTileData(Sprite sprite, float step)
     {
