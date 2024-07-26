@@ -268,8 +268,8 @@ public class KeyManager : MonoBehaviour
                     if (cell.GetComponent<Cell>().step == data.Step)
                     {
                         Debug.Log($"Found matching step {data.Step} in cell ({x}, {y}). Replacing sprite.");
-                        cell.ReplaceSprite(sprite, 4);
-                        break; // Replace sprite in only one cell per step match
+                        cell.ReplaceSprite(sprite, (int)cell.GetComponent<Cell>().step);
+                        GameObject.Find("HelmSequencer").GetComponent<HelmSequencer>().AddNote(midiNote, (int)cell.GetComponent<Cell>().step, (int)cell.GetComponent<Cell>().step + 1, 1.0f);
                     }
                 }
             }
