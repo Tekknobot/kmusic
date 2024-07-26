@@ -27,5 +27,6 @@ public class KeyClickHandler : MonoBehaviour
     private void OnMouseUp()
     {
         keyManager.OnKeyRelease(keyObject);
+        keyManager.OnManagerClicked();
     }
 }

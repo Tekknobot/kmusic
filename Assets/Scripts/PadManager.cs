@@ -292,4 +292,9 @@ public class PadManager : MonoBehaviour
 
         Debug.Log($"Added TileData for sprite: {data.SpriteName}, Step: {data.Step}");
     }
+
+    public void OnManagerClicked()
+    {
+        ManagerHandler.Instance.SetLastClickedManager(false);
+    }    
 }

@@ -51,8 +51,9 @@ public class Cell : MonoBehaviour
     {
         Debug.Log($"ReplaceSprite called: Old Sprite = {spriteRenderer.sprite?.name ?? "None"}, New Sprite = {newSprite.name}, Step = {step}");
 
-        // Check if the last clicked sprite from KeyManager or PadManager should be used
-        Sprite lastClickedSprite = KeyManager.Instance.GetLastClickedSprite() ?? PadManager.Instance.GetCurrentSprite();
+        // Get the last clicked sprite and midiNote from ManagerHandler
+        Sprite lastClickedSprite = ManagerHandler.Instance.GetLastClickedSprite();
+        midiNote = ManagerHandler.Instance.GetLastClickedMidiNote();
 
         if (lastClickedSprite != null)
         {
@@ -69,14 +70,14 @@ public class Cell : MonoBehaviour
             CurrentSprite = defaultSprite;
 
             // Determine which sequencer to use
-            if (KeyManager.Instance.GetLastClickedSprite() != null)
+            if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                // Use HelmSequencer if the last clicked sprite is not null
+                // Use HelmSequencer if the last clicked manager is KeyManager
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
                     helmSequencer.NoteOff(midiNote + 50);
-                    DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
+                    DataManager.EraseTileDataToFile(KeyManager.Instance.currentSprite.name, KeyManager.Instance.currentSprite.name, step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
                 else
@@ -86,7 +87,7 @@ public class Cell : MonoBehaviour
             }
             else
             {
-                // Use SampleSequencer if the last clicked sprite is null
+                // Use SampleSequencer if the last clicked manager is PadManager
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
@@ -106,15 +107,15 @@ public class Cell : MonoBehaviour
             spriteRenderer.sprite = newSprite;
             CurrentSprite = newSprite;
 
-            bool isKey = CurrentSprite.name.Contains("cell") ? false : true;
+            bool isKey = ManagerHandler.Instance.IsKeyManagerLastClicked();
 
             // Save tile data for the new sprite
             SaveTileData(newSprite, step, isKey);
 
             // Determine which sequencer to use
-            if (KeyManager.Instance.GetLastClickedSprite() != null)
+            if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                // Use HelmSequencer if the last clicked sprite is not null
+                // Use HelmSequencer if the last clicked manager is KeyManager
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
@@ -128,7 +129,7 @@ public class Cell : MonoBehaviour
             }
             else
             {
-                // Use SampleSequencer if the last clicked sprite is null
+                // Use SampleSequencer if the last clicked manager is PadManager
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
@@ -152,12 +153,10 @@ public class Cell : MonoBehaviour
             StopCoroutine(rotationCoroutine);
         }
 
-        // Retrieve the current sprite and midiNote from KeyManager or PadManager
-        Sprite currentSprite = KeyManager.Instance.GetLastClickedSprite() ?? PadManager.Instance.GetCurrentSprite();
-        int midiNote = KeyManager.Instance.GetLastClickedSprite() != null 
-            ? KeyManager.Instance.midiNote 
-            : PadManager.Instance.midiNote;
-        
+        // Get the last clicked sprite and midiNote from ManagerHandler
+        Sprite currentSprite = ManagerHandler.Instance.GetLastClickedSprite();
+        int midiNote = ManagerHandler.Instance.GetLastClickedMidiNote();
+
         // Check if currentSprite is null
         if (currentSprite == null)
         {

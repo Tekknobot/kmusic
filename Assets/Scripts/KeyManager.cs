@@ -123,7 +123,7 @@ public class KeyManager : MonoBehaviour
         midiNote = clickedKey.GetComponent<KeyClickHandler>().midiNote;
 
         // Reset the board to display default configuration first
-        BoardManager.Instance.ResetBoard();
+        //BoardManager.Instance.ResetBoard();
 
         // Update the current sprite tracked by KeyManager
         SpriteRenderer spriteRenderer = clickedKey.GetComponent<SpriteRenderer>();
@@ -292,4 +292,9 @@ public class KeyManager : MonoBehaviour
 
         Debug.Log($"Added TileData for sprite: {data.SpriteName}, Step: {data.Step}");
     }
+
+    public void OnManagerClicked()
+    {
+        ManagerHandler.Instance.SetLastClickedManager(true);
+    }    
 }

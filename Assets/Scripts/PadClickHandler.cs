@@ -18,5 +18,6 @@ public class PadClickHandler : MonoBehaviour
     private void OnMouseDown()
     {
         padManager.OnPadClicked(padObject);
+        padManager.OnManagerClicked();
     }
 }
