@@ -76,7 +76,7 @@ public class Cell : MonoBehaviour
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
-                    helmSequencer.NoteOff(midiNote + 50);
+                    helmSequencer.RemoveNotesInRange(midiNote, step, step + 1);
                     DataManager.EraseTileDataToFile(KeyManager.Instance.currentSprite.name, KeyManager.Instance.currentSprite.name, step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
@@ -119,7 +119,7 @@ public class Cell : MonoBehaviour
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
-                    helmSequencer.AddNote(midiNote + 50, step, step + 1, 1.0f);
+                    helmSequencer.AddNote(midiNote, step, step + 1, 1.0f);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
                 else

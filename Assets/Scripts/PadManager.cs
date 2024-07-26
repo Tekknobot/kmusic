@@ -10,7 +10,8 @@ public class PadManager : MonoBehaviour
     public GameObject padPrefab;         // Reference to the pad prefab
     public Sprite[] sprites;             // Array of sprites to assign to each pad
 
-    public Sprite currentSprite;        // Current sprite tracked by PadManager
+    public Sprite currentSprite;         // Current sprite tracked by PadManager
+    private Sprite lastClickedSprite;    // Last clicked sprite
 
     public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
 
@@ -59,25 +60,27 @@ public class PadManager : MonoBehaviour
         }
 
         GeneratePads();
-        tileDataGroups = DataManager.LoadTileDataFromFile();
-    }
-
-    void Update() {
-        //Debug.Log(public_clickedPad.GetComponent<SpriteRenderer>().sprite);
+        tileDataGroups = DataManager.LoadTileDataFromFile();       
     }
 
     private void GeneratePads()
     {
-        int numPadsToCreate = Mathf.Min(8, sprites.Length); // Ensure we create a maximum of 8 pads
+        int numPadsPerRow = 8; // Number of pads per row
+        int numRows = 8; // Number of rows
+
+        // Ensure we have enough sprites to fill the grid
+        int numPadsToCreate = Mathf.Min(numRows * numPadsPerRow, sprites.Length); 
 
         // Initialize the boardCells 2D array
         boardCells = new Cell[8, 8];
 
-        // Loop to create exactly 8 pads
+        // Loop to create pads
         for (int i = 0; i < numPadsToCreate; i++)
         {
             // Calculate position for the new pad
-            Vector3 padPosition = new Vector3(i, -2, 0); // Adjust Y position as needed
+            int row = i / numPadsPerRow;
+            int col = i % numPadsPerRow;
+            Vector3 padPosition = new Vector3(col, (-row)-2, 0); // Adjust Y position as needed
 
             // Instantiate a new pad from the prefab at the calculated position
             GameObject newPad = Instantiate(padPrefab, padPosition, Quaternion.identity);
@@ -86,7 +89,7 @@ public class PadManager : MonoBehaviour
             newPad.transform.parent = transform;
 
             // Assign a unique identifier or logic to each pad (for example, MIDI note)
-            int midiNote = 60 + i; // Example MIDI note generation
+            int midiNote = i + 60; // Example MIDI note generation
 
             // Get the SpriteRenderer component from the pad
             SpriteRenderer spriteRenderer = newPad.GetComponent<SpriteRenderer>();
@@ -119,6 +122,9 @@ public class PadManager : MonoBehaviour
     {
         midiNote = clickedPad.GetComponent<PadClickHandler>().midiNote;
 
+        // Set PadManager as the last clicked manager
+        ManagerHandler.Instance.SetLastClickedManager(false);
+
         // Reset the board to display default configuration first
         BoardManager.Instance.ResetBoard();
 
@@ -126,36 +132,49 @@ public class PadManager : MonoBehaviour
         SpriteRenderer spriteRenderer = clickedPad.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            Sprite clickedSprite = spriteRenderer.sprite;
-            if (IsSpriteInArray(clickedSprite))
-            {
-                currentSprite = clickedSprite;
+            // lastClickedSprite = spriteRenderer.sprite; // Update last clicked sprite
+            currentSprite = spriteRenderer.sprite;
 
-                // Scale the clicked pad temporarily
-                StartCoroutine(ScalePad(clickedPad));
+            // Scale the clicked pad temporarily
+            StartCoroutine(ScalePad(clickedPad));
 
-                // Display the sprite on cells with matching step data
-                DisplaySpriteOnMatchingSteps(clickedSprite, midiNote);
-            }
-            else
-            {
-                Debug.LogError($"Sprite {clickedSprite.name} is not in the sprites array.");
-            }
-        }
-        else
-        {
-            Debug.LogError("SpriteRenderer component not found on clicked pad.");
+            // Display the sprite on cells with matching step data
+            DisplaySpriteOnMatchingSteps(currentSprite);
         }
 
-        // Play sample
+        // Additional debug information
+        Debug.Log($"Clicked Pad: {clickedPad.name}");
+    }
+
+    // Method to handle when a pad is pressed down
+    public void OnPadPressDown(GameObject clickedPad)
+    {
         PadClickHandler padClickHandler = clickedPad.GetComponent<PadClickHandler>();
         if (padClickHandler != null)
         {
-            midiNote = clickedPad.GetComponent<PadClickHandler>().midiNote;
-            BoardManager.Instance.sampler.GetComponent<Sampler>().NoteOn(midiNote, 1.0f);
+            int midiNote = padClickHandler.midiNote;
+            BoardManager.Instance.sequencer.GetComponent<SampleSequencer>().NoteOn(midiNote, 1.0f);
 
             // Additional debug information
-            Debug.Log($"Clicked Pad: {clickedPad.name}, MIDI Note: {midiNote}");
+            Debug.Log($"Pad Pressed Down: {clickedPad.name}, MIDI Note: {midiNote}");
+        }
+        else
+        {
+            Debug.LogError("PadClickHandler component not found on clicked pad.");
+        }
+    }
+
+    // Method to handle when a pad is released
+    public void OnPadRelease(GameObject clickedPad)
+    {
+        PadClickHandler padClickHandler = clickedPad.GetComponent<PadClickHandler>();
+        if (padClickHandler != null)
+        {
+            int midiNote = padClickHandler.midiNote;
+            BoardManager.Instance.sequencer.GetComponent<SampleSequencer>().NoteOff(midiNote);
+
+            // Additional debug information
+            Debug.Log($"Pad Released: {clickedPad.name}, MIDI Note: {midiNote}");
         }
         else
         {
@@ -212,89 +231,48 @@ public class PadManager : MonoBehaviour
         return currentSprite;
     }
 
-    // Method to check if a sprite is in the sprites array
-    private bool IsSpriteInArray(Sprite sprite)
+    // Method to get the last clicked sprite
+    public Sprite GetLastClickedSprite()
     {
-        foreach (Sprite s in sprites)
-        {
-            if (s == sprite)
-            {
-                return true;
-            }
-        }
-        return false;
+        return lastClickedSprite;
     }
 
-    // Method to display all saved tiles for a specific pad sprite on matching cells
-    private void DisplaySpriteOnMatchingSteps(Sprite sprite, int midiNote)
+    // Method to display all saved tiles for a specific sprite on matching cells
+    private void DisplaySpriteOnMatchingSteps(Sprite sprite)
     {
         Debug.Log($"Displaying all saved tiles for sprite: {sprite.name}");
 
-        // Ensure we're only handling pad sprites
-        if (!IsSpriteInArray(sprite))
+        // Find the group that matches the current sprite
+        if (!tileDataGroups.ContainsKey(sprite.name))
         {
-            Debug.LogWarning($"Sprite {sprite.name} is not a pad. Skipping display.");
+            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
             return;
         }
 
-        // Use PadManager's tile data for pads
-        Dictionary<string, List<TileData>> tileDataDictionary = PadManager.Instance.tileDataGroups;
-
-        // Check if there is tile data for the specified sprite
-        if (!tileDataDictionary.ContainsKey(sprite.name))
-        {
-            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
-            return; // Exit if no tile data exists for the sprite
-        }
-
-        // Retrieve the list of tile data entries for the sprite
-        List<TileData> tileDataList = tileDataDictionary[sprite.name];
+        List<TileData> tileDataList = tileDataGroups[sprite.name];
         Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
 
-        // Iterate over all cells on the board
+        // Iterate through boardCells to find cells with matching step
         for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
         {
             for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
             {
-                // Get the cell at the current position
                 Cell cell = BoardManager.Instance.boardCells[x, y];
                 if (cell == null)
                 {
-                    continue; // Skip if the cell is null
+                    continue; // Skip null cells
                 }
 
-                // Check if the cell's step matches any of the tile data entries
+                // Check each TileData entry for matching steps
                 foreach (TileData tileData in tileDataList)
                 {
                     if (cell.step == tileData.Step)
                     {
-                        // Log the match and replace the sprite in the cell
-                        Debug.Log($"Found matching step {tileData.Step} in cell ({x}, {y}). Replacing sprite.");
-                        cell.ReplaceSprite(sprite, midiNote);
-                        break; // Stop checking further tile data entries for this cell
+                        cell.SetSprite(sprite);
+                        GameObject.Find("Sequencer").GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
                     }
                 }
             }
         }
     }
-
-    // Method to add tile data to history and respective group
-    public void AddTileData(TileData data)
-    {
-        // Check if there is already a list for this sprite, otherwise create one
-        if (!tileDataGroups.ContainsKey(data.SpriteName))
-        {
-            tileDataGroups[data.SpriteName] = new List<TileData>();
-        }
-
-        // Add tile data to respective sprite's group
-        tileDataGroups[data.SpriteName].Add(data);
-
-        Debug.Log($"Added TileData for sprite: {data.SpriteName}, Step: {data.Step}");
-    }
-
-    public void OnManagerClicked()
-    {
-        ManagerHandler.Instance.SetLastClickedManager(false);
-    }    
 }

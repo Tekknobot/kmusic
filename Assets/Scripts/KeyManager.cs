@@ -89,7 +89,7 @@ public class KeyManager : MonoBehaviour
             newKey.transform.parent = transform;
 
             // Assign a unique identifier or logic to each key (for example, MIDI note)
-            int midiNote = i; // Example MIDI note generation
+            int midiNote = i + 33; // Example MIDI note generation
 
             // Get the SpriteRenderer component from the key
             SpriteRenderer spriteRenderer = newKey.GetComponent<SpriteRenderer>();
@@ -116,20 +116,22 @@ public class KeyManager : MonoBehaviour
             newKey.name = sprites[i].name;
         }
     }
-
     // Method to handle when a key is clicked
     public void OnKeyClicked(GameObject clickedKey)
     {
         midiNote = clickedKey.GetComponent<KeyClickHandler>().midiNote;
 
+        // Set KeyManager as the last clicked manager
+        ManagerHandler.Instance.SetLastClickedManager(true);
+
         // Reset the board to display default configuration first
-        //BoardManager.Instance.ResetBoard();
+        // BoardManager.Instance.ResetBoard();
 
         // Update the current sprite tracked by KeyManager
         SpriteRenderer spriteRenderer = clickedKey.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            //lastClickedSprite = spriteRenderer.sprite; // Update last clicked sprite
+            // lastClickedSprite = spriteRenderer.sprite; // Update last clicked sprite
             currentSprite = spriteRenderer.sprite;
 
             // Scale the clicked key temporarily
@@ -138,10 +140,6 @@ public class KeyManager : MonoBehaviour
             // Display the sprite on cells with matching step data
             DisplaySpriteOnMatchingSteps(currentSprite);
         }
-
-        // Example of using DataManager static methods correctly
-        DataManager.EraseDataFile("tileData.txt");
-        DataManager.ClearAllData();
 
         // Additional debug information
         Debug.Log($"Clicked Key: {clickedKey.name}");
@@ -154,7 +152,7 @@ public class KeyManager : MonoBehaviour
         if (keyClickHandler != null)
         {
             int midiNote = keyClickHandler.midiNote;
-            BoardManager.Instance.helm.GetComponent<HelmSequencer>().NoteOn(midiNote + 50, 1.0f);
+            BoardManager.Instance.helm.GetComponent<HelmSequencer>().NoteOn(midiNote, 1.0f);
 
             // Additional debug information
             Debug.Log($"Key Pressed Down: {clickedKey.name}, MIDI Note: {midiNote}");
@@ -172,7 +170,7 @@ public class KeyManager : MonoBehaviour
         if (keyClickHandler != null)
         {
             int midiNote = keyClickHandler.midiNote;
-            BoardManager.Instance.helm.GetComponent<HelmSequencer>().NoteOff(midiNote + 50);
+            BoardManager.Instance.helm.GetComponent<HelmSequencer>().NoteOff(midiNote);
 
             // Additional debug information
             Debug.Log($"Key Released: {clickedKey.name}, MIDI Note: {midiNote}");
@@ -276,21 +274,6 @@ public class KeyManager : MonoBehaviour
                 }
             }
         }
-    }
-
-    // Method to add tile data to history and respective group
-    public void AddTileData(TileData data)
-    {
-        // Check if there is already a list for this sprite, otherwise create one
-        if (!tileDataGroups.ContainsKey(data.SpriteName))
-        {
-            tileDataGroups[data.SpriteName] = new List<TileData>();
-        }
-
-        // Add tile data to respective sprite's group
-        tileDataGroups[data.SpriteName].Add(data);
-
-        Debug.Log($"Added TileData for sprite: {data.SpriteName}, Step: {data.Step}");
     }
 
     public void OnManagerClicked()

@@ -2,51 +2,58 @@ using UnityEngine;
 
 public class ManagerHandler : MonoBehaviour
 {
-    public static ManagerHandler Instance { get; private set; }
-
-    public KeyManager keyManager;
-    public PadManager padManager;
+    public static ManagerHandler Instance;
 
     private bool isKeyManagerLastClicked;
+    private Sprite lastClickedSprite;
+    private int lastClickedMidiNote;
 
     private void Awake()
     {
+        // Singleton pattern
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Optional: if you want this to persist across scenes
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
         }
-
-        keyManager = KeyManager.Instance.GetComponent<KeyManager>();
-        padManager = PadManager.Instance.GetComponent<PadManager>();
-
-        if (keyManager == null || padManager == null)
-        {
-            Debug.LogError("KeyManager or PadManager instance not found.");
-        }
     }
 
+    // Method to set the last clicked manager
     public void SetLastClickedManager(bool isKeyManager)
     {
         isKeyManagerLastClicked = isKeyManager;
+
+        if (isKeyManager)
+        {
+            lastClickedSprite = KeyManager.Instance.GetCurrentSprite();
+            lastClickedMidiNote = KeyManager.Instance.midiNote;
+        }
+        else
+        {
+            lastClickedSprite = PadManager.Instance.GetCurrentSprite();
+            lastClickedMidiNote = PadManager.Instance.midiNote;
+        }
     }
 
-    public Sprite GetLastClickedSprite()
-    {
-        return isKeyManagerLastClicked ? keyManager.GetCurrentSprite() : padManager.GetCurrentSprite();
-    }
-
-    public int GetLastClickedMidiNote()
-    {
-        return isKeyManagerLastClicked ? keyManager.midiNote : padManager.midiNote;
-    }
-
+    // Method to check if the last clicked manager was KeyManager
     public bool IsKeyManagerLastClicked()
     {
         return isKeyManagerLastClicked;
     }
+
+    // Methods to get the last clicked sprite and MIDI note
+    public Sprite GetLastClickedSprite()
+    {
+        return lastClickedSprite;
+    }
+
+    public int GetLastClickedMidiNote()
+    {
+        return lastClickedMidiNote;
+    }
 }
+
