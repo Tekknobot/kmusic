@@ -10,7 +10,7 @@ public class PadManager : MonoBehaviour
     public GameObject padPrefab;         // Reference to the pad prefab
     public Sprite[] sprites;             // Array of sprites to assign to each pad
 
-    private Sprite currentSprite;        // Current sprite tracked by PadManager
+    public Sprite currentSprite;        // Current sprite tracked by PadManager
 
     public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
 
