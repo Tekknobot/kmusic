@@ -62,7 +62,7 @@ public class Cell : MonoBehaviour
             {
                 int midiNote = PadManager.Instance.public_clickedPad.GetComponent<PadClickHandler>().midiNote;
                 sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
-                DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, CurrentSprite.name, step);
+                DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
                 Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
             }
             else

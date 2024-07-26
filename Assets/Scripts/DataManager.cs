@@ -53,7 +53,6 @@ public static class DataManager
         return tileDataGroups;
     }
 
-    // Erase specific tile data in the file
     public static void EraseTileDataToFile(string spriteGroup, string currentSprite, float step)
     {
         string path = Path.Combine(Application.persistentDataPath, "tileData.dat");
@@ -107,4 +106,5 @@ public static class DataManager
             Debug.LogWarning("Tile data file does not exist.");
         }
     }
+
 }
