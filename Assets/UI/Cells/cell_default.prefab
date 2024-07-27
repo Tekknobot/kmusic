@@ -145,6 +145,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultSprite: {fileID: 21300000, guid: 78b8217c21f460c43acdb671fc45e794, type: 3}
+  sequencer: {fileID: 0}
   step: 0
 --- !u!114 &-1317629146768416124
 MonoBehaviour:

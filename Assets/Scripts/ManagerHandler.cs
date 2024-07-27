@@ -71,9 +71,8 @@ public class ManagerHandler : MonoBehaviour
             return padManager != null ? padManager.midiNote : 0;
         }
     }
-
     public bool IsKeyManagerLastClicked()
     {
         return isKeyManagerLastClicked;
-    }
+    }  
 }

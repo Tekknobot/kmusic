@@ -55,6 +55,12 @@ public class Cell : MonoBehaviour
         Sprite lastClickedSprite = ManagerHandler.Instance.GetLastClickedSprite();
         midiNote = ManagerHandler.Instance.GetLastClickedMidiNote();
 
+        if (lastClickedSprite != BoardManager.Instance.GetSpriteByStep(step) && BoardManager.Instance.GetSpriteByStep(step) != defaultSprite)
+        {
+            Debug.Log("Returning early due to sprite mismatch.");
+            return;
+        }
+
         if (lastClickedSprite != null)
         {
             newSprite = lastClickedSprite;
@@ -68,6 +74,9 @@ public class Cell : MonoBehaviour
             RemoveTileData(spriteRenderer.sprite, step);
             spriteRenderer.sprite = defaultSprite;
             CurrentSprite = defaultSprite;
+
+            // Remove the old sprite from the stepToSpriteMap
+            BoardManager.Instance.stepToSpriteMap.Remove(step);
 
             // Determine which sequencer to use
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
@@ -112,11 +121,8 @@ public class Cell : MonoBehaviour
             // Save tile data for the new sprite
             SaveTileData(newSprite, step, isKey);
 
-            if (isKey)
-            {
-                // Save tile data specifically for keys
-                SaveKeyTileData(CurrentSprite, (int)step);
-            }
+            // Update the stepToSpriteMap dictionary
+            BoardManager.Instance.stepToSpriteMap[step] = newSprite;
 
             // Determine which sequencer to use
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
