@@ -261,11 +261,11 @@ public class KeyManager : MonoBehaviour
             Debug.Log($"Displaying sprite {sprite.name} for step {step}");
 
             // Iterate through boardCells to find cells with matching step
-            for (int row = 0; row < boardCells.GetLength(0); row++)
+            for (int row = 0; row < BoardManager.Instance.boardCells.GetLength(0); row++)
             {
-                for (int col = 0; col < boardCells.GetLength(1); col++)
+                for (int col = 0; col < BoardManager.Instance.boardCells.GetLength(1); col++)
                 {
-                    Cell cell = boardCells[row, col];
+                    Cell cell = BoardManager.Instance.boardCells[row, col];
                     if (cell != null && cell.step == step)
                     {
                         cell.SetSprite(sprite);
