@@ -234,7 +234,22 @@ public class Cell : MonoBehaviour
 
     private void RemoveTileData(Sprite sprite, float step)
     {
-        if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
+        // Handle removal in KeyManager
+        if (KeyManager.Instance.tileData.ContainsKey(sprite))
+        {
+            List<int> steps = KeyManager.Instance.tileData[sprite];
+            steps.Remove((int)step);
+
+            if (steps.Count == 0)
+            {
+                KeyManager.Instance.tileData.Remove(sprite);
+            }
+
+            Debug.Log($"Removed Tile Data for Key Sprite: {sprite.name}, Step: {step}");
+        }
+
+        // Handle removal in PadManager
+        else if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
         {
             List<TileData> tileDataList = PadManager.Instance.tileDataGroups[sprite.name];
             tileDataList.RemoveAll(data => data.Step == step);
@@ -244,9 +259,10 @@ public class Cell : MonoBehaviour
                 PadManager.Instance.tileDataGroups.Remove(sprite.name);
             }
 
-            Debug.Log($"Removed Tile Data for Sprite: {sprite.name}, Step: {step}");
+            Debug.Log($"Removed Tile Data for Pad Sprite: {sprite.name}, Step: {step}");
         }
     }
+
 
     // Method to call SaveKeyTileData
     private void SaveKeyTileData(Sprite sprite, int step)
