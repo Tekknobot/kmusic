@@ -140,46 +140,13 @@ public class PadManager : MonoBehaviour
 
             // Display the sprite on cells with matching step data
             DisplaySpriteOnMatchingSteps(currentSprite);
+
+            // Play sample
+            BoardManager.Instance.sequencer.GetComponent<SampleSequencer>().NoteOn(midiNote, 1.0f);
         }
 
         // Additional debug information
         Debug.Log($"Clicked Pad: {clickedPad.name}");
-    }
-
-    // Method to handle when a pad is pressed down
-    public void OnPadPressDown(GameObject clickedPad)
-    {
-        PadClickHandler padClickHandler = clickedPad.GetComponent<PadClickHandler>();
-        if (padClickHandler != null)
-        {
-            int midiNote = padClickHandler.midiNote;
-            BoardManager.Instance.sequencer.GetComponent<SampleSequencer>().NoteOn(midiNote, 1.0f);
-
-            // Additional debug information
-            Debug.Log($"Pad Pressed Down: {clickedPad.name}, MIDI Note: {midiNote}");
-        }
-        else
-        {
-            Debug.LogError("PadClickHandler component not found on clicked pad.");
-        }
-    }
-
-    // Method to handle when a pad is released
-    public void OnPadRelease(GameObject clickedPad)
-    {
-        PadClickHandler padClickHandler = clickedPad.GetComponent<PadClickHandler>();
-        if (padClickHandler != null)
-        {
-            int midiNote = padClickHandler.midiNote;
-            BoardManager.Instance.sequencer.GetComponent<SampleSequencer>().NoteOff(midiNote);
-
-            // Additional debug information
-            Debug.Log($"Pad Released: {clickedPad.name}, MIDI Note: {midiNote}");
-        }
-        else
-        {
-            Debug.LogError("PadClickHandler component not found on clicked pad.");
-        }
     }
 
     // Coroutine to scale the clicked pad
