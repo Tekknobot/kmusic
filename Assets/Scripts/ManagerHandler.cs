@@ -2,58 +2,78 @@ using UnityEngine;
 
 public class ManagerHandler : MonoBehaviour
 {
-    public static ManagerHandler Instance;
+    public static ManagerHandler Instance { get; private set; }
+
+    public KeyManager keyManager;
+    public PadManager padManager;
 
     private bool isKeyManagerLastClicked;
-    private Sprite lastClickedSprite;
-    private int lastClickedMidiNote;
 
-    private void Awake()
+    private void Start()
     {
         // Singleton pattern
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject); // Optional: if you want this to persist across scenes
         }
         else
         {
             Destroy(gameObject);
+            return;
+        }
+
+        // Ensure KeyManager and PadManager instances are assigned
+        if (keyManager == null)
+        {
+            keyManager = KeyManager.Instance;
+            if (keyManager == null)
+            {
+                Debug.LogError("KeyManager instance is not assigned or found.");
+            }
+        }
+
+        if (padManager == null)
+        {
+            padManager = PadManager.Instance;
+            if (padManager == null)
+            {
+                Debug.LogError("PadManager instance is not assigned or found.");
+            }
         }
     }
 
-    // Method to set the last clicked manager
     public void SetLastClickedManager(bool isKeyManager)
     {
         isKeyManagerLastClicked = isKeyManager;
+    }
 
-        if (isKeyManager)
+    public Sprite GetLastClickedSprite()
+    {
+        if (isKeyManagerLastClicked)
         {
-            lastClickedSprite = KeyManager.Instance.GetCurrentSprite();
-            lastClickedMidiNote = KeyManager.Instance.midiNote;
+            return keyManager != null ? keyManager.GetCurrentSprite() : null;
         }
         else
         {
-            lastClickedSprite = PadManager.Instance.GetCurrentSprite();
-            lastClickedMidiNote = PadManager.Instance.midiNote;
+            return padManager != null ? padManager.GetCurrentSprite() : null;
         }
-    }
-
-    // Method to check if the last clicked manager was KeyManager
-    public bool IsKeyManagerLastClicked()
-    {
-        return isKeyManagerLastClicked;
-    }
-
-    // Methods to get the last clicked sprite and MIDI note
-    public Sprite GetLastClickedSprite()
-    {
-        return lastClickedSprite;
     }
 
     public int GetLastClickedMidiNote()
     {
-        return lastClickedMidiNote;
+        if (isKeyManagerLastClicked)
+        {
+            return keyManager != null ? keyManager.midiNote : 0;
+        }
+        else
+        {
+            return padManager != null ? padManager.midiNote : 0;
+        }
+    }
+
+    public bool IsKeyManagerLastClicked()
+    {
+        return isKeyManagerLastClicked;
     }
 }
-

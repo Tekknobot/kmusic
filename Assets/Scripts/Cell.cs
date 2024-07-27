@@ -61,7 +61,7 @@ public class Cell : MonoBehaviour
             Debug.Log($"ReplaceSprite using last clicked sprite: {newSprite.name}");
         }
 
-        // If the current sprite is not the default sprite
+        // Check if the current sprite is not the default sprite
         if (spriteRenderer.sprite != defaultSprite)
         {
             // Remove tile data related to the current sprite
@@ -111,6 +111,12 @@ public class Cell : MonoBehaviour
 
             // Save tile data for the new sprite
             SaveTileData(newSprite, step, isKey);
+
+            if (isKey)
+            {
+                // Save tile data specifically for keys
+                SaveKeyTileData(CurrentSprite, (int)step);
+            }
 
             // Determine which sequencer to use
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
@@ -202,30 +208,26 @@ public class Cell : MonoBehaviour
     {
         TileData data = new TileData(sprite.name, step);
 
-        // Determine which dictionary to use based on the `isKey` flag
-        Dictionary<string, List<TileData>> targetDictionary;
-
         if (isKey)
         {
-            // Use KeyManager's tile data groups
-            targetDictionary = KeyManager.Instance.tileDataGroups;
-            Debug.Log("Saving to KeyManager's tile data groups.");
+            // Use KeyManager's tile data
+            KeyManager.Instance.SaveKeyTileData(sprite, (int)step);
         }
         else
         {
             // Use PadManager's tile data groups
-            targetDictionary = PadManager.Instance.tileDataGroups;
+            Dictionary<string, List<TileData>> targetDictionary = PadManager.Instance.tileDataGroups;
             Debug.Log("Saving to PadManager's tile data groups.");
-        }
 
-        // Ensure the dictionary contains a list for this sprite
-        if (!targetDictionary.ContainsKey(sprite.name))
-        {
-            targetDictionary[sprite.name] = new List<TileData>();
-        }
+            // Ensure the dictionary contains a list for this sprite
+            if (!targetDictionary.ContainsKey(sprite.name))
+            {
+                targetDictionary[sprite.name] = new List<TileData>();
+            }
 
-        // Add the new tile data to the list
-        targetDictionary[sprite.name].Add(data);
+            // Add the new tile data to the list
+            targetDictionary[sprite.name].Add(data);
+        }
 
         Debug.Log($"Saved Tile Data: Sprite = {data.SpriteName}, Step = {data.Step}, Dictionary = {(isKey ? "KeyManager" : "PadManager")}");
     }
@@ -244,6 +246,12 @@ public class Cell : MonoBehaviour
 
             Debug.Log($"Removed Tile Data for Sprite: {sprite.name}, Step: {step}");
         }
+    }
+
+    // Method to call SaveKeyTileData
+    private void SaveKeyTileData(Sprite sprite, int step)
+    {
+        KeyManager.Instance.SaveKeyTileData(sprite, step);
     }
 }
 

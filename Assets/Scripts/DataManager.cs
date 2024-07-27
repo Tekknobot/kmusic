@@ -54,6 +54,7 @@ public class DataManager : MonoBehaviour
         return tileDataGroups;
     }
 
+    // Erase specific tile data from file
     public static void EraseTileDataToFile(string spriteGroup, string currentSprite, float step)
     {
         string path = Path.Combine(Application.persistentDataPath, "tileData.dat");
@@ -158,5 +159,47 @@ public class DataManager : MonoBehaviour
         {
             Debug.LogWarning($"Directory {directoryPath} does not exist.");
         }
+    }
+
+    // Load tile data based on currentSprite and step
+    public static List<TileData> LoadKeyTileDataFromFile(string currentSprite, float step)
+    {
+        string path = Path.Combine(Application.persistentDataPath, "tileData.dat");
+        List<TileData> matchingTileData = new List<TileData>();
+
+        if (File.Exists(path))
+        {
+            try
+            {
+                Dictionary<string, List<TileData>> tileDataGroups;
+                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    tileDataGroups = (Dictionary<string, List<TileData>>)formatter.Deserialize(fileStream);
+                }
+
+                // Iterate through the groups to find matching tile data
+                foreach (var group in tileDataGroups.Values)
+                {
+                    foreach (var tileData in group)
+                    {
+                        if (tileData.SpriteName == currentSprite && tileData.Step == step)
+                        {
+                            matchingTileData.Add(tileData);
+                        }
+                    }
+                }
+            }
+            catch (IOException ex)
+            {
+                Debug.LogError($"IOException while loading key tile data: {ex.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Tile data file does not exist.");
+        }
+
+        return matchingTileData;
     }
 }

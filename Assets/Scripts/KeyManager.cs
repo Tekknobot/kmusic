@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using AudioHelm;
 
 public class KeyManager : MonoBehaviour
@@ -10,7 +12,7 @@ public class KeyManager : MonoBehaviour
     public GameObject keyPrefab;         // Reference to the key prefab
     public Sprite[] sprites;             // Array of sprites to assign to each key
 
-    public Sprite currentSprite;        // Current sprite tracked by KeyManager
+    public Sprite currentSprite;         // Current sprite tracked by KeyManager
     private Sprite lastClickedSprite;    // Last clicked sprite
 
     public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
@@ -19,7 +21,7 @@ public class KeyManager : MonoBehaviour
 
     private Cell[,] boardCells; // 2D array to store references to all board cells
 
-    public Dictionary<string, List<TileData>> tileDataGroups = new Dictionary<string, List<TileData>>(); // Dictionary to store TileData grouped by sprite
+    public Dictionary<Sprite, int> tileData = new Dictionary<Sprite, int>(); // Dictionary to store Sprite to int mapping
 
     public int midiNote;
 
@@ -60,7 +62,6 @@ public class KeyManager : MonoBehaviour
         }
 
         GenerateKeys();
-        tileDataGroups = DataManager.LoadTileDataFromFile();       
     }
 
     private void GenerateKeys()
@@ -116,6 +117,7 @@ public class KeyManager : MonoBehaviour
             newKey.name = sprites[i].name;
         }
     }
+
     // Method to handle when a key is clicked
     public void OnKeyClicked(GameObject clickedKey)
     {
@@ -124,21 +126,18 @@ public class KeyManager : MonoBehaviour
         // Set KeyManager as the last clicked manager
         ManagerHandler.Instance.SetLastClickedManager(true);
 
-        // Reset the board to display default configuration first
-        // BoardManager.Instance.ResetBoard();
-
         // Update the current sprite tracked by KeyManager
         SpriteRenderer spriteRenderer = clickedKey.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
-            // lastClickedSprite = spriteRenderer.sprite; // Update last clicked sprite
             currentSprite = spriteRenderer.sprite;
 
             // Scale the clicked key temporarily
             StartCoroutine(ScaleKey(clickedKey));
-
-            // Display the sprite on cells with matching step data
-            DisplaySpriteOnMatchingSteps(currentSprite);
+            BoardManager.Instance.ResetBoard();
+            
+            // Load tile data for keys
+            DisplaySpriteOnMatchingSteps();
         }
 
         // Additional debug information
@@ -236,48 +235,79 @@ public class KeyManager : MonoBehaviour
         return lastClickedSprite;
     }
 
-    // Method to display all saved tiles for a specific sprite on matching cells
-    private void DisplaySpriteOnMatchingSteps(Sprite sprite)
+    public void OnManagerClicked()
     {
-        Debug.Log($"Displaying all saved tiles for sprite: {sprite.name}");
+        ManagerHandler.Instance.SetLastClickedManager(true);
+    }
 
-        // Find the group that matches the current sprite
-        if (!tileDataGroups.ContainsKey(sprite.name))
+    // Method to display sprites on cells with matching step data
+    public void DisplaySpriteOnMatchingSteps()
+    {
+        Debug.Log("Displaying all saved tiles for KeyManager.");
+
+        // Ensure we have the boardCells populated
+        if (boardCells == null)
         {
-            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
+            Debug.LogError("Board cells are not initialized.");
             return;
         }
 
-        List<TileData> tileDataList = tileDataGroups[sprite.name];
-        Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
-
-        // Iterate through boardCells to find cells with matching step
-        for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
+        // Iterate through all sprite and step pairs in tileData
+        foreach (var entry in tileData)
         {
-            for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
-            {
-                Cell cell = BoardManager.Instance.boardCells[x, y];
-                if (cell == null)
-                {
-                    continue; // Skip null cells
-                }
+            Sprite sprite = entry.Key;
+            int step = entry.Value;
 
-                // Check each TileData entry for a match with the cell's step
-                foreach (TileData data in tileDataList)
+            Debug.Log($"Displaying sprite {sprite.name} for step {step}");
+
+            // Iterate through boardCells to find cells with matching step
+            for (int row = 0; row < boardCells.GetLength(0); row++)
+            {
+                for (int col = 0; col < boardCells.GetLength(1); col++)
                 {
-                    if (cell.GetComponent<Cell>().step == data.Step)
+                    Cell cell = boardCells[row, col];
+                    if (cell != null && cell.step == step)
                     {
-                        Debug.Log($"Found matching step {data.Step} in cell ({x}, {y}). Replacing sprite.");
-                        cell.ReplaceSprite(sprite, (int)cell.GetComponent<Cell>().step);
-                        GameObject.Find("HelmSequencer").GetComponent<HelmSequencer>().AddNote(midiNote, (int)cell.GetComponent<Cell>().step, (int)cell.GetComponent<Cell>().step + 1, 1.0f);
+                        cell.SetSprite(sprite);
+                        Debug.Log($"Displayed sprite {sprite.name} on cell at position ({row}, {col}) with step {step}.");
                     }
                 }
             }
         }
     }
 
-    public void OnManagerClicked()
+    // Method to save tile data to file
+    public void SaveKeyTileData(Sprite sprite, int step)
     {
-        ManagerHandler.Instance.SetLastClickedManager(true);
-    }    
+        if (sprite != null)
+        {
+            if (tileData.ContainsKey(sprite))
+            {
+                tileData[sprite] = step; // Update the existing entry
+            }
+            else
+            {
+                tileData.Add(sprite, step); // Add a new entry
+            }
+
+            Debug.Log($"Saved Key Tile Data: Sprite = {sprite.name}, Step = {step}");
+        }
+        else
+        {
+            Debug.LogError("Sprite is null. Cannot save tile data.");
+        }
+    }
+}
+
+[System.Serializable]
+public class KeyTileData
+{
+    public string SpriteName; // Store sprite name instead of sprite object
+    public float Step;
+}
+
+[System.Serializable]
+public class KeyTileDataList
+{
+    public List<KeyTileData> tileData;
 }
