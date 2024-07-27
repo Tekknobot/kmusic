@@ -21,7 +21,7 @@ public class KeyManager : MonoBehaviour
 
     private Cell[,] boardCells; // 2D array to store references to all board cells
 
-    public Dictionary<Sprite, int> tileData = new Dictionary<Sprite, int>(); // Dictionary to store Sprite to int mapping
+    public Dictionary<Sprite, List<int>> tileData = new Dictionary<Sprite, List<int>>();
 
     public int midiNote;
 
@@ -256,38 +256,40 @@ public class KeyManager : MonoBehaviour
         foreach (var entry in tileData)
         {
             Sprite sprite = entry.Key;
-            int step = entry.Value;
+            List<int> steps = entry.Value;
 
-            Debug.Log($"Displaying sprite {sprite.name} for step {step}");
+            Debug.Log($"Displaying sprite {sprite.name} for steps {string.Join(", ", steps)}");
 
-            // Iterate through boardCells to find cells with matching step
-            for (int row = 0; row < BoardManager.Instance.boardCells.GetLength(0); row++)
+            // Iterate through boardCells to find cells with matching steps
+            for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
             {
-                for (int col = 0; col < BoardManager.Instance.boardCells.GetLength(1); col++)
+                for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
                 {
-                    Cell cell = BoardManager.Instance.boardCells[row, col];
-                    if (cell != null && cell.step == step)
+                    Cell cell = BoardManager.Instance.boardCells[x, y];
+                    if (cell != null && steps.Contains((int)cell.step))
                     {
                         cell.SetSprite(sprite);
-                        Debug.Log($"Displayed sprite {sprite.name} on cell at position ({row}, {col}) with step {step}.");
+                        Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}.");
                     }
                 }
             }
         }
     }
 
-    // Method to save tile data to file
     public void SaveKeyTileData(Sprite sprite, int step)
     {
         if (sprite != null)
         {
             if (tileData.ContainsKey(sprite))
             {
-                tileData[sprite] = step; // Update the existing entry
+                if (!tileData[sprite].Contains(step))
+                {
+                    tileData[sprite].Add(step); // Add the new step if it doesn't already exist
+                }
             }
             else
             {
-                tileData.Add(sprite, step); // Add a new entry
+                tileData.Add(sprite, new List<int> { step }); // Create a new entry with the step
             }
 
             Debug.Log($"Saved Key Tile Data: Sprite = {sprite.name}, Step = {step}");
@@ -297,6 +299,7 @@ public class KeyManager : MonoBehaviour
             Debug.LogError("Sprite is null. Cannot save tile data.");
         }
     }
+
 }
 
 [System.Serializable]
