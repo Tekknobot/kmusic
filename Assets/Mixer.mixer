@@ -187,6 +187,8 @@ AudioMixerController:
     name: Closed
   - guid: d9957c615379cce4fae89b61730253eb
     name: Crash
+  - guid: 1ee94a722a19fa0498dc84007b46f7cc
+    name: Helm
   - guid: 07bbc58af77df9f45b5d7144abc8e355
     name: Kick
   - guid: f7f333032c36ea24c8442de1bd0bd330

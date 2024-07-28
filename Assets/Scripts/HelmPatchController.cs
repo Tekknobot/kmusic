@@ -33,7 +33,9 @@ public class HelmPatchController : MonoBehaviour
         {
             currentPatchIndex = 0;
         }
+    }
 
+    void Start() {
         // Load the current patch based on the saved index
         LoadCurrentPatch();
     }
