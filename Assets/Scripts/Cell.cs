@@ -78,7 +78,7 @@ public class Cell : MonoBehaviour
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
-                    helmSequencer.RemoveNotesInRange(midiNote, step, step + 1);
+                    helmSequencer.RemoveNotesInRange(midiNote, this.step, this.step + 1);
                     DataManager.EraseKeyTileDataToFile(KeyManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
@@ -245,11 +245,6 @@ public class Cell : MonoBehaviour
 
             Debug.Log($"Removed Tile Data for Pad Sprite: {spriteName}, Step: {step}");
         }
-    }
-
-    private void SaveKeyTileData(Sprite sprite, int step)
-    {
-        KeyManager.Instance.SaveKeyTileData(sprite, step);
     }
 }
 

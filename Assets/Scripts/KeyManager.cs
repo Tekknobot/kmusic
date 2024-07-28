@@ -72,7 +72,7 @@ public class KeyManager : MonoBehaviour
         GenerateKeys();
 
         // Start the coroutine to load tile data after a delay
-        StartCoroutine(LoadTileDataAfterDelay(1.0f)); // Adjust the delay time as needed
+        StartCoroutine(LoadTileDataAfterDelay(0.2f)); // Adjust the delay time as needed
     }
 
     private IEnumerator LoadTileDataAfterDelay(float delaySeconds)
@@ -88,73 +88,6 @@ public class KeyManager : MonoBehaviour
         {
             Debug.Log($"Loaded tile data: Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
         }
-    }
-
-    // Method to display sprites on cells with matching step data
-    public void DisplaySpriteOnMatchingSteps()
-    {
-        Debug.Log("Displaying all saved tiles for KeyManager.");
-
-        // Ensure we have the boardCells populated
-        if (boardCells == null)
-        {
-            Debug.LogError("Board cells are not initialized.");
-            return;
-        }
-
-        // Get the HelmSequencer component
-        HelmSequencer helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
-        if (helmSequencer == null)
-        {
-            Debug.LogError("HelmSequencer component not found on Helm.");
-            return;
-        }
-
-        // Iterate through all sprite and step pairs in tileData
-        foreach (var entry in tileData)
-        {
-            string spriteName = entry.Key;
-            List<int> steps = entry.Value;
-            Sprite sprite = GetSpriteByName(spriteName);
-
-            if (sprite != null)
-            {
-                Debug.Log($"Displaying sprite {sprite.name} for steps {string.Join(", ", steps)}");
-
-                // Iterate through boardCells to find cells with matching steps
-                for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
-                {
-                    for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
-                    {
-                        Cell cell = BoardManager.Instance.boardCells[x, y];
-                        if (cell != null && steps.Contains((int)cell.step))
-                        {
-                            cell.SetSprite(sprite);
-                            Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}.");
-
-                            // Apply note to HelmSequencer
-                            int midiNote = GetMidiNoteForSprite(spriteName);
-                            helmSequencer.AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
-                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogError($"Sprite with name {spriteName} not found.");
-            }
-        }
-    }
-
-    private int GetMidiNoteForSprite(string spriteName)
-    {
-        // Try to extract the number from the sprite name and use it to calculate the MIDI note
-        if (int.TryParse(spriteName.Replace("key_", ""), out int keyNumber) && keyNumber >= 1 && keyNumber <= 36)
-        {
-            return 59 + keyNumber; // MIDI note calculation: 60 (C4) + (keyNumber - 1)
-        }
-        return 60; // Default to C4 if sprite name is not recognized or out of range
     }
 
 
@@ -229,13 +162,13 @@ public class KeyManager : MonoBehaviour
             // Scale the clicked key temporarily
             StartCoroutine(ScaleKey(clickedKey));
             BoardManager.Instance.ResetBoard();
-            
-            // Load tile data for keys
-            DisplaySpriteOnMatchingSteps();
         }
 
         // Additional debug information
         Debug.Log($"Clicked Key: {clickedKey.name}");
+        
+        // Load tile data for keys
+        DisplaySpriteOnMatchingSteps();
     }
 
     // Method to handle when a key is pressed down
@@ -334,6 +267,63 @@ public class KeyManager : MonoBehaviour
         ManagerHandler.Instance.SetLastClickedManager(true);
     }
 
+    // Method to display sprites on cells with matching step data
+    public void DisplaySpriteOnMatchingSteps()
+    {
+        Debug.Log("Displaying all saved tiles for KeyManager.");
+
+        // Ensure we have the boardCells populated
+        if (boardCells == null)
+        {
+            Debug.LogError("Board cells are not initialized.");
+            return;
+        }
+
+        // Get the HelmSequencer component
+        HelmSequencer helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
+        if (helmSequencer == null)
+        {
+            Debug.LogError("HelmSequencer component not found on Helm.");
+            return;
+        }
+
+        // Iterate through all sprite and step pairs in tileData
+        foreach (var entry in tileData)
+        {
+            string spriteName = entry.Key;
+            List<int> steps = entry.Value;
+            Sprite sprite = GetSpriteByName(spriteName);
+
+            if (sprite != null)
+            {
+                Debug.Log($"Displaying sprite {sprite.name} for steps {string.Join(", ", steps)}");
+
+                // Iterate through boardCells to find cells with matching steps
+                for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
+                {
+                    for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
+                    {
+                        Cell cell = BoardManager.Instance.boardCells[x, y];
+                        if (cell != null && steps.Contains((int)cell.step))
+                        {
+                            cell.SetSprite(sprite);
+                            Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}.");
+
+                            // Apply note to HelmSequencer
+                            int midiNote = GetMidiNoteForSprite(spriteName);
+                            helmSequencer.AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
+                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError($"Sprite with name {spriteName} not found.");
+            }
+        }
+    }
+
     public void SaveKeyTileData(Sprite sprite, int step)
     {
         if (sprite != null)
@@ -384,6 +374,16 @@ public class KeyManager : MonoBehaviour
         Debug.LogError($"Sprite with name {spriteName} not found.");
         return null;
     }
+
+    private int GetMidiNoteForSprite(string spriteName)
+    {
+        // Try to extract the number from the sprite name and use it to calculate the MIDI note
+        if (int.TryParse(spriteName.Replace("key_", ""), out int keyNumber) && keyNumber >= 1 && keyNumber <= 36)
+        {
+            return 32 + keyNumber; // MIDI note calculation: 33 (A0) + (keyNumber - 1)
+        }
+        return 32;
+    }    
 }
 
 [System.Serializable]
