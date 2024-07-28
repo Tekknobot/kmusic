@@ -2746,6 +2746,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 145076561}
   m_CullTransparentMesh: 1
+--- !u!83 &156784208
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 48000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &159725029
 GameObject:
   m_ObjectHideFlags: 0
@@ -5384,8 +5412,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1086554068}
   - {fileID: 1881936758}
+  - {fileID: 1086554068}
   - {fileID: 1418260841}
   - {fileID: 903481549}
   m_Father: {fileID: 719920309}
@@ -9876,7 +9904,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -25, y: 3000}
+  m_AnchoredPosition: {x: -25, y: 438.2639}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &709725770
@@ -10090,8 +10118,8 @@ RectTransform:
   - {fileID: 460544833}
   - {fileID: 2135177833}
   - {fileID: 23166763}
-  - {fileID: 474924970}
   - {fileID: 706080875}
+  - {fileID: 474924970}
   - {fileID: 1086913454}
   - {fileID: 1268591106}
   - {fileID: 2142702932}
@@ -12571,7 +12599,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &903481549
 RectTransform:
   m_ObjectHideFlags: 0
@@ -14144,7 +14172,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 5533100680317944387, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
-  m_audioClip: {fileID: 0}
+  m_audioClip: {fileID: 156784208}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -16614,7 +16642,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -25, y: 438.2639}
+  m_AnchoredPosition: {x: -25, y: 3000}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1092085017
@@ -25628,6 +25656,60 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1739040395}
   m_CullTransparentMesh: 1
+--- !u!1 &1744627850
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1744627852}
+  - component: {fileID: 1744627851}
+  m_Layer: 0
+  m_Name: SynthButtonUIManger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1744627851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1744627850}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 688e8763ea1c8904cba81864bd14faa1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objectsToMove:
+  - {fileID: 706080875}
+  - {fileID: 474924970}
+  - {fileID: 1086913454}
+  - {fileID: 1268591106}
+  moveButtons:
+  - {fileID: 1881936759}
+  - {fileID: 1086554069}
+  - {fileID: 1418260842}
+  - {fileID: 903481550}
+--- !u!4 &1744627852
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1744627850}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.9617157, y: -2.1948824, z: 1495.2324}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1753592971
 GameObject:
   m_ObjectHideFlags: 0
@@ -33585,3 +33667,4 @@ SceneRoots:
   - {fileID: 871563213}
   - {fileID: 1412768884}
   - {fileID: 2119059804}
+  - {fileID: 1744627852}
