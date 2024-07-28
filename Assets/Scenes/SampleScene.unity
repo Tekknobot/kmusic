@@ -4733,7 +4733,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1669224080}
   m_Direction: 2
   m_MinValue: -12
-  m_MaxValue: 2
+  m_MaxValue: 20
   m_WholeNumbers: 1
   m_Value: 1
   m_OnValueChanged:
@@ -6049,7 +6049,7 @@ GameObject:
   - component: {fileID: 393918489}
   - component: {fileID: 393918490}
   m_Layer: 5
-  m_Name: DistDrive
+  m_Name: DistOn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -14144,7 +14144,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 5533100680317944387, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
-  m_audioClip: {fileID: 1556335965}
+  m_audioClip: {fileID: 2050759020}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -14485,21 +14485,21 @@ MonoBehaviour:
   synthParamValue17: 0
   synthParamValue18: 0
   synthParamValue19: 0
-  synthParamValue20: 0
+  synthParamValue20: -30
   synthParamValue21: 0
   synthParamValue22: 0
   synthParamValue23: 0
   synthParamValue24: 0
-  synthParamValue25: 0
+  synthParamValue25: 0.8
   synthParameters:
   - parameter_: 25
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
     paramValue_: 0
   - parameter_: 26
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
@@ -14511,13 +14511,13 @@ MonoBehaviour:
     maximumRange: 128
     paramValue_: -128
   - parameter_: 28
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
     paramValue_: 0
   - parameter_: 29
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 1
@@ -14553,55 +14553,55 @@ MonoBehaviour:
     maximumRange: 1
     paramValue_: 0
   - parameter_: 1
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
     paramValue_: 0
   - parameter_: 2
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
     paramValue_: 0
   - parameter_: 3
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
     paramValue_: 0
   - parameter_: 4
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 1
     paramValue_: 0
   - parameter_: 42
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
     paramValue_: 0
   - parameter_: 43
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
     paramValue_: 0
   - parameter_: 45
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 1
     paramValue_: 0
   - parameter_: 44
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 4
     paramValue_: 0
   - parameter_: 21
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 1
@@ -14613,11 +14613,11 @@ MonoBehaviour:
     maximumRange: 3
     paramValue_: 0
   - parameter_: 23
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: -30
     maximumRange: 30
-    paramValue_: 0
+    paramValue_: -30
   - parameter_: 24
     scaleType: 1
     parent: {fileID: 994914762}
@@ -14631,23 +14631,23 @@ MonoBehaviour:
     maximumRange: 1
     paramValue_: 0
   - parameter_: 86
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 1
     paramValue_: 0
   - parameter_: 87
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0
     maximumRange: 1
     paramValue_: 0
   - parameter_: 88
-    scaleType: 1
+    scaleType: 0
     parent: {fileID: 994914762}
     minimumRange: 0.8
     maximumRange: 1
-    paramValue_: 0
+    paramValue_: 0.8
 --- !u!1 &997932603
 GameObject:
   m_ObjectHideFlags: 0
@@ -15281,7 +15281,7 @@ MonoBehaviour:
   m_FillRect: {fileID: 1158179375}
   m_HandleRect: {fileID: 1103632038}
   m_Direction: 2
-  m_MinValue: 0
+  m_MinValue: 0.8
   m_MaxValue: 1
   m_WholeNumbers: 0
   m_Value: 1
@@ -16151,7 +16151,7 @@ GameObject:
   - component: {fileID: 1064959589}
   - component: {fileID: 1064959590}
   m_Layer: 5
-  m_Name: DistOn
+  m_Name: DistDrive
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23251,34 +23251,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1555995996}
   m_CullTransparentMesh: 1
---- !u!83 &1556335965
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &1568863051
 GameObject:
   m_ObjectHideFlags: 0
@@ -26974,7 +26946,7 @@ GameObject:
   - component: {fileID: 1862042783}
   - component: {fileID: 1862042784}
   m_Layer: 5
-  m_Name: DistType
+  m_Name: DistMix
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -30242,6 +30214,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2042341794}
   m_CullTransparentMesh: 1
+--- !u!83 &2050759020
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 48000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &2053388377
 GameObject:
   m_ObjectHideFlags: 0
@@ -33131,7 +33131,7 @@ GameObject:
   - component: {fileID: 2134220850}
   - component: {fileID: 2134220851}
   m_Layer: 5
-  m_Name: DistMix
+  m_Name: DistType
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
