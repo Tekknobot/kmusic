@@ -52,6 +52,7 @@ public class HelmPatchController : MonoBehaviour
     {
         // Load the current patch based on the saved index
         LoadCurrentPatch();
+        SyncSlidersWithParameters();       
     }
 
     private void LoadCurrentPatch()
