@@ -16,13 +16,20 @@ public class BPMController : MonoBehaviour
     // Reference to the Slider UI component
     public Slider bpmSlider;
 
+    // Key for storing BPM in PlayerPrefs
+    private const string BPM_PREF_KEY = "BPM";
+
     // Start is called before the first frame update
     void Start()
     {
         if (helmClock != null && bpmSlider != null)
         {
+            // Load the saved BPM value or default to helmClock's BPM if not found
+            float savedBPM = PlayerPrefs.GetFloat(BPM_PREF_KEY, helmClock.bpm);
+
             // Initialize the BPM value and set the slider's value
-            bpmSlider.value = helmClock.bpm;
+            helmClock.bpm = savedBPM;
+            bpmSlider.value = savedBPM;
             UpdateBPMLabel();
 
             // Add listener for slider value changes
@@ -37,6 +44,7 @@ public class BPMController : MonoBehaviour
         {
             helmClock.bpm = bpmSlider.value;
             UpdateBPMLabel();
+            SaveBPM();
         }
     }
 
@@ -47,5 +55,12 @@ public class BPMController : MonoBehaviour
         {
             bpmLabel.text = $"{helmClock.bpm}";
         }
+    }
+
+    // Save the BPM value to PlayerPrefs
+    void SaveBPM()
+    {
+        PlayerPrefs.SetFloat(BPM_PREF_KEY, helmClock.bpm);
+        PlayerPrefs.Save();
     }
 }
