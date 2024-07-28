@@ -65,7 +65,7 @@ public class Mixer : MonoBehaviour
         if (helmSlider != null)
         {
             helmSlider.onValueChanged.AddListener(OnHelmSliderValueChanged);
-            string helmGroupName = helmSlider.name;
+            string helmGroupName = "Helm";
             groupNames = AddGroupName(groupNames, helmGroupName); // Add helm group name to the groupNames array
 
             // Load the saved Helm slider value
