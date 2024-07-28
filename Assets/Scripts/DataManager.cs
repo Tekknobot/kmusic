@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
+using System; // Add this directive for Exception
 
 public class DataManager : MonoBehaviour
 {
@@ -109,97 +110,127 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    // Method to erase a data file
-    public static void EraseDataFile(string fileName)
+    // Save key tile data to a file
+    public static void SaveKeyTileDataToFile(Dictionary<string, List<int>> keyTileData)
     {
-        string filePath = Path.Combine(Application.persistentDataPath, fileName);
+        string path = Path.Combine(Application.persistentDataPath, "keyTileData.dat");
+        Debug.Log("Persistent Data Path: " + Application.persistentDataPath);
 
-        if (File.Exists(filePath))
+        try
         {
-            try
+            using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                File.Delete(filePath);
-                Debug.Log($"File {fileName} successfully deleted from {Application.persistentDataPath}.");
-            }
-            catch (IOException e)
-            {
-                Debug.LogError($"Failed to delete file {fileName}: {e.Message}");
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(fileStream, keyTileData);
             }
         }
-        else
+        catch (IOException ex)
         {
-            Debug.LogWarning($"File {fileName} does not exist in {Application.persistentDataPath}.");
+            Debug.LogError($"IOException while saving key tile data: {ex.Message}");
         }
     }
 
-    public static void ClearAllData()
+    // Load key tile data from a file
+    public static Dictionary<string, List<int>> LoadKeyTileDataFromFile()
     {
-        string directoryPath = Application.persistentDataPath;
+        Dictionary<string, List<int>> tileData = new Dictionary<string, List<int>>();
+        string filePath = Path.Combine(Application.persistentDataPath, "keyTileData.dat");
 
-        if (Directory.Exists(directoryPath))
+        if (!File.Exists(filePath))
         {
-            try
-            {
-                // Get all files in the directory
-                string[] files = Directory.GetFiles(directoryPath);
+            Debug.LogWarning("Key tile data file not found.");
+            return tileData;
+        }
 
-                // Delete each file
-                foreach (string file in files)
+        try
+        {
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                if (fileStream.Length == 0)
                 {
-                    File.Delete(file);
-                    Debug.Log($"File {Path.GetFileName(file)} successfully deleted from {directoryPath}.");
+                    Debug.LogWarning("Key tile data file is empty.");
+                    return tileData;
+                }
+
+                // Log the file content before deserialization
+                StreamReader reader = new StreamReader(fileStream);
+                string fileContent = reader.ReadToEnd();
+                Debug.Log($"File content: {fileContent}");
+
+                // Reset the stream position to the beginning before deserializing
+                fileStream.Position = 0;
+
+                BinaryFormatter formatter = new BinaryFormatter();
+                tileData = (Dictionary<string, List<int>>)formatter.Deserialize(fileStream);
+
+                // Debug log to check loaded data
+                foreach (var entry in tileData)
+                {
+                    Debug.Log($"Loaded Key Tile Data: Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
                 }
             }
-            catch (IOException e)
-            {
-                Debug.LogError($"Failed to delete files in directory {directoryPath}: {e.Message}");
-            }
         }
-        else
+        catch (Exception ex)
         {
-            Debug.LogWarning($"Directory {directoryPath} does not exist.");
+            Debug.LogError($"Failed to load key tile data: {ex.Message}");
         }
+
+        return tileData;
     }
 
-    // Load tile data based on currentSprite and step
-    public static List<TileData> LoadKeyTileDataFromFile(string currentSprite, float step)
+
+    // Erase specific key tile data from file
+    public static void EraseKeyTileDataToFile(string spriteName, int step)
     {
-        string path = Path.Combine(Application.persistentDataPath, "tileData.dat");
-        List<TileData> matchingTileData = new List<TileData>();
+        string path = Path.Combine(Application.persistentDataPath, "keyTileData.dat");
 
         if (File.Exists(path))
         {
             try
             {
-                Dictionary<string, List<TileData>> tileDataGroups;
+                Dictionary<string, List<int>> keyTileData;
                 using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     BinaryFormatter formatter = new BinaryFormatter();
-                    tileDataGroups = (Dictionary<string, List<TileData>>)formatter.Deserialize(fileStream);
+                    keyTileData = (Dictionary<string, List<int>>)formatter.Deserialize(fileStream);
                 }
 
-                // Iterate through the groups to find matching tile data
-                foreach (var group in tileDataGroups.Values)
+                if (keyTileData.ContainsKey(spriteName))
                 {
-                    foreach (var tileData in group)
+                    int initialCount = keyTileData[spriteName].Count;
+                    keyTileData[spriteName].Remove(step);
+                    if (keyTileData[spriteName].Count < initialCount)
                     {
-                        if (tileData.SpriteName == currentSprite && tileData.Step == step)
-                        {
-                            matchingTileData.Add(tileData);
-                        }
+                        Debug.Log($"Removed step {step} from sprite {spriteName}");
                     }
+
+                    if (keyTileData[spriteName].Count == 0)
+                    {
+                        keyTileData.Remove(spriteName);
+                        Debug.Log($"Removed sprite {spriteName} as it became empty.");
+                    }
+
+                    using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        formatter.Serialize(fileStream, keyTileData);
+                    }
+
+                    Debug.Log("Specified key tile data erased successfully.");
+                }
+                else
+                {
+                    Debug.LogWarning($"Sprite {spriteName} does not exist in key tile data.");
                 }
             }
             catch (IOException ex)
             {
-                Debug.LogError($"IOException while loading key tile data: {ex.Message}");
+                Debug.LogError($"IOException while erasing specific key tile data: {ex.Message}");
             }
         }
         else
         {
-            Debug.LogWarning("Tile data file does not exist.");
+            Debug.LogWarning("Key tile data file does not exist.");
         }
-
-        return matchingTileData;
     }
 }

@@ -21,7 +21,6 @@ public class Cell : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         originalRotation = transform.rotation;
 
-        // Attempt to find the sequencer if not assigned
         if (sequencer == null)
         {
             sequencer = GameObject.Find("Sequencer");
@@ -51,7 +50,6 @@ public class Cell : MonoBehaviour
     {
         Debug.Log($"ReplaceSprite called: Old Sprite = {spriteRenderer.sprite?.name ?? "None"}, New Sprite = {newSprite.name}, Step = {step}");
 
-        // Get the last clicked sprite and midiNote from ManagerHandler
         Sprite lastClickedSprite = ManagerHandler.Instance.GetLastClickedSprite();
         midiNote = ManagerHandler.Instance.GetLastClickedMidiNote();
 
@@ -67,26 +65,21 @@ public class Cell : MonoBehaviour
             Debug.Log($"ReplaceSprite using last clicked sprite: {newSprite.name}");
         }
 
-        // Check if the current sprite is not the default sprite
         if (spriteRenderer.sprite != defaultSprite)
         {
-            // Remove tile data related to the current sprite
-            RemoveTileData(spriteRenderer.sprite, step);
+            RemoveTileData(spriteRenderer.sprite.name, step);
             spriteRenderer.sprite = defaultSprite;
             CurrentSprite = defaultSprite;
 
-            // Remove the old sprite from the stepToSpriteMap
             BoardManager.Instance.stepToSpriteMap.Remove(step);
 
-            // Determine which sequencer to use
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                // Use HelmSequencer if the last clicked manager is KeyManager
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
                     helmSequencer.RemoveNotesInRange(midiNote, step, step + 1);
-                    DataManager.EraseTileDataToFile(KeyManager.Instance.currentSprite.name, KeyManager.Instance.currentSprite.name, step);
+                    DataManager.EraseKeyTileDataToFile(KeyManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
                 else
@@ -96,12 +89,11 @@ public class Cell : MonoBehaviour
             }
             else
             {
-                // Use SampleSequencer if the last clicked manager is PadManager
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
                     sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
-                    DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, step);
+                    DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
                 else
@@ -112,26 +104,22 @@ public class Cell : MonoBehaviour
         }
         else
         {
-            // Set the new sprite
             spriteRenderer.sprite = newSprite;
             CurrentSprite = newSprite;
 
             bool isKey = ManagerHandler.Instance.IsKeyManagerLastClicked();
 
-            // Save tile data for the new sprite
             SaveTileData(newSprite, step, isKey);
 
-            // Update the stepToSpriteMap dictionary
             BoardManager.Instance.stepToSpriteMap[step] = newSprite;
 
-            // Determine which sequencer to use
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                // Use HelmSequencer if the last clicked manager is KeyManager
                 var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                 if (helmSequencer != null)
                 {
                     helmSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    KeyManager.Instance.SaveKeyTileData(newSprite, (int)step);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
                 else
@@ -141,7 +129,6 @@ public class Cell : MonoBehaviour
             }
             else
             {
-                // Use SampleSequencer if the last clicked manager is PadManager
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
@@ -155,6 +142,7 @@ public class Cell : MonoBehaviour
             }
 
             DataManager.SaveTileDataToFile(PadManager.Instance.tileDataGroups);
+            DataManager.SaveKeyTileDataToFile(KeyManager.Instance.tileData);
         }
     }
 
@@ -165,18 +153,15 @@ public class Cell : MonoBehaviour
             StopCoroutine(rotationCoroutine);
         }
 
-        // Get the last clicked sprite and midiNote from ManagerHandler
         Sprite currentSprite = ManagerHandler.Instance.GetLastClickedSprite();
         int midiNote = ManagerHandler.Instance.GetLastClickedMidiNote();
 
-        // Check if currentSprite is null
         if (currentSprite == null)
         {
             Debug.LogError("Current sprite is null. Cannot rotate and replace sprite.");
-            return; // Exit the method early if currentSprite is null
+            return;
         }
 
-        // Proceed if currentSprite is not null
         Debug.Log($"RotateAndReturn called: Current Sprite = {currentSprite.name}, Step = {step}");
 
         ReplaceSprite(currentSprite, midiNote);
@@ -216,61 +201,52 @@ public class Cell : MonoBehaviour
 
         if (isKey)
         {
-            // Use KeyManager's tile data
             KeyManager.Instance.SaveKeyTileData(sprite, (int)step);
         }
         else
         {
-            // Use PadManager's tile data groups
             Dictionary<string, List<TileData>> targetDictionary = PadManager.Instance.tileDataGroups;
             Debug.Log("Saving to PadManager's tile data groups.");
 
-            // Ensure the dictionary contains a list for this sprite
             if (!targetDictionary.ContainsKey(sprite.name))
             {
                 targetDictionary[sprite.name] = new List<TileData>();
             }
 
-            // Add the new tile data to the list
             targetDictionary[sprite.name].Add(data);
         }
 
         Debug.Log($"Saved Tile Data: Sprite = {data.SpriteName}, Step = {data.Step}, Dictionary = {(isKey ? "KeyManager" : "PadManager")}");
     }
 
-    private void RemoveTileData(Sprite sprite, float step)
+    private void RemoveTileData(string spriteName, float step)
     {
-        // Handle removal in KeyManager
-        if (KeyManager.Instance.tileData.ContainsKey(sprite))
+        if (KeyManager.Instance.tileData.ContainsKey(spriteName))
         {
-            List<int> steps = KeyManager.Instance.tileData[sprite];
+            List<int> steps = KeyManager.Instance.tileData[spriteName];
             steps.Remove((int)step);
 
             if (steps.Count == 0)
             {
-                KeyManager.Instance.tileData.Remove(sprite);
+                KeyManager.Instance.tileData.Remove(spriteName);
             }
 
-            Debug.Log($"Removed Tile Data for Key Sprite: {sprite.name}, Step: {step}");
+            Debug.Log($"Removed Tile Data for Key Sprite: {spriteName}, Step: {step}");
         }
-
-        // Handle removal in PadManager
-        else if (PadManager.Instance.tileDataGroups.ContainsKey(sprite.name))
+        else if (PadManager.Instance.tileDataGroups.ContainsKey(spriteName))
         {
-            List<TileData> tileDataList = PadManager.Instance.tileDataGroups[sprite.name];
+            List<TileData> tileDataList = PadManager.Instance.tileDataGroups[spriteName];
             tileDataList.RemoveAll(data => data.Step == step);
 
             if (tileDataList.Count == 0)
             {
-                PadManager.Instance.tileDataGroups.Remove(sprite.name);
+                PadManager.Instance.tileDataGroups.Remove(spriteName);
             }
 
-            Debug.Log($"Removed Tile Data for Pad Sprite: {sprite.name}, Step: {step}");
+            Debug.Log($"Removed Tile Data for Pad Sprite: {spriteName}, Step: {step}");
         }
     }
 
-
-    // Method to call SaveKeyTileData
     private void SaveKeyTileData(Sprite sprite, int step)
     {
         KeyManager.Instance.SaveKeyTileData(sprite, step);
@@ -280,7 +256,7 @@ public class Cell : MonoBehaviour
 [System.Serializable]
 public class TileData
 {
-    public string SpriteName; // Store sprite name instead of sprite object
+    public string SpriteName;
     public float Step;
 
     public TileData(string spriteName, float step)
@@ -289,6 +265,5 @@ public class TileData
         Step = step;
     }
 
-    // Parameterless constructor for deserialization
-    public TileData() {}
+    public TileData() { }
 }

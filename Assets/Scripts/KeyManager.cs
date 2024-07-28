@@ -21,7 +21,7 @@ public class KeyManager : MonoBehaviour
 
     private Cell[,] boardCells; // 2D array to store references to all board cells
 
-    public Dictionary<Sprite, List<int>> tileData = new Dictionary<Sprite, List<int>>();
+    public Dictionary<string, List<int>> tileData = new Dictionary<string, List<int>>(); // Changed to use string keys
 
     public int midiNote;
 
@@ -31,6 +31,7 @@ public class KeyManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
@@ -55,6 +56,13 @@ public class KeyManager : MonoBehaviour
             return;
         }
 
+        // Log the names of sprites in the array
+        Debug.Log("Sprites available:");
+        foreach (var sprite in sprites)
+        {
+            Debug.Log(sprite.name);
+        }
+
         // Initialize default sprite
         if (sprites.Length > 0)
         {
@@ -62,7 +70,93 @@ public class KeyManager : MonoBehaviour
         }
 
         GenerateKeys();
+
+        // Start the coroutine to load tile data after a delay
+        StartCoroutine(LoadTileDataAfterDelay(1.0f)); // Adjust the delay time as needed
     }
+
+    private IEnumerator LoadTileDataAfterDelay(float delaySeconds)
+    {
+        // Wait for the specified delay
+        yield return new WaitForSeconds(delaySeconds);
+
+        // Load the tile data from file
+        tileData = DataManager.LoadKeyTileDataFromFile();
+
+        // Log the loaded tile data
+        foreach (var entry in tileData)
+        {
+            Debug.Log($"Loaded tile data: Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
+        }
+    }
+
+    // Method to display sprites on cells with matching step data
+    public void DisplaySpriteOnMatchingSteps()
+    {
+        Debug.Log("Displaying all saved tiles for KeyManager.");
+
+        // Ensure we have the boardCells populated
+        if (boardCells == null)
+        {
+            Debug.LogError("Board cells are not initialized.");
+            return;
+        }
+
+        // Get the HelmSequencer component
+        HelmSequencer helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
+        if (helmSequencer == null)
+        {
+            Debug.LogError("HelmSequencer component not found on Helm.");
+            return;
+        }
+
+        // Iterate through all sprite and step pairs in tileData
+        foreach (var entry in tileData)
+        {
+            string spriteName = entry.Key;
+            List<int> steps = entry.Value;
+            Sprite sprite = GetSpriteByName(spriteName);
+
+            if (sprite != null)
+            {
+                Debug.Log($"Displaying sprite {sprite.name} for steps {string.Join(", ", steps)}");
+
+                // Iterate through boardCells to find cells with matching steps
+                for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
+                {
+                    for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
+                    {
+                        Cell cell = BoardManager.Instance.boardCells[x, y];
+                        if (cell != null && steps.Contains((int)cell.step))
+                        {
+                            cell.SetSprite(sprite);
+                            Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}.");
+
+                            // Apply note to HelmSequencer
+                            int midiNote = GetMidiNoteForSprite(spriteName);
+                            helmSequencer.AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
+                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError($"Sprite with name {spriteName} not found.");
+            }
+        }
+    }
+
+    private int GetMidiNoteForSprite(string spriteName)
+    {
+        // Try to extract the number from the sprite name and use it to calculate the MIDI note
+        if (int.TryParse(spriteName.Replace("key_", ""), out int keyNumber) && keyNumber >= 1 && keyNumber <= 36)
+        {
+            return 59 + keyNumber; // MIDI note calculation: 60 (C4) + (keyNumber - 1)
+        }
+        return 60; // Default to C4 if sprite name is not recognized or out of range
+    }
+
 
     private void GenerateKeys()
     {
@@ -240,56 +334,22 @@ public class KeyManager : MonoBehaviour
         ManagerHandler.Instance.SetLastClickedManager(true);
     }
 
-    // Method to display sprites on cells with matching step data
-    public void DisplaySpriteOnMatchingSteps()
-    {
-        Debug.Log("Displaying all saved tiles for KeyManager.");
-
-        // Ensure we have the boardCells populated
-        if (boardCells == null)
-        {
-            Debug.LogError("Board cells are not initialized.");
-            return;
-        }
-
-        // Iterate through all sprite and step pairs in tileData
-        foreach (var entry in tileData)
-        {
-            Sprite sprite = entry.Key;
-            List<int> steps = entry.Value;
-
-            Debug.Log($"Displaying sprite {sprite.name} for steps {string.Join(", ", steps)}");
-
-            // Iterate through boardCells to find cells with matching steps
-            for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
-            {
-                for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
-                {
-                    Cell cell = BoardManager.Instance.boardCells[x, y];
-                    if (cell != null && steps.Contains((int)cell.step))
-                    {
-                        cell.SetSprite(sprite);
-                        Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}.");
-                    }
-                }
-            }
-        }
-    }
-
     public void SaveKeyTileData(Sprite sprite, int step)
     {
         if (sprite != null)
         {
-            if (tileData.ContainsKey(sprite))
+            string spriteName = sprite.name;
+
+            if (tileData.ContainsKey(spriteName))
             {
-                if (!tileData[sprite].Contains(step))
+                if (!tileData[spriteName].Contains(step))
                 {
-                    tileData[sprite].Add(step); // Add the new step if it doesn't already exist
+                    tileData[spriteName].Add(step); // Add the new step if it doesn't already exist
                 }
             }
             else
             {
-                tileData.Add(sprite, new List<int> { step }); // Create a new entry with the step
+                tileData.Add(spriteName, new List<int> { step }); // Create a new entry with the step
             }
 
             Debug.Log($"Saved Key Tile Data: Sprite = {sprite.name}, Step = {step}");
@@ -300,6 +360,30 @@ public class KeyManager : MonoBehaviour
         }
     }
 
+    // Helper method to get a sprite by its name
+    private Sprite GetSpriteByName(string spriteName)
+    {
+        if (sprites == null || sprites.Length == 0)
+        {
+            Debug.LogError("The sprites array is null or empty.");
+            return null;
+        }
+
+        Debug.Log($"Looking for sprite with name: {spriteName}");
+
+        foreach (Sprite sprite in sprites)
+        {
+            Debug.Log($"Checking sprite: {sprite.name}");
+            if (sprite.name == spriteName)
+            {
+                Debug.Log($"Found sprite: {sprite.name}");
+                return sprite;
+            }
+        }
+
+        Debug.LogError($"Sprite with name {spriteName} not found.");
+        return null;
+    }
 }
 
 [System.Serializable]
