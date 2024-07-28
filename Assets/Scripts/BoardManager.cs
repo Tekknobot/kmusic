@@ -67,7 +67,7 @@ public class BoardManager : MonoBehaviour
     private void InitializeBoard()
     {
         // Assuming a fixed size board of 8x8 cells
-        int boardSizeX = 8;
+        int boardSizeX = 2;
         int boardSizeY = 8;
 
         // Initialize the boardCells 2D array
