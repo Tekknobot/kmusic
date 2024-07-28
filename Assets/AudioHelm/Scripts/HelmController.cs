@@ -175,14 +175,16 @@ namespace AudioHelm
                 case 13: synthParamValue13 = newValue; break;
                 case 14: synthParamValue14 = newValue; break;
                 case 15: synthParamValue15 = newValue; break;
-                case 16: synthParamValue8 = newValue; break;
-                case 17: synthParamValue9 = newValue; break;
-                case 18: synthParamValue10 = newValue; break;
-                case 19: synthParamValue11 = newValue; break;
-                case 20: synthParamValue12 = newValue; break;
-                case 21: synthParamValue13 = newValue; break;
-                case 22: synthParamValue14 = newValue; break;
-                case 23: synthParamValue15 = newValue; break;                
+                case 16: synthParamValue16 = newValue; break;
+                case 17: synthParamValue17 = newValue; break;
+                case 18: synthParamValue18 = newValue; break;
+                case 19: synthParamValue19 = newValue; break;
+                case 20: synthParamValue20 = newValue; break;
+                case 21: synthParamValue21 = newValue; break;
+                case 22: synthParamValue22 = newValue; break;
+                case 23: synthParamValue23 = newValue; break;   
+                case 24: synthParamValue24 = newValue; break; 
+                case 25: synthParamValue25 = newValue; break;             
             }
         }
 

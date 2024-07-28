@@ -21,7 +21,7 @@ public class HelmPatchController : MonoBehaviour
     private void Awake()
     {
         // Reverse the order of patches
-        System.Array.Reverse(patches);
+        //System.Array.Reverse(patches);
 
         // Add listeners to the buttons
         nextButton.onClick.AddListener(NextPatch);
