@@ -18,7 +18,7 @@ namespace AudioHelm
     public class HelmController : MonoBehaviour, NoteHandler
     {
         public const float UPDATE_WAIT = 0.04f;
-        public const int MAX_PARAMETERS = 16;
+        public const int MAX_PARAMETERS = 26;
 
         /// <summary>
         /// Specifies which Helm instance(s) to control.
@@ -33,7 +33,10 @@ namespace AudioHelm
         protected float synthParamValue0 = 0.0f, synthParamValue1 = 0.0f, synthParamValue2 = 0.0f, synthParamValue3 = 0.0f,
                         synthParamValue4 = 0.0f, synthParamValue5 = 0.0f, synthParamValue6 = 0.0f, synthParamValue7 = 0.0f,
                         synthParamValue8 = 0.0f, synthParamValue9 = 0.0f, synthParamValue10 = 0.0f, synthParamValue11 = 0.0f,
-                        synthParamValue12 = 0.0f, synthParamValue13 = 0.0f, synthParamValue14 = 0.0f, synthParamValue15 = 0.0f;
+                        synthParamValue12 = 0.0f, synthParamValue13 = 0.0f, synthParamValue14 = 0.0f, synthParamValue15 = 0.0f,
+                        synthParamValue16 = 0.0f, synthParamValue17 = 0.0f, synthParamValue18 = 0.0f, synthParamValue19 = 0.0f,
+                        synthParamValue20 = 0.0f, synthParamValue21 = 0.0f, synthParamValue22 = 0.0f, synthParamValue23 = 0.0f,
+                        synthParamValue24 = 0.0f, synthParamValue25 = 0.0f;                        
 
         /// <summary>
         /// List of current parameters you can view, change and animate in the Inspector view.
@@ -129,6 +132,16 @@ namespace AudioHelm
                 case 13: return synthParamValue13;
                 case 14: return synthParamValue14;
                 case 15: return synthParamValue15;
+                case 16: return synthParamValue16;
+                case 17: return synthParamValue17;    
+                case 18: return synthParamValue18; 
+                case 19: return synthParamValue19; 
+                case 20: return synthParamValue20; 
+                case 21: return synthParamValue21; 
+                case 22: return synthParamValue22; 
+                case 23: return synthParamValue23; 
+                case 24: return synthParamValue24;   
+                case 25: return synthParamValue25;                                                                                                                                                           
                 default: return 0.0f;
             }
         }
@@ -162,6 +175,14 @@ namespace AudioHelm
                 case 13: synthParamValue13 = newValue; break;
                 case 14: synthParamValue14 = newValue; break;
                 case 15: synthParamValue15 = newValue; break;
+                case 16: synthParamValue8 = newValue; break;
+                case 17: synthParamValue9 = newValue; break;
+                case 18: synthParamValue10 = newValue; break;
+                case 19: synthParamValue11 = newValue; break;
+                case 20: synthParamValue12 = newValue; break;
+                case 21: synthParamValue13 = newValue; break;
+                case 22: synthParamValue14 = newValue; break;
+                case 23: synthParamValue15 = newValue; break;                
             }
         }
 
@@ -175,7 +196,10 @@ namespace AudioHelm
                 synthParamValue0, synthParamValue1, synthParamValue2, synthParamValue3,
                 synthParamValue4, synthParamValue5, synthParamValue6, synthParamValue7,
                 synthParamValue8, synthParamValue9, synthParamValue10, synthParamValue11,
-                synthParamValue12, synthParamValue13, synthParamValue14, synthParamValue15
+                synthParamValue12, synthParamValue13, synthParamValue14, synthParamValue15,
+                synthParamValue16, synthParamValue17, synthParamValue18, synthParamValue19,
+                synthParamValue20, synthParamValue21, synthParamValue22, synthParamValue23,
+                synthParamValue24, synthParamValue25
             };
             for (int i = 0; i < synthParameters.Count; ++i)
                 synthParameters[i].paramValue = paramValues[i];
@@ -194,7 +218,10 @@ namespace AudioHelm
                 synthParamValue0, synthParamValue1, synthParamValue2, synthParamValue3,
                 synthParamValue4, synthParamValue5, synthParamValue6, synthParamValue7,
                 synthParamValue8, synthParamValue9, synthParamValue10, synthParamValue11,
-                synthParamValue12, synthParamValue13, synthParamValue14, synthParamValue15
+                synthParamValue12, synthParamValue13, synthParamValue14, synthParamValue15,
+                synthParamValue16, synthParamValue17, synthParamValue18, synthParamValue19,
+                synthParamValue20, synthParamValue21, synthParamValue22, synthParamValue23,
+                synthParamValue24, synthParamValue25
             };
             synthParameters[index].paramValue = paramValues[index];
         }
