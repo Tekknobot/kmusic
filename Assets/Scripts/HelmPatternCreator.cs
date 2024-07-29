@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,7 +14,10 @@ public class PatternCreator : MonoBehaviour
     private List<HelmSequencer> targetSequencers = new List<HelmSequencer>(); // List to hold created sequencers
     private bool patternsCreated = false; // Flag to check if patterns have been created
     private bool isPlaying = false;       // Flag to check if patterns are currently playing
-    private Coroutine playCoroutine;      // Coroutine for sequential playback
+    private int currentSequencerIndex = 0; // Index of the current sequencer playing
+    private float[] sequencerStartTimes;  // Array to track start times of each sequencer
+    private Dictionary<int, List<AudioHelm.Note>> sequencerNotes = new Dictionary<int, List<AudioHelm.Note>>();
+
 
     void Start()
     {
@@ -39,23 +41,80 @@ public class PatternCreator : MonoBehaviour
         }
     }
 
+    void Update()
+    {
+        if (isPlaying && patternsCreated && targetSequencers.Count > 0)
+        {
+            HelmSequencer currentSequencer = targetSequencers[currentSequencerIndex];
+
+            // Calculate the elapsed time since the sequencer started
+            float elapsedTime = Time.time - sequencerStartTimes[currentSequencerIndex];
+            float cycleLength = GetCycleLengthInSeconds(currentSequencer);
+
+            // Check if the current sequencer has finished playing its cycle
+            if (elapsedTime >= cycleLength)
+            {
+                // Stop the current sequencer and clear its notes
+                currentSequencer.Clear();
+
+                // Move to the next sequencer
+                currentSequencerIndex = (currentSequencerIndex + 1) % targetSequencers.Count;
+
+                // Clear notes from all other sequencers
+                foreach (var sequencer in targetSequencers)
+                {
+                    if (sequencer != targetSequencers[currentSequencerIndex])
+                    {
+                        sequencer.Clear();
+                    }
+                }
+
+                // Add notes to the next sequencer and start it
+                HelmSequencer nextSequencer = targetSequencers[currentSequencerIndex];
+
+                // Reapply notes from the saved notes for the next sequencer
+                if (sequencerNotes.TryGetValue(currentSequencerIndex, out List<AudioHelm.Note> notes))
+                {
+                    foreach (AudioHelm.Note note in notes)
+                    {
+                        nextSequencer.AddNote(note.note, note.start, note.end, note.velocity);
+                    }
+                }
+
+                // Start the next sequencer
+                nextSequencer.StartOnNextCycle();
+
+                // Update the start time for the next sequencer
+                sequencerStartTimes[currentSequencerIndex] = Time.time;
+            }
+        }
+    }
+
     void CreateAndTransferPattern()
     {
         // Instantiate a new sequencer from the prefab
         GameObject newSequencerObj = Instantiate(sequencerPrefab, transform);
         HelmSequencer newSequencer = newSequencerObj.GetComponent<HelmSequencer>();
 
-        // Copy the notes from the source sequencer to the new sequencer
+        // Store notes for the new sequencer
+        List<AudioHelm.Note> notes = new List<AudioHelm.Note>();
         foreach (AudioHelm.Note note in sourceSequencer.GetAllNotes())
         {
             newSequencer.AddNote(note.note, note.start, note.end, note.velocity);
+            notes.Add(note);
         }
+
+        // Save the notes for this sequencer
+        sequencerNotes[targetSequencers.Count] = notes;
 
         // Copy other settings from the source sequencer if necessary
         CopySequencerSettings(sourceSequencer, newSequencer);
 
         // Add the new sequencer to the list
         targetSequencers.Add(newSequencer);
+
+        // Initialize the start times array
+        sequencerStartTimes = new float[targetSequencers.Count];
 
         // Set the flag to indicate patterns have been created
         patternsCreated = true;
@@ -66,7 +125,6 @@ public class PatternCreator : MonoBehaviour
         // Copy any relevant settings from source to target
         target.length = source.length;
         target.division = source.division;
-        target.loop = false; // Ensure individual sequencers do not loop
     }
 
     void TogglePlayPatterns()
@@ -101,67 +159,53 @@ public class PatternCreator : MonoBehaviour
         // Unpause the clock
         clock.pause = false;
 
-        // Set the first target sequencer to loop initially
-        if (targetSequencers.Count > 0)
+        // Clear notes from all sequencers
+        foreach (var sequencer in targetSequencers)
         {
-            targetSequencers[0].loop = true;
+            sequencer.AllNotesOff();
         }
 
-        // Start the coroutine for sequential playback
-        playCoroutine = StartCoroutine(PlaySequentialPatterns());
+        // Add notes to the first sequencer and start it
+        if (targetSequencers.Count > 0)
+        {
+            HelmSequencer firstSequencer = targetSequencers[0];
+
+            // Add notes from the saved notes for the first sequencer
+            if (sequencerNotes.TryGetValue(0, out List<AudioHelm.Note> notes))
+            {
+                foreach (AudioHelm.Note note in notes)
+                {
+                    firstSequencer.AddNote(note.note, note.start, note.end, note.velocity);
+                }
+            }
+
+            // Start the first sequencer
+            firstSequencer.StartOnNextCycle();
+
+            // Initialize start time for the first sequencer
+            sequencerStartTimes[0] = Time.time;
+        }
     }
-
-
 
     void StopCreatedPatterns()
     {
-        // Stop the playback coroutine
-        if (playCoroutine != null)
-        {
-            StopCoroutine(playCoroutine);
-        }
-
-        // Pause the clock to stop all sequencers
-        clock.pause = true;
-
-        // Reset the position of all target sequencers
+        // Stop playback of all sequencers and turn off notes
         foreach (HelmSequencer sequencer in targetSequencers)
         {
             sequencer.AllNotesOff();
         }
 
+        // Pause the clock
+        clock.pause = true;
+
         // Optionally, you can reset the flag to indicate patterns are not playing
         patternsCreated = false;
 
+        // Optionally set the source sequencer to loop again if needed
         sourceSequencer.loop = true;
-    }
 
-    IEnumerator PlaySequentialPatterns()
-    {
-        bool firstSequencerPlayed = false;
-        
-        while (true)
-        {
-            foreach (HelmSequencer sequencer in targetSequencers)
-            {
-                if (!firstSequencerPlayed && sequencer == targetSequencers[0])
-                {
-                    // Set the loop to false after the first cycle
-                    sequencer.StartOnNextCycle();
-                    yield return new WaitForSeconds(GetCycleLengthInSeconds(sequencer));
-                    sequencer.loop = false;
-                    sequencer.AllNotesOff();
-                    firstSequencerPlayed = true;
-                }
-                else
-                {
-                    // Start subsequent sequencers
-                    sequencer.StartOnNextCycle();
-                    yield return new WaitForSeconds(GetCycleLengthInSeconds(sequencer));
-                    sequencer.AllNotesOff();
-                }
-            }
-        }
+        // Reset the current sequencer index
+        currentSequencerIndex = 0;
     }
 
     float GetCycleLengthInSeconds(HelmSequencer sequencer)
