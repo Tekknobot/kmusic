@@ -40,7 +40,9 @@ namespace AudioHelm
                         synthParamValue28 = 0.0f, synthParamValue29 = 0.0f, synthParamValue30 = 0.0f, synthParamValue31 = 0.0f,     
                         synthParamValue32 = 0.0f, synthParamValue33 = 0.0f, synthParamValue34 = 0.0f, synthParamValue35 = 0.0f,
                         synthParamValue36 = 0.0f, synthParamValue37 = 0.0f, synthParamValue38 = 0.0f, synthParamValue39 = 0.0f,
-                        synthParamValue40 = 0.0f, synthParamValue41 = 0.0f, synthParamValue42 = 0.0f, synthParamValue43 = 0.0f;                                                 
+                        synthParamValue40 = 0.0f, synthParamValue41 = 0.0f, synthParamValue42 = 0.0f, synthParamValue43 = 0.0f,                                                 
+                        synthParamValue44 = 0.0f, synthParamValue45 = 0.0f, synthParamValue46 = 0.0f, synthParamValue47 = 0.0f,
+                        synthParamValue48 = 0.0f, synthParamValue49 = 0.0f, synthParamValue50 = 0.0f;
 
         /// <summary>
         /// List of current parameters you can view, change and animate in the Inspector view.
@@ -151,7 +153,26 @@ namespace AudioHelm
                 case 28: return synthParamValue28; 
                 case 29: return synthParamValue29; 
                 case 30: return synthParamValue30;   
-                case 31: return synthParamValue31;                                                                                                                                                                     
+                case 31: return synthParamValue31;    
+                case 32: return synthParamValue32;
+                case 33: return synthParamValue33;
+                case 34: return synthParamValue34;
+                case 35: return synthParamValue35;
+                case 36: return synthParamValue36;    
+                case 37: return synthParamValue37; 
+                case 38: return synthParamValue38; 
+                case 39: return synthParamValue39; 
+                case 40: return synthParamValue40; 
+                case 41: return synthParamValue41; 
+                case 42: return synthParamValue42; 
+                case 43: return synthParamValue43;   
+                case 44: return synthParamValue44;       
+                case 45: return synthParamValue45; 
+                case 46: return synthParamValue46; 
+                case 47: return synthParamValue47; 
+                case 48: return synthParamValue48; 
+                case 49: return synthParamValue49;   
+                case 50: return synthParamValue50;                                                                                                                                                                                  
                 default: return 0.0f;
             }
         }
@@ -200,7 +221,26 @@ namespace AudioHelm
                 case 28: synthParamValue28 = newValue; break;
                 case 29: synthParamValue29 = newValue; break;   
                 case 30: synthParamValue30 = newValue; break; 
-                case 31: synthParamValue31 = newValue; break;                         
+                case 31: synthParamValue31 = newValue; break;      
+                case 32: synthParamValue32 = newValue; break;    
+                case 33: synthParamValue33 = newValue; break;
+                case 34: synthParamValue34 = newValue; break;
+                case 35: synthParamValue35 = newValue; break;
+                case 36: synthParamValue36 = newValue; break;   
+                case 37: synthParamValue37 = newValue; break; 
+                case 38: synthParamValue38 = newValue; break;  
+                case 39: synthParamValue39 = newValue; break;    
+                case 40: synthParamValue40 = newValue; break;
+                case 41: synthParamValue41 = newValue; break;
+                case 42: synthParamValue42 = newValue; break;
+                case 43: synthParamValue43 = newValue; break;   
+                case 44: synthParamValue44 = newValue; break; 
+                case 45: synthParamValue45 = newValue; break; 
+                case 46: synthParamValue41 = newValue; break;
+                case 47: synthParamValue42 = newValue; break;
+                case 48: synthParamValue43 = newValue; break;   
+                case 49: synthParamValue44 = newValue; break; 
+                case 50: synthParamValue45 = newValue; break;                                                                  
             }
         }
 
@@ -221,7 +261,9 @@ namespace AudioHelm
                 synthParamValue28, synthParamValue29, synthParamValue30, synthParamValue31,
                 synthParamValue32, synthParamValue33, synthParamValue34, synthParamValue35,
                 synthParamValue36, synthParamValue37, synthParamValue38, synthParamValue39, 
-                synthParamValue40, synthParamValue41, synthParamValue41, synthParamValue43                    
+                synthParamValue40, synthParamValue41, synthParamValue41, synthParamValue43, 
+                synthParamValue44, synthParamValue45, synthParamValue46, synthParamValue47, 
+                synthParamValue48, synthParamValue49, synthParamValue50                                   
             };
             for (int i = 0; i < synthParameters.Count; ++i)
                 synthParameters[i].paramValue = paramValues[i];
@@ -247,7 +289,9 @@ namespace AudioHelm
                 synthParamValue28, synthParamValue29, synthParamValue30, synthParamValue31,
                 synthParamValue32, synthParamValue33, synthParamValue34, synthParamValue35,
                 synthParamValue36, synthParamValue37, synthParamValue38, synthParamValue39, 
-                synthParamValue40, synthParamValue41, synthParamValue41, synthParamValue43                
+                synthParamValue40, synthParamValue41, synthParamValue42, synthParamValue43,
+                synthParamValue44, synthParamValue45, synthParamValue46, synthParamValue47, 
+                synthParamValue48, synthParamValue49, synthParamValue50                                
             };
             synthParameters[index].paramValue = paramValues[index];
         }
