@@ -21,11 +21,13 @@ public class Pause : MonoBehaviour
             helmClock.pause = false;
 
             // Initialize the Toggle's state based on the clock's paused state
-            pauseToggle.isOn = !helmClock.pause;
+            pauseToggle.isOn = helmClock.pause;
 
             // Add listener for toggle value changes
             pauseToggle.onValueChanged.AddListener(OnToggleValueChanged);
         }
+
+        pauseToggle.isOn = true;
     }
 
     // Called when the Toggle value changes
@@ -35,6 +37,12 @@ public class Pause : MonoBehaviour
         {
             // Reverse the logic for setting pause state
             helmClock.pause = !isOn;
+
+            // Reset the clock if the toggle is turned on
+            if (isOn)
+            {
+                helmClock.Reset();
+            }
         }
     }
 }
