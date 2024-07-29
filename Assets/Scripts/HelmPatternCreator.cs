@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using AudioHelm;
+using System.Collections;
 
 public class PatternCreator : MonoBehaviour
 {
@@ -15,9 +16,9 @@ public class PatternCreator : MonoBehaviour
     private bool patternsCreated = false; // Flag to check if patterns have been created
     private bool isPlaying = false;       // Flag to check if patterns are currently playing
     private int currentSequencerIndex = 0; // Index of the current sequencer playing
-    private float[] sequencerStartTimes;  // Array to track start times of each sequencer
+    private float[] sequencerStartBeats;  // Array to track start beats of each sequencer
     private Dictionary<int, List<AudioHelm.Note>> sequencerNotes = new Dictionary<int, List<AudioHelm.Note>>();
-
+    private int patternCounter = 1; // Counter for naming patterns
 
     void Start()
     {
@@ -46,28 +47,17 @@ public class PatternCreator : MonoBehaviour
         if (isPlaying && patternsCreated && targetSequencers.Count > 0)
         {
             HelmSequencer currentSequencer = targetSequencers[currentSequencerIndex];
+            float currentBeat = (float)AudioHelmClock.GetGlobalBeatTime(); // Cast to float
+            float cycleLengthBeats = GetCycleLengthInBeats(currentSequencer);
 
-            // Calculate the elapsed time since the sequencer started
-            float elapsedTime = Time.time - sequencerStartTimes[currentSequencerIndex];
-            float cycleLength = GetCycleLengthInSeconds(currentSequencer);
+            // Calculate the elapsed beats since the sequencer started
+            float elapsedBeats = currentBeat - sequencerStartBeats[currentSequencerIndex];
 
             // Check if the current sequencer has finished playing its cycle
-            if (elapsedTime >= cycleLength)
+            if (elapsedBeats >= cycleLengthBeats)
             {
-                // Stop the current sequencer and clear its notes
-                currentSequencer.Clear();
-
                 // Move to the next sequencer
                 currentSequencerIndex = (currentSequencerIndex + 1) % targetSequencers.Count;
-
-                // Clear notes from all other sequencers
-                foreach (var sequencer in targetSequencers)
-                {
-                    if (sequencer != targetSequencers[currentSequencerIndex])
-                    {
-                        sequencer.Clear();
-                    }
-                }
 
                 // Add notes to the next sequencer and start it
                 HelmSequencer nextSequencer = targetSequencers[currentSequencerIndex];
@@ -81,11 +71,14 @@ public class PatternCreator : MonoBehaviour
                     }
                 }
 
-                // Start the next sequencer
-                nextSequencer.StartOnNextCycle();
+                // Ensure correct timing for the next sequencer
+                sequencerStartBeats[currentSequencerIndex] = currentBeat;
 
-                // Update the start time for the next sequencer
-                sequencerStartTimes[currentSequencerIndex] = Time.time;
+                // Start the next sequencer in the middle of the current sequencer's cycle
+                StartNextSequencerInMiddle(nextSequencer);
+
+                // Clear the current sequencer's notes after the cycle has ended
+                StartCoroutine(ClearSequencerAfterCycle(currentSequencer, cycleLengthBeats));
             }
         }
     }
@@ -95,6 +88,9 @@ public class PatternCreator : MonoBehaviour
         // Instantiate a new sequencer from the prefab
         GameObject newSequencerObj = Instantiate(sequencerPrefab, transform);
         HelmSequencer newSequencer = newSequencerObj.GetComponent<HelmSequencer>();
+
+        // Name the new sequencer
+        newSequencer.name = "Helm Pattern " + patternCounter;
 
         // Store notes for the new sequencer
         List<AudioHelm.Note> notes = new List<AudioHelm.Note>();
@@ -113,8 +109,11 @@ public class PatternCreator : MonoBehaviour
         // Add the new sequencer to the list
         targetSequencers.Add(newSequencer);
 
-        // Initialize the start times array
-        sequencerStartTimes = new float[targetSequencers.Count];
+        // Initialize the start beats array
+        sequencerStartBeats = new float[targetSequencers.Count];
+
+        // Increment the pattern counter
+        patternCounter++;
 
         // Set the flag to indicate patterns have been created
         patternsCreated = true;
@@ -155,14 +154,13 @@ public class PatternCreator : MonoBehaviour
 
         // Reset the clock timer
         clock.Reset();
-
-        // Unpause the clock
-        clock.pause = false;
+        clock.pause = false; // Ensure the clock is not paused
 
         // Clear notes from all sequencers
         foreach (var sequencer in targetSequencers)
         {
             sequencer.AllNotesOff();
+            sequencer.Clear();
         }
 
         // Add notes to the first sequencer and start it
@@ -179,11 +177,11 @@ public class PatternCreator : MonoBehaviour
                 }
             }
 
+            // Initialize start time for the first sequencer
+            sequencerStartBeats[0] = (float)AudioHelmClock.GetGlobalBeatTime(); // Cast to float
+
             // Start the first sequencer
             firstSequencer.StartOnNextCycle();
-
-            // Initialize start time for the first sequencer
-            sequencerStartTimes[0] = Time.time;
         }
     }
 
@@ -193,6 +191,7 @@ public class PatternCreator : MonoBehaviour
         foreach (HelmSequencer sequencer in targetSequencers)
         {
             sequencer.AllNotesOff();
+            sequencer.Clear();
         }
 
         // Pause the clock
@@ -208,11 +207,44 @@ public class PatternCreator : MonoBehaviour
         currentSequencerIndex = 0;
     }
 
-    float GetCycleLengthInSeconds(HelmSequencer sequencer)
+    void StartNextSequencerInMiddle(HelmSequencer nextSequencer)
     {
-        // Convert the sequencer division to a float value representing beats per minute
+        // Calculate the remaining beats in the current cycle
+        float currentBeat = (float)AudioHelmClock.GetGlobalBeatTime(); // Cast to float
+        float elapsedBeats = currentBeat - sequencerStartBeats[currentSequencerIndex];
+        float cycleLengthBeats = GetCycleLengthInBeats(targetSequencers[currentSequencerIndex]);
+        float remainingBeats = cycleLengthBeats - elapsedBeats;
+
+        // Adjust the start beats for the next sequencer
+        sequencerStartBeats[currentSequencerIndex] = currentBeat - (cycleLengthBeats / 2.0f);
+
+        // Start the next sequencer on its next cycle, adjusting for the half-cycle offset
+        nextSequencer.StartOnNextCycle();
+    }
+
+    IEnumerator ClearSequencerAfterCycle(HelmSequencer sequencer, float cycleLengthBeats)
+    {
+        // Wait until the cycle has fully completed
+        float startBeat = (float)AudioHelmClock.GetGlobalBeatTime(); // Cast to float
+        float waitForBeats = cycleLengthBeats;
+        while (waitForBeats > 0)
+        {
+            float currentBeat = (float)AudioHelmClock.GetGlobalBeatTime(); // Cast to float
+            yield return null; // Wait for the next frame
+            float newBeat = (float)AudioHelmClock.GetGlobalBeatTime(); // Cast to float
+            waitForBeats -= (newBeat - currentBeat);
+        }
+
+        // Clear the sequencer's notes after the cycle ends
+        sequencer.AllNotesOff();
+        sequencer.Clear();
+    }
+
+    float GetCycleLengthInBeats(HelmSequencer sequencer)
+    {
+        // Convert the sequencer length and division to beats
         float divisionMultiplier = DivisionToFloat(sequencer.division);
-        return sequencer.length * 60.0f / (clock.bpm * divisionMultiplier);
+        return sequencer.length / divisionMultiplier;
     }
 
     float DivisionToFloat(HelmSequencer.Division division)
