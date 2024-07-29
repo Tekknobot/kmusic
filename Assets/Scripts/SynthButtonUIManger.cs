@@ -15,7 +15,7 @@ public class SynthButtonUIManager : MonoBehaviour
     void Start()
     {
         // Ensure we have the correct number of buttons and objects
-        if (objectsToMove.Length != 4 || moveButtons.Length != 4)
+        if (objectsToMove.Length != 6 || moveButtons.Length != 6)
         {
             Debug.LogError("You need exactly 4 objects and 4 buttons assigned.");
             return;
@@ -39,6 +39,8 @@ public class SynthButtonUIManager : MonoBehaviour
         moveButtons[1].onClick.AddListener(() => MoveObject(1));
         moveButtons[2].onClick.AddListener(() => MoveObject(2));
         moveButtons[3].onClick.AddListener(() => MoveObject(3));
+        moveButtons[4].onClick.AddListener(() => MoveObject(4));
+        moveButtons[5].onClick.AddListener(() => MoveObject(5));
     }
 
     // Method to move the clicked object and reset others
