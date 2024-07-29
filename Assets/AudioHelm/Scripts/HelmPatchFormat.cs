@@ -24,8 +24,8 @@ namespace AudioHelm
     [Serializable]
     public class HelmPatchSettings
     {
-        public const int kMaxModulations = 26;
-        public const int kMaxCharacters = 25;
+        public const int kMaxModulations = 32;
+        public const int kMaxCharacters = 31;
 
         static readonly string[] kModulationSources =
         {

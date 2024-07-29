@@ -36,7 +36,8 @@ namespace AudioHelm
                         synthParamValue12 = 0.0f, synthParamValue13 = 0.0f, synthParamValue14 = 0.0f, synthParamValue15 = 0.0f,
                         synthParamValue16 = 0.0f, synthParamValue17 = 0.0f, synthParamValue18 = 0.0f, synthParamValue19 = 0.0f,
                         synthParamValue20 = 0.0f, synthParamValue21 = 0.0f, synthParamValue22 = 0.0f, synthParamValue23 = 0.0f,
-                        synthParamValue24 = 0.0f, synthParamValue25 = 0.0f;                        
+                        synthParamValue24 = 0.0f, synthParamValue25 = 0.0f, synthParamValue26 = 0.0f, synthParamValue27 = 0.0f,
+                        synthParamValue28 = 0.0f, synthParamValue29 = 0.0f, synthParamValue30 = 0.0f, synthParamValue31 = 0.0f;                        
 
         /// <summary>
         /// List of current parameters you can view, change and animate in the Inspector view.
@@ -141,7 +142,13 @@ namespace AudioHelm
                 case 22: return synthParamValue22; 
                 case 23: return synthParamValue23; 
                 case 24: return synthParamValue24;   
-                case 25: return synthParamValue25;                                                                                                                                                           
+                case 25: return synthParamValue25;       
+                case 26: return synthParamValue26; 
+                case 27: return synthParamValue27; 
+                case 28: return synthParamValue28; 
+                case 29: return synthParamValue29; 
+                case 30: return synthParamValue30;   
+                case 31: return synthParamValue31;                                                                                                                                                                     
                 default: return 0.0f;
             }
         }
@@ -184,7 +191,13 @@ namespace AudioHelm
                 case 22: synthParamValue22 = newValue; break;
                 case 23: synthParamValue23 = newValue; break;   
                 case 24: synthParamValue24 = newValue; break; 
-                case 25: synthParamValue25 = newValue; break;             
+                case 25: synthParamValue25 = newValue; break;    
+                case 26: synthParamValue26 = newValue; break;
+                case 27: synthParamValue27 = newValue; break;
+                case 28: synthParamValue28 = newValue; break;
+                case 29: synthParamValue29 = newValue; break;   
+                case 30: synthParamValue30 = newValue; break; 
+                case 31: synthParamValue31 = newValue; break;                         
             }
         }
 
