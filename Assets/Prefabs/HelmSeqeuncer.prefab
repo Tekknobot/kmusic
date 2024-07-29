@@ -1,0 +1,911 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &9130518919848579439
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1181851387552263071}
+  - component: {fileID: 780837114624715435}
+  - component: {fileID: 6510429297449938484}
+  - component: {fileID: 8329820468214787007}
+  - component: {fileID: 3887056398153956535}
+  - component: {fileID: 2449331208316368850}
+  m_Layer: 0
+  m_Name: HelmSeqeuncer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1181851387552263071
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9130518919848579439}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.6545334, y: -3.8929567, z: 2407.5857}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!82 &780837114624715435
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9130518919848579439}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 5533100680317944387, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &6510429297449938484
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9130518919848579439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 981c2862dc2a4474b9d748a52426fab6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spatialize: 0
+  spatializeWithPlugin: 0
+  synthesizerMixerGroup: {fileID: 0}
+  spatializerMixerGroup: {fileID: 0}
+--- !u!114 &8329820468214787007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9130518919848579439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03c2100a494de423e9975762c775cfac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noteOnEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  noteOffEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  beatEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  length: 16
+  currentIndex: -1
+  loop: 1
+  allNotes:
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  - notes: []
+  scrollPosition: {x: 0, y: 893}
+  autoScroll: 0
+  division: 1
+  zoom: 0.3
+  channel: 0
+--- !u!114 &3887056398153956535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9130518919848579439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e4430ff3452e4a85ac2530e457beb05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  channel: 0
+  synthParamValue0: 0
+  synthParamValue1: 0
+  synthParamValue2: -128
+  synthParamValue3: 0
+  synthParamValue4: 0
+  synthParamValue5: -12
+  synthParamValue6: 0
+  synthParamValue7: 0
+  synthParamValue8: 0
+  synthParamValue9: 0
+  synthParamValue10: 0
+  synthParamValue11: 0
+  synthParamValue12: 0
+  synthParamValue13: 0
+  synthParamValue14: 0
+  synthParamValue15: 0
+  synthParamValue16: 0
+  synthParamValue17: 0
+  synthParamValue18: 0
+  synthParamValue19: 0
+  synthParamValue20: -30
+  synthParamValue21: 0
+  synthParamValue22: 0
+  synthParamValue23: 0
+  synthParamValue24: 0
+  synthParamValue25: 0.8
+  synthParamValue26: 0
+  synthParamValue27: 0
+  synthParamValue28: 0
+  synthParamValue29: 0
+  synthParamValue30: 0
+  synthParamValue31: 0
+  synthParamValue32: -48
+  synthParamValue33: -1
+  synthParamValue34: 0
+  synthParamValue35: 1
+  synthParamValue36: 0
+  synthParamValue37: 0
+  synthParamValue38: -48
+  synthParamValue39: -1
+  synthParamValue40: 0
+  synthParamValue41: 0
+  synthParamValue42: 0
+  synthParamValue43: 0
+  synthParamValue44: 0
+  synthParamValue45: -1
+  synthParamValue46: 0
+  synthParamValue47: 1
+  synthParamValue48: 0
+  synthParamValue49: 0
+  synthParamValue50: 0
+  synthParameters:
+  - parameter_: 25
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 26
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 27
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -128
+    maximumRange: 128
+    paramValue_: -128
+  - parameter_: 28
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 29
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 31
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -12
+    maximumRange: 20
+    paramValue_: -12
+  - parameter_: 32
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 2
+    paramValue_: 0
+  - parameter_: 34
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 2
+    paramValue_: 0
+  - parameter_: 35
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 2
+    paramValue_: 0
+  - parameter_: 36
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 1
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 2
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 3
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 4
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 42
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 43
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 45
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 44
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 21
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 22
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 3
+    paramValue_: 0
+  - parameter_: 23
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -30
+    maximumRange: 30
+    paramValue_: -30
+  - parameter_: 24
+    scaleType: 1
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 89
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 86
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 87
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 88
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0.8
+    maximumRange: 1
+    paramValue_: 0.8
+  - parameter_: 18
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 15
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 16
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -1
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 17
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -2
+    maximumRange: 5
+    paramValue_: 0
+  - parameter_: 19
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 3
+    paramValue_: 0
+  - parameter_: 20
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 11
+    paramValue_: 0
+  - parameter_: 60
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -48
+    maximumRange: 48
+    paramValue_: -48
+  - parameter_: 61
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -1
+    maximumRange: 1
+    paramValue_: -1
+  - parameter_: 62
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 100
+    paramValue_: 0
+  - parameter_: 63
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 1
+    maximumRange: 15
+    paramValue_: 1
+  - parameter_: 64
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 65
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 10
+    paramValue_: 0
+  - parameter_: 66
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -48
+    maximumRange: 48
+    paramValue_: -48
+  - parameter_: 67
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -1
+    maximumRange: 1
+    paramValue_: -1
+  - parameter_: 68
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 100
+    paramValue_: 0
+  - parameter_: 69
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 1
+    maximumRange: 15
+    paramValue_: 0
+  - parameter_: 70
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 71
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 10
+    paramValue_: 0
+  - parameter_: 8
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 5
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: -1
+    maximumRange: 4
+    paramValue_: -1
+  - parameter_: 6
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 1
+    paramValue_: 0
+  - parameter_: 7
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 1
+    maximumRange: 4
+    paramValue_: 1
+  - parameter_: 9
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 4
+    paramValue_: 0
+  - parameter_: 10
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 3
+    paramValue_: 0
+  - parameter_: 11
+    scaleType: 0
+    parent: {fileID: 3887056398153956535}
+    minimumRange: 0
+    maximumRange: 11
+    paramValue_: 0
+--- !u!114 &2449331208316368850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9130518919848579439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53f927a343b51b342a26798d2a07920f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  helmController: {fileID: 3887056398153956535}
+  patchNameLabel: {fileID: 0}
+  nextButton: {fileID: 0}
+  prevButton: {fileID: 0}
+  patches:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  parameterSliders:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  helmParams: 190000001a0000001b0000001c0000001d0000001f00000020000000220000002300000024000000010000000200000003000000040000002a0000002b0000002d0000002c0000001500000016000000170000001800000059000000560000005700000058000000120000000f000000100000001100000013000000140000003c0000003d0000003e0000003f000000400000004100000042000000430000004400000045000000460000004700000008000000050000000600000007000000090000000a0000000b000000
