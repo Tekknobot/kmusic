@@ -279,14 +279,6 @@ public class KeyManager : MonoBehaviour
             return;
         }
 
-        // Get the HelmSequencer component
-        HelmSequencer helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
-        if (helmSequencer == null)
-        {
-            Debug.LogError("HelmSequencer component not found on Helm.");
-            return;
-        }
-
         // Iterate through all sprite and step pairs in tileData
         foreach (var entry in tileData)
         {
@@ -311,6 +303,7 @@ public class KeyManager : MonoBehaviour
 
                             // Apply note to HelmSequencer
                             int midiNote = GetMidiNoteForSprite(spriteName);
+                            HelmSequencer helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
                             helmSequencer.AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
                             Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
                         }
@@ -351,7 +344,7 @@ public class KeyManager : MonoBehaviour
     }
 
     // Helper method to get a sprite by its name
-    private Sprite GetSpriteByName(string spriteName)
+    public Sprite GetSpriteByName(string spriteName)
     {
         if (sprites == null || sprites.Length == 0)
         {
@@ -384,6 +377,42 @@ public class KeyManager : MonoBehaviour
         }
         return 32;
     }    
+
+    public Sprite GetSpriteByStep(int step)
+    {
+        // Ensure we have tile data populated
+        if (tileData == null || tileData.Count == 0)
+        {
+            Debug.LogError("Tile data is not initialized or empty.");
+            return null;
+        }
+
+        // Iterate through all sprite and step pairs in tileData
+        foreach (var entry in tileData)
+        {
+            string spriteName = entry.Key;
+            List<int> steps = entry.Value;
+
+            // Check if the step is present in the list of steps for the current sprite
+            if (steps.Contains(step))
+            {
+                // Get the sprite by name
+                Sprite sprite = GetSpriteByName(spriteName);
+                if (sprite != null)
+                {
+                    return sprite;
+                }
+                else
+                {
+                    Debug.LogError($"Sprite with name {spriteName} not found.");
+                }
+            }
+        }
+
+        Debug.LogError($"No sprite found for step {step}.");
+        return null;
+    }
+
 }
 
 [System.Serializable]

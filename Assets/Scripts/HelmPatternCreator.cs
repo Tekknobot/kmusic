@@ -63,6 +63,14 @@ public class HelmPatternCreator : MonoBehaviour
         // Prepare and start the next sequencer
         PrepareSequencerForNextCycle(nextSequencer);
 
+        // Update the BoardManager with the notes of the queued-up sequencer
+        if (boardManager != null)
+        {
+            List<AudioHelm.Note> notes = new List<AudioHelm.Note>(nextSequencer.GetAllNotes());
+            boardManager.ResetBoard();
+            boardManager.UpdateBoardWithNotes(notes); // Update the board with the new notes
+        }
+
         if (boardManager != null)
         {
             // Highlight the cell corresponding to the next sequencer

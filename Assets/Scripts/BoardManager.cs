@@ -274,4 +274,39 @@ public class BoardManager : MonoBehaviour
             Debug.LogError("SpriteRenderer component not found on cell.");
         }
     }
+
+    // Method to update the board with the given notes
+    public void UpdateBoardWithNotes(List<AudioHelm.Note> notes)
+    {
+        // Iterate through each note and update the corresponding cell's sprite
+        foreach (var note in notes)
+        {
+            if (stepToSpriteMap.TryGetValue(note.start, out Sprite sprite))
+            {
+                Debug.Log($"Updating step {note.start} with sprite {sprite.name}");
+
+                // Iterate through all cells on the board
+                for (int x = 0; x < boardCells.GetLength(0); x++)
+                {
+                    for (int y = 0; y < boardCells.GetLength(1); y++)
+                    {
+                        Cell cell = boardCells[x, y];
+                        if (cell != null && cell.step == note.start)
+                        {
+                            sprite = KeyManager.Instance.GetSpriteByStep((int)note.start);
+                            Debug.Log($"Setting sprite for cell at position ({x}, {y})");
+                            cell.SetSprite(sprite);
+                            break; // Exit the inner loop since we found the matching cell
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"No sprite found for step {note.start} in stepToSpriteMap.");
+            }
+        }
+    }
+
+
 }
