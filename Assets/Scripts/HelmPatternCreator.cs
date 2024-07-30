@@ -11,12 +11,13 @@ public class PatternCreator : MonoBehaviour
     public Button createPatternButton;    // Button to create and transfer patterns
     public Button playPatternsButton;     // Button to play the created patterns
     public AudioHelmClock clock;
+
     private List<HelmSequencer> targetSequencers = new List<HelmSequencer>(); // List to hold created sequencers
     private bool patternsCreated = false; // Flag to check if patterns have been created
     private bool isPlaying = false;       // Flag to check if patterns are currently playing
 
     private int currentSequencerIndex = 0; // Index of the currently playing sequencer
-    private float beatsPerBar = 10f; // Number of beats in one bar
+    private float beatsPerBar = 1f; // Number of beats in one bar
     private double nextSequencerSwitchTime = 0f; // Time to switch to the next sequencer in global beat time
 
     void Start()
@@ -44,10 +45,13 @@ public class PatternCreator : MonoBehaviour
     {
         if (isPlaying)
         {
+            double globalBeatTime = AudioHelmClock.GetGlobalBeatTime();
+            Debug.Log($"Global Beat Time: {globalBeatTime}");
+
             // Check if it's time to switch to the next sequencer
-            if (AudioHelmClock.GetGlobalBeatTime() >= nextSequencerSwitchTime)
+            if (globalBeatTime >= nextSequencerSwitchTime)
             {
-                PlayNextSequencer();
+                StartCoroutine(SmoothTransitionToNextSequencer());
             }
         }
     }
@@ -76,10 +80,7 @@ public class PatternCreator : MonoBehaviour
         newSequencer.loop = false;
 
         // Transfer notes from the source sequencer to the new sequencer
-        foreach (AudioHelm.Note note in sourceSequencer.GetAllNotes())
-        {
-            newSequencer.AddNote(note.note, note.start, note.end, note.velocity);
-        }
+        TransferNotes(sourceSequencer, newSequencer);
 
         // Copy other settings from the source sequencer if necessary
         CopySequencerSettings(sourceSequencer, newSequencer);
@@ -91,6 +92,19 @@ public class PatternCreator : MonoBehaviour
         patternsCreated = true;
 
         Debug.Log("Pattern created and transferred.");
+    }
+
+    void TransferNotes(HelmSequencer source, HelmSequencer target)
+    {
+        // Clear existing notes in the target sequencer
+        target.Clear();
+
+        // Transfer notes from the source sequencer to the target sequencer
+        foreach (AudioHelm.Note note in source.GetAllNotes())
+        {
+            target.AddNote(note.note, note.start, note.end, note.velocity);
+            Debug.Log($"Transferred note {note.note} to new sequencer.");
+        }
     }
 
     void CopySequencerSettings(HelmSequencer source, HelmSequencer target)
@@ -111,62 +125,45 @@ public class PatternCreator : MonoBehaviour
         isPlaying = true;
         currentSequencerIndex = 0;
 
-        clock.Reset();
-        clock.pause = false; // Ensure the clock is not paused
+        // Ensure the clock is not paused
+        clock.pause = false;
         sourceSequencer.loop = false;
 
-        PlayNextSequencer(); // Start the first sequencer immediately
+        // Immediately start playing the first sequencer
+        StartCoroutine(SmoothTransitionToNextSequencer());
 
         Debug.Log("Started playing patterns.");
     }
 
-    void PlayNextSequencer()
+    IEnumerator SmoothTransitionToNextSequencer()
     {
-        if (targetSequencers.Count == 0)
+        if (targetSequencers.Count > 0)
         {
-            Debug.LogError("No sequencers to play.");
-            return;
+            HelmSequencer currentSequencer = targetSequencers[currentSequencerIndex];
+            currentSequencer.loop = false;
+            currentSequencer.AllNotesOff();
         }
 
-        // Stop all sequencers except the current one
-        foreach (var sequencer in targetSequencers)
-        {
-            if (targetSequencers.IndexOf(sequencer) != currentSequencerIndex)
-            {
-                sequencer.loop = false;  // Ensure no other sequencer is looping
-                sequencer.AllNotesOff(); // Stop all notes
-                // Remove "(playing)" suffix if it was added before
-                if (sequencer.name.EndsWith(" (playing)"))
-                {
-                    sequencer.name = sequencer.name.Substring(0, sequencer.name.Length - 11);
-                }
-            }
-        }
-
-        // Start the current sequencer
-        HelmSequencer currentSequencer = targetSequencers[currentSequencerIndex];
-        currentSequencer.loop = true;
-
-        // Reset the clock of the sequencer to 0 for a fresh start
-        clock.Reset();
-
-        // Start the current sequencer
-        currentSequencer.StartOnNextCycle();
-        Debug.Log($"Started sequencer: {currentSequencer.name}");
-
-        // Rename the current sequencer to indicate it's playing
-        if (!currentSequencer.name.EndsWith(" (playing)"))
-        {
-            currentSequencer.name += " (playing)";
-        }
+        // Move to the next sequencer index
+        currentSequencerIndex = (currentSequencerIndex + 1) % targetSequencers.Count;
+        HelmSequencer nextSequencer = targetSequencers[currentSequencerIndex];
+        
+        // Ensure the next sequencer is ready to play
+        nextSequencer.loop = true;
+        nextSequencer.StartOnNextCycle();
 
         // Calculate the time for the next sequencer switch
         double bpm = clock.bpm; // Get the BPM from the AudioHelmClock
         double secondsPerBeat = 60f / bpm; // Duration of one beat in seconds
         nextSequencerSwitchTime = AudioHelmClock.GetGlobalBeatTime() + beatsPerBar * secondsPerBeat;
 
-        // Move to the next sequencer index
-        currentSequencerIndex = (currentSequencerIndex + 1) % targetSequencers.Count;
+        Debug.Log($"Switched to sequencer: {nextSequencer.name}");
+
+        // Wait for the transition period to avoid overlap
+        yield return new WaitForSeconds(0.1f);
+
+        // Ensure a smooth transition
+        yield return null;
     }
 
     void StopCreatedPatterns()
