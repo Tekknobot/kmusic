@@ -8928,7 +8928,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 0
+  m_IsOn: 1
 --- !u!1 &463833035
 GameObject:
   m_ObjectHideFlags: 0
@@ -35211,6 +35211,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1851548673}
   m_CullTransparentMesh: 1
+--- !u!83 &1855447476
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 48000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &1860993214
 GameObject:
   m_ObjectHideFlags: 0
@@ -37208,6 +37236,7 @@ MonoBehaviour:
   sequencerPrefab: {fileID: 9130518919848579439, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
   createPatternButton: {fileID: 643452366}
   playPatternsButton: {fileID: 2101984522}
+  clock: {fileID: 2020880539}
 --- !u!4 &1951593134
 Transform:
   m_ObjectHideFlags: 0
