@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro; // Make sure to include this for TextMeshPro
 using AudioHelm;
 
 public class HelmPatternCreator : MonoBehaviour
@@ -11,6 +12,7 @@ public class HelmPatternCreator : MonoBehaviour
     public Button createPatternButton;       // Button to create and transfer patterns
     public Button playPatternsButton;        // Button to start playing the created patterns
     public Button removePatternButton;       // Button to remove a pattern
+    public TextMeshProUGUI patternDisplayText; // TextMeshProUGUI to display both current playing pattern and total patterns
     public BoardManager boardManager;         // Reference to BoardManager
 
     private List<HelmSequencer> targetSequencers = new List<HelmSequencer>(); // List to hold created sequencers
@@ -50,6 +52,8 @@ public class HelmPatternCreator : MonoBehaviour
         {
             Debug.LogError("Remove Pattern Button not assigned.");
         }
+
+        UpdatePatternDisplay(); // Initialize the pattern display text
     }
 
     IEnumerator SmoothTransitionToNextSequencer()
@@ -96,6 +100,9 @@ public class HelmPatternCreator : MonoBehaviour
 
         // Set loop to true only for the currently playing sequencer
         nextSequencer.loop = true;
+
+        // Update the pattern display
+        UpdatePatternDisplay();
 
         // Wait until the loop ends
         yield return new WaitForSeconds(loopDuration);
@@ -172,6 +179,9 @@ public class HelmPatternCreator : MonoBehaviour
 
         // Set the flag to indicate patterns have been created
         patternsCreated = true;
+
+        // Update pattern display
+        UpdatePatternDisplay();
 
         Debug.Log("Pattern created and transferred.");
     }
@@ -274,20 +284,32 @@ public class HelmPatternCreator : MonoBehaviour
                 boardManager.ResetBoard();
                 if (targetSequencers.Count > 0)
                 {
-                    List<AudioHelm.Note> notes = new List<AudioHelm.Note>(targetSequencers[currentSequencerIndex].GetAllNotes());
+                    HelmSequencer remainingSequencer = targetSequencers[Mathf.Clamp(currentSequencerIndex, 0, targetSequencers.Count - 1)];
+                    List<AudioHelm.Note> notes = new List<AudioHelm.Note>(remainingSequencer.GetAllNotes());
                     boardManager.UpdateBoardWithNotes(notes);
-                    boardManager.HighlightCellOnStep(targetSequencers[currentSequencerIndex].currentIndex);
                 }
             }
 
-            // Update patternsCreated flag
-            patternsCreated = targetSequencers.Count > 0;
+            // Update pattern display
+            UpdatePatternDisplay();
 
             Debug.Log("Pattern removed.");
         }
-        else
+    }
+
+    void UpdatePatternDisplay()
+    {
+        if (patternDisplayText != null)
         {
-            Debug.LogError("Sequencer to remove is null.");
+            if (targetSequencers.Count > 0)
+            {
+                string currentPattern = isPlaying && targetSequencers.Count > 0 ? (currentSequencerIndex + 1).ToString() : "0";
+                patternDisplayText.text = $"{currentPattern}/{targetSequencers.Count}";
+            }
+            else
+            {
+                patternDisplayText.text = "0/0";
+            }
         }
     }
 
