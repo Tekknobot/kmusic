@@ -10,6 +10,7 @@ public class HelmPatternCreator : MonoBehaviour
     public GameObject sequencerPrefab;       // Prefab to instantiate new sequencers
     public Button createPatternButton;       // Button to create and transfer patterns
     public Button playPatternsButton;        // Button to start playing the created patterns
+    public Button removePatternButton;       // Button to remove a pattern
     public BoardManager boardManager;         // Reference to BoardManager
 
     private List<HelmSequencer> targetSequencers = new List<HelmSequencer>(); // List to hold created sequencers
@@ -39,6 +40,15 @@ public class HelmPatternCreator : MonoBehaviour
         else
         {
             Debug.LogError("Play Patterns Button not assigned.");
+        }
+
+        if (removePatternButton != null)
+        {
+            removePatternButton.onClick.AddListener(RemovePattern);
+        }
+        else
+        {
+            Debug.LogError("Remove Pattern Button not assigned.");
         }
     }
 
@@ -235,6 +245,50 @@ public class HelmPatternCreator : MonoBehaviour
         ResumeClock();
 
         Debug.Log("Stopped all patterns except the one currently in line to play.");
+    }
+
+    void RemovePattern()
+    {
+        if (!patternsCreated || targetSequencers.Count == 0)
+        {
+            Debug.LogWarning("No patterns created to remove.");
+            return;
+        }
+
+        // Remove the last sequencer in the list
+        int indexToRemove = targetSequencers.Count - 1;
+        HelmSequencer sequencerToRemove = targetSequencers[indexToRemove];
+
+        if (sequencerToRemove != null)
+        {
+            // Stop the sequencer if it is playing
+            StopSequencer(sequencerToRemove);
+
+            // Remove the sequencer from the list and destroy its GameObject
+            targetSequencers.RemoveAt(indexToRemove);
+            Destroy(sequencerToRemove.gameObject);
+
+            // Update BoardManager if necessary
+            if (boardManager != null)
+            {
+                boardManager.ResetBoard();
+                if (targetSequencers.Count > 0)
+                {
+                    List<AudioHelm.Note> notes = new List<AudioHelm.Note>(targetSequencers[currentSequencerIndex].GetAllNotes());
+                    boardManager.UpdateBoardWithNotes(notes);
+                    boardManager.HighlightCellOnStep(targetSequencers[currentSequencerIndex].currentIndex);
+                }
+            }
+
+            // Update patternsCreated flag
+            patternsCreated = targetSequencers.Count > 0;
+
+            Debug.Log("Pattern removed.");
+        }
+        else
+        {
+            Debug.LogError("Sequencer to remove is null.");
+        }
     }
 
     // Dummy methods for clock management
