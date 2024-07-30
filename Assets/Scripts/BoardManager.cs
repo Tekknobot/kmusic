@@ -16,6 +16,14 @@ public class BoardManager : MonoBehaviour
 
     private float stepCount;
 
+    private int highlightedCellIndex = 0; // Example placeholder for the highlighted cell index
+
+    // Method to get the current highlighted cell index
+    public int GetHighlightedCellIndex()
+    {
+        return highlightedCellIndex;
+    }
+
     private void Awake()
     {
         // Singleton pattern
@@ -235,7 +243,7 @@ public class BoardManager : MonoBehaviour
     }
 
     // Method to highlight a cell when sequencer.currentIndex matches cell step
-    private void HighlightCellOnStep(int stepIndex)
+    public void HighlightCellOnStep(int stepIndex)
     {
         // Iterate through all board cells
         for (int x = 0; x < boardCells.GetLength(0); x++)
@@ -246,6 +254,7 @@ public class BoardManager : MonoBehaviour
                 if (cell != null && cell.step == stepIndex)
                 {
                     HighlightCell(cell);
+                    highlightedCellIndex = stepIndex;
                 }
             }
         }

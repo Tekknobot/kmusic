@@ -14087,7 +14087,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: K-MUSIC
+  m_text: PUNK
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -14120,7 +14120,7 @@ MonoBehaviour:
   m_enableAutoSizing: 1
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 1
   m_VerticalAlignment: 256
   m_textAlignment: 65535
@@ -29723,6 +29723,34 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_IsOn: 0
+--- !u!83 &1526261763
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 48000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &1527290903
 GameObject:
   m_ObjectHideFlags: 0
@@ -35211,34 +35239,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1851548673}
   m_CullTransparentMesh: 1
---- !u!83 &1855447476
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &1860993214
 GameObject:
   m_ObjectHideFlags: 0
@@ -45247,6 +45247,34 @@ PrefabInstance:
       propertyPath: parameterSliders.Array.data[50]
       value: 
       objectReference: {fileID: 1513442937}
+    - target: {fileID: 3887056398153956535, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+      propertyPath: synthParamValue28
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3887056398153956535, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+      propertyPath: synthParamValue29
+      value: -2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3887056398153956535, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+      propertyPath: synthParamValue41
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3887056398153956535, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+      propertyPath: synthParameters.Array.data[28].paramValue_
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3887056398153956535, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+      propertyPath: synthParameters.Array.data[29].paramValue_
+      value: -2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3887056398153956535, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+      propertyPath: synthParameters.Array.data[41].paramValue_
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3887056398153956535, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+      propertyPath: synthParameters.Array.data[42].paramValue_
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9130518919848579439, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
       propertyPath: m_Name
       value: HelmSeqeuncer
