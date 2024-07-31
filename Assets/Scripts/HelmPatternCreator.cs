@@ -18,7 +18,7 @@ public class HelmPatternCreator : MonoBehaviour
     private List<HelmSequencer> targetSequencers = new List<HelmSequencer>(); // List to hold created sequencers
     private bool patternsCreated = false;     // Flag to check if patterns have been created
     private bool isPlaying = false;           // Flag to check if patterns are currently playing
-    private int currentSequencerIndex = -1;   // Index of the currently playing sequencer
+    private int currentSequencerIndex = 0;   // Index of the currently playing sequencer
     public AudioHelmClock clock;              // Reference to the AudioHelm clock
     private bool isClockPaused = false;       // Flag to check if the clock is paused
 
