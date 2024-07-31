@@ -112,7 +112,7 @@ public class HelmPatternCreator : MonoBehaviour
         // Continue playing patterns
         if (isPlaying)
         {
-            yield return new WaitForSeconds(0.1f); // Small delay to ensure highlight update
+            yield return new WaitForSeconds(0.01f); // Small delay to ensure highlight update
             StartCoroutine(SmoothTransitionToNextSequencer()); // Continue the loop
         }
 
@@ -170,6 +170,9 @@ public class HelmPatternCreator : MonoBehaviour
 
         // Name the new sequencer
         newSequencer.name = "Helm Pattern " + (targetSequencers.Count + 1);
+
+        // Set loop to false when createing
+        newSequencer.loop = false;
 
         // Transfer notes from the source sequencer to the new sequencer
         TransferNotes(sourceSequencer, newSequencer);
