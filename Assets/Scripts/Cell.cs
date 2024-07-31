@@ -19,6 +19,11 @@ public class Cell : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        // Ensure spriteRenderer is not null
+        if (spriteRenderer == null)
+        {
+            Debug.LogError("SpriteRenderer component not found on this GameObject.");
+        }
         originalRotation = transform.rotation;
 
         if (sequencer == null)
@@ -30,7 +35,10 @@ public class Cell : MonoBehaviour
                 return;
             }
         }
+
+        InitializeCell();
     }
+
 
     public void SetSprite(Sprite sprite)
     {
@@ -53,6 +61,7 @@ public class Cell : MonoBehaviour
         Sprite lastClickedSprite = ManagerHandler.Instance.GetLastClickedSprite();
         midiNote = ManagerHandler.Instance.GetLastClickedMidiNote();
 
+        // If the last clicked sprite and the sprite at the step do not match, return early
         if (lastClickedSprite != BoardManager.Instance.GetSpriteByStep(step) && BoardManager.Instance.GetSpriteByStep(step) != defaultSprite)
         {
             Debug.Log("Returning early due to sprite mismatch.");
@@ -65,8 +74,10 @@ public class Cell : MonoBehaviour
             Debug.Log($"ReplaceSprite using last clicked sprite: {newSprite.name}");
         }
 
+        // Handle removal and replacement logic
         if (spriteRenderer.sprite != defaultSprite)
         {
+            var oldSprite = spriteRenderer.sprite;
             RemoveTileData(spriteRenderer.sprite.name, step);
             spriteRenderer.sprite = defaultSprite;
             CurrentSprite = defaultSprite;
@@ -79,7 +90,7 @@ public class Cell : MonoBehaviour
                 if (helmSequencer != null)
                 {
                     helmSequencer.RemoveNotesInRange(midiNote, this.step, this.step + 1);
-                    KeyManager.Instance.RemoveKeyTileData(newSprite, (int)step);
+                    KeyManager.Instance.RemoveKeyTileData(oldSprite, (int)step);
                     DataManager.EraseKeyTileDataToFile(KeyManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
@@ -109,7 +120,6 @@ public class Cell : MonoBehaviour
             CurrentSprite = newSprite;
 
             bool isKey = ManagerHandler.Instance.IsKeyManagerLastClicked();
-
             SaveTileData(newSprite, step, isKey);
 
             BoardManager.Instance.stepToSpriteMap[step] = newSprite;
@@ -227,6 +237,7 @@ public class Cell : MonoBehaviour
             List<int> steps = KeyManager.Instance.tileData[spriteName];
             steps.Remove((int)step);
 
+            // Remove the sprite from KeyManager's tile data if no steps are left
             if (steps.Count == 0)
             {
                 KeyManager.Instance.tileData.Remove(spriteName);
@@ -239,6 +250,7 @@ public class Cell : MonoBehaviour
             List<TileData> tileDataList = PadManager.Instance.tileDataGroups[spriteName];
             tileDataList.RemoveAll(data => data.Step == step);
 
+            // Remove the sprite from PadManager's tile data if no TileData left
             if (tileDataList.Count == 0)
             {
                 PadManager.Instance.tileDataGroups.Remove(spriteName);
@@ -246,7 +258,21 @@ public class Cell : MonoBehaviour
 
             Debug.Log($"Removed Tile Data for Pad Sprite: {spriteName}, Step: {step}");
         }
+        else
+        {
+            Debug.LogWarning($"Sprite {spriteName} not found in tile data.");
+        }
     }
+
+    private void InitializeCell()
+    {
+        // Ensure that all required components and references are properly set
+        if (spriteRenderer == null)
+        {
+            Debug.LogError("SpriteRenderer component is not set.");
+        }
+    }    
+
 }
 
 [System.Serializable]

@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro; // Make sure to include this for TextMeshPro
+using TMPro; // Ensure you have TextMeshPro namespace
 using AudioHelm;
 
 public class HelmPatternCreator : MonoBehaviour
@@ -11,21 +11,22 @@ public class HelmPatternCreator : MonoBehaviour
     public GameObject sequencerPrefab;       // Prefab to instantiate new sequencers
     public Button createPatternButton;       // Button to create and transfer patterns
     public Button playPatternsButton;        // Button to start playing the created patterns
+    public Button stopPatternsButton;        // Button to stop all patterns
     public Button removePatternButton;       // Button to remove a pattern
     public TextMeshProUGUI patternDisplayText; // TextMeshProUGUI to display both current playing pattern and total patterns
     public BoardManager boardManager;         // Reference to BoardManager
+    public AudioHelmClock clock;              // Reference to the AudioHelm clock
 
     private List<HelmSequencer> targetSequencers = new List<HelmSequencer>(); // List to hold created sequencers
     private bool patternsCreated = false;     // Flag to check if patterns have been created
     private bool isPlaying = false;           // Flag to check if patterns are currently playing
-    private int currentSequencerIndex = 0;   // Index of the currently playing sequencer
-    public AudioHelmClock clock;              // Reference to the AudioHelm clock
+    private int currentSequencerIndex = 0;    // Index of the currently playing sequencer
     private bool isClockPaused = false;       // Flag to check if the clock is paused
-
     private float loopDuration = 0f;          // Duration of the loop in seconds
 
     void Start()
     {
+        // Ensure all buttons are assigned
         if (createPatternButton != null)
         {
             createPatternButton.onClick.AddListener(CreateAndTransferPattern);
@@ -42,6 +43,15 @@ public class HelmPatternCreator : MonoBehaviour
         else
         {
             Debug.LogError("Play Patterns Button not assigned.");
+        }
+
+        if (stopPatternsButton != null)
+        {
+            stopPatternsButton.onClick.AddListener(StopCreatedPatterns);
+        }
+        else
+        {
+            Debug.LogError("Stop Patterns Button not assigned.");
         }
 
         if (removePatternButton != null)
@@ -86,17 +96,20 @@ public class HelmPatternCreator : MonoBehaviour
                 List<AudioHelm.Note> notes = new List<AudioHelm.Note>(nextSequencer.GetAllNotes());
                 boardManager.ResetBoard();
                 boardManager.UpdateBoardWithNotes(notes); // Update the board with the new notes
-            }
-
-            if (boardManager != null)
-            {
-                // Highlight the cell corresponding to the next sequencer
-                boardManager.HighlightCellOnStep(nextSequencer.currentIndex);
+                boardManager.HighlightCellOnStep(nextSequencer.currentIndex); // Highlight the cell
             }
 
             // Calculate the duration of the loop based on BPM and 16-step cycle
-            float bpm = clock.bpm;
-            loopDuration = (960f / bpm) / 4f; // 16 steps per loop cycle
+            if (clock != null)
+            {
+                float bpm = clock.bpm;
+                loopDuration = (960f / bpm) / 4f; // 16 steps per loop cycle
+            }
+            else
+            {
+                Debug.LogError("AudioHelmClock not assigned.");
+                yield break;
+            }
 
             // Start the next sequencer
             StartSequencer(nextSequencer);
@@ -174,7 +187,7 @@ public class HelmPatternCreator : MonoBehaviour
         // Name the new sequencer
         newSequencer.name = "Helm Pattern " + (targetSequencers.Count + 1);
 
-        // Set loop to false when createing
+        // Set loop to false when creating
         newSequencer.loop = false;
 
         // Transfer notes from the source sequencer to the new sequencer
@@ -210,6 +223,12 @@ public class HelmPatternCreator : MonoBehaviour
 
     void StartPlayingPatterns()
     {
+        if (clock == null)
+        {
+            Debug.LogError("AudioHelmClock not assigned.");
+            return;
+        }
+
         clock.Reset();
 
         if (!patternsCreated)
@@ -236,7 +255,6 @@ public class HelmPatternCreator : MonoBehaviour
         Debug.Log("Started playing patterns.");
     }
 
-
     void StopCreatedPatterns()
     {
         if (!patternsCreated)
@@ -245,26 +263,18 @@ public class HelmPatternCreator : MonoBehaviour
             return;
         }
 
-        // Stop playback of all sequencers except the one currently in line to play
-        for (int i = 0; i < targetSequencers.Count; i++)
+        // Stop playback of all sequencers
+        foreach (var sequencer in targetSequencers)
         {
-            HelmSequencer sequencer = targetSequencers[i];
-            if (i != currentSequencerIndex)
-            {
-                StopSequencer(sequencer);
-            }
-            else
-            {
-                // Make sure the sequencer in line to play is still running
-                Debug.Log($"Sequencer {sequencer.name} is in line to play and is not stopped.");
-            }
+            StopSequencer(sequencer);
         }
 
         // Resume the clock when stopping playback
-        ResumeClock();
+        PauseClock();
 
-        Debug.Log("Stopped all patterns except the one currently in line to play.");
+        Debug.Log("Stopped all patterns.");
     }
+
 
     void RemovePattern()
     {
@@ -325,16 +335,21 @@ public class HelmPatternCreator : MonoBehaviour
     // Dummy methods for clock management
     void PauseClock()
     {
-        isClockPaused = true;
-        Debug.Log("Clock paused.");
-        // Implement actual clock pause logic here
-        clock.pause = true;
+        if (clock != null)
+        {
+            isClockPaused = true;
+            Debug.Log("Clock paused.");
+            clock.pause = true;
+        }
     }
 
     void ResumeClock()
     {
-        isClockPaused = false;
-        Debug.Log("Clock resumed.");
-        clock.pause = false;
+        if (clock != null)
+        {
+            isClockPaused = false;
+            Debug.Log("Clock resumed.");
+            clock.pause = false;
+        }
     }
 }

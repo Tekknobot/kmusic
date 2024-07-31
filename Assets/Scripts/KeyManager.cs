@@ -345,42 +345,66 @@ public class KeyManager : MonoBehaviour
 
     public void RemoveKeyTileData(Sprite sprite, int step)
     {
-        if (sprite != null)
+        if (sprite == null)
         {
-            string spriteName = sprite.name;
+            Debug.LogError("Sprite is null. Cannot remove tile data.");
+            return;
+        }
 
-            if (tileData.ContainsKey(spriteName))
+        string spriteName = sprite.name;
+
+        // Check if the sprite to be removed is in the tileData
+        if (!tileData.ContainsKey(spriteName))
+        {
+            Debug.LogWarning($"Sprite = {spriteName} not found in tile data.");
+            return;
+        }
+
+        List<int> steps = tileData[spriteName];
+
+        // Check if the step exists in the list for the sprite
+        if (!steps.Contains(step))
+        {
+            Debug.LogWarning($"Step {step} not found for Sprite = {spriteName}.");
+            return;
+        }
+
+        // Remove the step from the list
+        steps.Remove(step);
+
+        // Remove the sprite from tileData if it has no remaining steps
+        if (steps.Count == 0)
+        {
+            tileData.Remove(spriteName);
+
+            // If the sprite being removed is not the default sprite
+            if (sprite != DefaultSprite)
             {
-                List<int> steps = tileData[spriteName];
-                
-                if (steps.Contains(step))
+                // Update tileData to add the step to the default sprite
+                if (DefaultSprite != null)
                 {
-                    steps.Remove(step); // Remove the step from the list
+                    string defaultSpriteName = DefaultSprite.name;
                     
-                    // If the list is empty after removal, remove the sprite from the dictionary
-                    if (steps.Count == 0)
+                    if (!tileData.ContainsKey(defaultSpriteName))
                     {
-                        tileData.Remove(spriteName);
+                        tileData[defaultSpriteName] = new List<int>();
                     }
 
-                    Debug.Log($"Removed Key Tile Data: Sprite = {sprite.name}, Step = {step}");
-                }
-                else
-                {
-                    Debug.LogWarning($"Step {step} not found for Sprite = {sprite.name}.");
+                    // Add the step to default sprite if not already present
+                    if (!tileData[defaultSpriteName].Contains(step))
+                    {
+                        tileData[defaultSpriteName].Add(step);
+                    }
                 }
             }
-            else
-            {
-                Debug.LogWarning($"Sprite = {sprite.name} not found in tile data.");
-            }
+
+            Debug.Log($"Removed Key Tile Data: Sprite = {sprite.name}, Step = {step}");
         }
         else
         {
-            Debug.LogError("Sprite is null. Cannot remove tile data.");
+            Debug.Log($"Removed Step = {step} from Sprite = {sprite.name}");
         }
     }
-
 
     public void UpdateCellSprite(Cell cell, Sprite newSprite)
     {
@@ -415,7 +439,6 @@ public class KeyManager : MonoBehaviour
 
         Debug.Log($"Updated cell at step {cell.step} to new sprite: {newSprite.name}");
     }
-
 
     public void ReapplyPatterns()
     {
@@ -482,6 +505,16 @@ public class KeyManager : MonoBehaviour
 
     public Sprite GetSpriteByStep(int step)
     {
+        if (BoardManager.Instance.stepToSpriteMap.ContainsKey(step))
+        {
+            return BoardManager.Instance.stepToSpriteMap[step];
+        }
+        else
+        {
+            Debug.LogError($"No sprite found for step {step}.");
+            return null;
+        }
+
         // Ensure we have tile data populated
         if (tileData == null || tileData.Count == 0)
         {

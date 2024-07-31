@@ -278,6 +278,28 @@ public class BoardManager : MonoBehaviour
     // Method to update the board with the given notes
     public void UpdateBoardWithNotes(List<AudioHelm.Note> notes)
     {
+        foreach (var note in notes)
+        {
+            var step = note.start;
+            var sprite = KeyManager.Instance.GetSpriteByStep((int)step);
+
+            if (sprite == null)
+            {
+                Debug.LogError($"No sprite found for step {step}.");
+                continue;
+            }
+
+            var cell = GetCellByStep(note.start);
+            if (cell != null)
+            {
+                cell.SetSprite(sprite);
+            }
+            else
+            {
+                Debug.LogError($"Cell not found for position {note.start}.");
+            }
+        }
+
         // Iterate through each note and update the corresponding cell's sprite
         foreach (var note in notes)
         {
