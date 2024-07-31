@@ -64,63 +64,65 @@ public class HelmPatternCreator : MonoBehaviour
             yield break;
         }
 
-        // Stop all sequencers
-        foreach (var sequencer in targetSequencers)
+        while (isPlaying)  // Continuous loop to keep transitioning as long as isPlaying is true
         {
-            StopSequencer(sequencer);
-            sequencer.loop = false;
+            // Stop all sequencers
+            foreach (var sequencer in targetSequencers)
+            {
+                StopSequencer(sequencer);
+                sequencer.loop = false;
+            }
+
+            // Move to the next sequencer index
+            currentSequencerIndex = (currentSequencerIndex + 1) % targetSequencers.Count;
+            HelmSequencer nextSequencer = targetSequencers[currentSequencerIndex];
+
+            // Prepare and start the next sequencer
+            PrepareSequencerForNextCycle(nextSequencer);
+
+            // Update the BoardManager with the notes of the queued-up sequencer
+            if (boardManager != null)
+            {
+                List<AudioHelm.Note> notes = new List<AudioHelm.Note>(nextSequencer.GetAllNotes());
+                boardManager.ResetBoard();
+                boardManager.UpdateBoardWithNotes(notes); // Update the board with the new notes
+            }
+
+            if (boardManager != null)
+            {
+                // Highlight the cell corresponding to the next sequencer
+                boardManager.HighlightCellOnStep(nextSequencer.currentIndex);
+            }
+
+            // Calculate the duration of the loop based on BPM and 16-step cycle
+            float bpm = clock.bpm;
+            loopDuration = (960f / bpm) / 4f; // 16 steps per loop cycle
+
+            // Start the next sequencer
+            StartSequencer(nextSequencer);
+
+            // Set loop to true only for the currently playing sequencer
+            nextSequencer.loop = true;
+
+            // Wait until the loop ends
+            yield return new WaitUntil(() => boardManager.highlightedCellIndex == 15);
+
+            // Wait a little longer to ensure the sequencer has time to finish the step
+            yield return new WaitForSeconds(loopDuration);
+
+            // Update the pattern display
+            UpdatePatternDisplay();
+
+            Debug.Log("Started next sequencer.");
+
+            // Small delay to ensure highlight update before next loop iteration
+            yield return new WaitForSeconds(0.1f);
         }
 
-        // Move to the next sequencer index
-        currentSequencerIndex = (currentSequencerIndex + 1) % targetSequencers.Count;
-        HelmSequencer nextSequencer = targetSequencers[currentSequencerIndex];
-
-        // Prepare and start the next sequencer
-        PrepareSequencerForNextCycle(nextSequencer);
-
-        // Update the BoardManager with the notes of the queued-up sequencer
-        if (boardManager != null)
-        {
-            List<AudioHelm.Note> notes = new List<AudioHelm.Note>(nextSequencer.GetAllNotes());
-            boardManager.ResetBoard();
-            boardManager.UpdateBoardWithNotes(notes); // Update the board with the new notes
-        }
-
-        if (boardManager != null)
-        {
-            // Highlight the cell corresponding to the next sequencer
-            boardManager.HighlightCellOnStep(nextSequencer.currentIndex);
-        }
-
-        // Calculate the duration of the loop based on BPM and 16-step cycle
-        float bpm = clock.bpm;
-        loopDuration = (960f / bpm) / 4f; // 16 steps per loop cycle
-
-        // Start the next sequencer
-        StartSequencer(nextSequencer);
-
-        // Set loop to true only for the currently playing sequencer
-        nextSequencer.loop = true;
-
-        // Wait until the loop ends
-        yield return new WaitForSeconds(loopDuration);
-
-        // Update the pattern display
-        UpdatePatternDisplay();
-
-        Debug.Log("Started next sequencer.");
-
-        // Continue playing patterns
-        if (isPlaying)
-        {
-            yield return new WaitForSeconds(0.01f); // Small delay to ensure highlight update
-            StartCoroutine(SmoothTransitionToNextSequencer()); // Continue the loop
-        }
-
-        // Resume the clock after transition
+        // Resume the clock after stopping the loop
         if (isClockPaused)
         {
-            ResumeClock(); // Resume the clock if it was paused
+            ResumeClock();
         }
     }
 

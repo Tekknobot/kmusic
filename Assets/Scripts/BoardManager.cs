@@ -16,7 +16,7 @@ public class BoardManager : MonoBehaviour
 
     private float stepCount;
 
-    private int highlightedCellIndex = 0; // Example placeholder for the highlighted cell index
+    public int highlightedCellIndex = 0; // Example placeholder for the highlighted cell index
 
     // Method to get the current highlighted cell index
     public int GetHighlightedCellIndex()
