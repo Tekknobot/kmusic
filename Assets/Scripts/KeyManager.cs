@@ -23,6 +23,8 @@ public class KeyManager : MonoBehaviour
 
     public Dictionary<string, List<int>> tileData = new Dictionary<string, List<int>>(); // Changed to use string keys
 
+    private Dictionary<int, Sprite> noteToSpriteMap;
+
     public int midiNote;
 
     private void Awake()
@@ -70,7 +72,8 @@ public class KeyManager : MonoBehaviour
         }
 
         GenerateKeys();
-
+        PopulateNoteToSpriteMap();
+        
         // Start the coroutine to load tile data after a delay
         StartCoroutine(LoadTileDataAfterDelay(0.2f)); // Adjust the delay time as needed
     }
@@ -142,6 +145,19 @@ public class KeyManager : MonoBehaviour
 
             // Change name of key
             newKey.name = sprites[i].name;
+        }
+    }
+
+    private void PopulateNoteToSpriteMap()
+    {
+        // Initialize the dictionary
+        noteToSpriteMap = new Dictionary<int, Sprite>();
+
+        // Assuming you have MIDI notes and sprites mapped
+        for (int i = 0; i < sprites.Length; i++)
+        {
+            int midiNote = i + 33; // Example MIDI note calculation
+            noteToSpriteMap[midiNote] = sprites[i];
         }
     }
 
@@ -547,6 +563,21 @@ public class KeyManager : MonoBehaviour
         Debug.LogError($"No sprite found for step {step}.");
         return null;
     }
+
+    public Sprite GetSpriteFromNote(int midiNote)
+    {
+        // Check if the dictionary has a mapping for the given MIDI note
+        if (noteToSpriteMap != null && noteToSpriteMap.ContainsKey(midiNote))
+        {
+            return noteToSpriteMap[midiNote];
+        }
+        else
+        {
+            Debug.LogError($"No sprite found for MIDI note {midiNote}.");
+            return null;
+        }
+    }
+
 
 }
 

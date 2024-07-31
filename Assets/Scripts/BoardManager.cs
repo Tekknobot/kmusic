@@ -315,7 +315,7 @@ public class BoardManager : MonoBehaviour
                         Cell cell = boardCells[x, y];
                         if (cell != null && cell.step == note.start)
                         {
-                            sprite = KeyManager.Instance.GetSpriteByStep((int)note.start);
+                            sprite = KeyManager.Instance.GetSpriteFromNote(note.note);
                             Debug.Log($"Setting sprite for cell at position ({x}, {y})");
                             cell.SetSprite(sprite);
                             break; // Exit the inner loop since we found the matching cell
