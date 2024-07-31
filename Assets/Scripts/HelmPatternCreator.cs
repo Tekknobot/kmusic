@@ -68,6 +68,7 @@ public class HelmPatternCreator : MonoBehaviour
         foreach (var sequencer in targetSequencers)
         {
             StopSequencer(sequencer);
+            sequencer.loop = false;
         }
 
         // Move to the next sequencer index
@@ -101,11 +102,11 @@ public class HelmPatternCreator : MonoBehaviour
         // Set loop to true only for the currently playing sequencer
         nextSequencer.loop = true;
 
-        // Update the pattern display
-        UpdatePatternDisplay();
-
         // Wait until the loop ends
         yield return new WaitForSeconds(loopDuration);
+
+        // Update the pattern display
+        UpdatePatternDisplay();
 
         Debug.Log("Started next sequencer.");
 
@@ -230,6 +231,7 @@ public class HelmPatternCreator : MonoBehaviour
 
         Debug.Log("Started playing patterns.");
     }
+
 
     void StopCreatedPatterns()
     {
