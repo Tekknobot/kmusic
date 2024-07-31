@@ -343,6 +343,69 @@ public class KeyManager : MonoBehaviour
         }
     }
 
+    public void UpdateCellSprite(Cell cell, Sprite newSprite)
+    {
+        if (cell == null || newSprite == null)
+        {
+            Debug.LogError("Cell or new sprite is null.");
+            return;
+        }
+
+        // Get the old sprite from the cell
+        Sprite oldSprite = cell.CurrentSprite; // Assume you have a method to get the current sprite
+
+        // Remove old sprite data from tileData
+        if (oldSprite != null)
+        {
+            string oldSpriteName = oldSprite.name;
+            if (tileData.ContainsKey(oldSpriteName))
+            {
+                tileData[oldSpriteName].Remove((int)cell.step);
+                if (tileData[oldSpriteName].Count == 0)
+                {
+                    tileData.Remove(oldSpriteName);
+                }
+            }
+        }
+
+        // Set new sprite on the cell
+        cell.SetSprite(newSprite); // Assume you have a method to set the sprite
+
+        // Save new sprite data
+        SaveKeyTileData(newSprite, (int)cell.step);
+
+        Debug.Log($"Updated cell at step {cell.step} to new sprite: {newSprite.name}");
+    }
+
+
+    public void ReapplyPatterns()
+    {
+        foreach (var entry in tileData)
+        {
+            string spriteName = entry.Key;
+            List<int> steps = entry.Value;
+            Sprite sprite = GetSpriteByName(spriteName);
+
+            if (sprite != null)
+            {
+                foreach (var step in steps)
+                {
+                    Cell cell = BoardManager.Instance.GetCellByStep(step); // Assume you have a method to get a cell by step
+                    if (cell != null)
+                    {
+                        cell.SetSprite(sprite);
+                        Debug.Log($"Reapplied sprite {sprite.name} to cell at step {step}");
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError($"Sprite with name {spriteName} not found.");
+            }
+        }
+    }
+
+
     // Helper method to get a sprite by its name
     public Sprite GetSpriteByName(string spriteName)
     {

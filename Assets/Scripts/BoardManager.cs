@@ -308,5 +308,17 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    public Cell GetCellByStep(float step)
+    {
+        foreach (Cell cell in boardCells)
+        {
+            if (cell != null && cell.step == step)
+            {
+                return cell;
+            }
+        }
 
+        Debug.LogError($"No cell found with step {step}.");
+        return null;
+    }
 }

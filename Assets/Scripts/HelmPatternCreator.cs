@@ -108,7 +108,7 @@ public class HelmPatternCreator : MonoBehaviour
             yield return new WaitUntil(() => boardManager.highlightedCellIndex == 15);
 
             // Wait a little longer to ensure the sequencer has time to finish the step
-            yield return new WaitForSeconds(loopDuration);
+            yield return new WaitForSeconds(0.1f);
 
             // Update the pattern display
             UpdatePatternDisplay();
@@ -230,6 +230,8 @@ public class HelmPatternCreator : MonoBehaviour
 
         // Start playing the first sequencer
         StartCoroutine(SmoothTransitionToNextSequencer());
+
+        UpdatePatternDisplay();
 
         Debug.Log("Started playing patterns.");
     }
