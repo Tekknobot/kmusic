@@ -343,6 +343,45 @@ public class KeyManager : MonoBehaviour
         }
     }
 
+    public void RemoveKeyTileData(Sprite sprite, int step)
+    {
+        if (sprite != null)
+        {
+            string spriteName = sprite.name;
+
+            if (tileData.ContainsKey(spriteName))
+            {
+                List<int> steps = tileData[spriteName];
+                
+                if (steps.Contains(step))
+                {
+                    steps.Remove(step); // Remove the step from the list
+                    
+                    // If the list is empty after removal, remove the sprite from the dictionary
+                    if (steps.Count == 0)
+                    {
+                        tileData.Remove(spriteName);
+                    }
+
+                    Debug.Log($"Removed Key Tile Data: Sprite = {sprite.name}, Step = {step}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Step {step} not found for Sprite = {sprite.name}.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"Sprite = {sprite.name} not found in tile data.");
+            }
+        }
+        else
+        {
+            Debug.LogError("Sprite is null. Cannot remove tile data.");
+        }
+    }
+
+
     public void UpdateCellSprite(Cell cell, Sprite newSprite)
     {
         if (cell == null || newSprite == null)

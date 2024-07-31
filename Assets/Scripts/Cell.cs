@@ -79,6 +79,7 @@ public class Cell : MonoBehaviour
                 if (helmSequencer != null)
                 {
                     helmSequencer.RemoveNotesInRange(midiNote, this.step, this.step + 1);
+                    KeyManager.Instance.RemoveKeyTileData(newSprite, (int)step);
                     DataManager.EraseKeyTileDataToFile(KeyManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
