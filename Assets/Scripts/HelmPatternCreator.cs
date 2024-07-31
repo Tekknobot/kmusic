@@ -68,6 +68,17 @@ public class HelmPatternCreator : MonoBehaviour
 
     IEnumerator SmoothTransitionToNextSequencer()
     {
+        // Stop all sequencers
+        foreach (var sequencer in targetSequencers)
+        {
+            StopSequencer(sequencer);
+            sequencer.loop = false;
+        }     
+
+        // Ensure the source sequencer is stopped
+        sourceSequencer.AllNotesOff();
+        sourceSequencer.loop = false;        
+
         if (targetSequencers.Count == 0)
         {
             Debug.LogError("No target sequencers available for transition.");
@@ -229,8 +240,6 @@ public class HelmPatternCreator : MonoBehaviour
 
     void StartPlayingPatterns()
     {
-        sourceSequencer.GetComponent<AudioSource>().volume = 0;
-
         if (clock == null)
         {
             Debug.LogError("AudioHelmClock not assigned.");
@@ -243,7 +252,7 @@ public class HelmPatternCreator : MonoBehaviour
         {
             Debug.LogError("No patterns created to play.");
             return;
-        }
+        }   
 
         // Ensure the source sequencer is stopped
         sourceSequencer.AllNotesOff();
@@ -265,8 +274,6 @@ public class HelmPatternCreator : MonoBehaviour
 
     void StopCreatedPatterns()
     {
-        sourceSequencer.GetComponent<AudioSource>().volume = 1;
-
         if (!patternsCreated)
         {
             Debug.LogWarning("No patterns created to stop.");
