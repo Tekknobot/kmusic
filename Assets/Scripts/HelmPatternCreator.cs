@@ -20,7 +20,7 @@ public class HelmPatternCreator : MonoBehaviour
     private List<HelmSequencer> targetSequencers = new List<HelmSequencer>(); // List to hold created sequencers
     private bool patternsCreated = false;     // Flag to check if patterns have been created
     private bool isPlaying = false;           // Flag to check if patterns are currently playing
-    private int currentSequencerIndex = 0;    // Index of the currently playing sequencer
+    public int currentSequencerIndex = 0;    // Index of the currently playing sequencer
     private bool isClockPaused = false;       // Flag to check if the clock is paused
     private float loopDuration = 0f;          // Duration of the loop in seconds
 
@@ -67,33 +67,25 @@ public class HelmPatternCreator : MonoBehaviour
     }
 
     IEnumerator SmoothTransitionToNextSequencer()
-    {
-        // Stop all sequencers
-        foreach (var sequencer in targetSequencers)
-        {
-            StopSequencer(sequencer);
-            sequencer.loop = false;
-        }     
-
-        // Ensure the source sequencer is stopped
-        sourceSequencer.AllNotesOff();
-        sourceSequencer.loop = false;        
-
+    {        
         if (targetSequencers.Count == 0)
         {
             Debug.LogError("No target sequencers available for transition.");
             yield break;
         }
 
-        while (isPlaying)  // Continuous loop to keep transitioning as long as isPlaying is true
+        // Ensure all other sequencers have loop set to false
+        for (int i = 0; i < targetSequencers.Count; i++)
         {
-            // Stop all sequencers
-            foreach (var sequencer in targetSequencers)
+            if (i != currentSequencerIndex)
             {
-                StopSequencer(sequencer);
-                sequencer.loop = false;
+                targetSequencers[i].loop = false;
+                targetSequencers[i].AllNotesOff();
             }
+        }
 
+        while (isPlaying)
+        {
             // Move to the next sequencer index
             currentSequencerIndex = (currentSequencerIndex + 1) % targetSequencers.Count;
             HelmSequencer nextSequencer = targetSequencers[currentSequencerIndex];
@@ -130,14 +122,14 @@ public class HelmPatternCreator : MonoBehaviour
             // Enable AudioSource component
             nextSequencer.GetComponent<AudioSource>().volume = 1;
 
-            // Set loop to true only for the currently playing sequencer
-            nextSequencer.loop = true;
-
             // Wait until the loop ends
             yield return new WaitUntil(() => boardManager.highlightedCellIndex == 15);
 
             // Wait a little longer to ensure the sequencer has time to finish the step
             yield return new WaitForSeconds(0.1f);
+
+            // Stop the current sequencer after the loop duration
+            StopSequencer(nextSequencer);
 
             // Update the pattern display
             UpdatePatternDisplay();
@@ -169,6 +161,8 @@ public class HelmPatternCreator : MonoBehaviour
         if (sequencer != null)
         {
             sequencer.loop = false; // Stop the sequencer
+            sequencer.AllNotesOff();
+            sequencer.GetComponent<AudioSource>().volume = 0; // Mute the AudioSource
             Debug.Log($"Stopped sequencer: {sequencer.name}");
         }
     }
@@ -238,7 +232,7 @@ public class HelmPatternCreator : MonoBehaviour
         }
     }
 
-    void StartPlayingPatterns()
+    public void StartPlayingPatterns()
     {
         if (clock == null)
         {
@@ -246,33 +240,33 @@ public class HelmPatternCreator : MonoBehaviour
             return;
         }
 
-        clock.Reset();
-
         if (!patternsCreated)
         {
             Debug.LogError("No patterns created to play.");
             return;
-        }   
+        }
 
         // Ensure the source sequencer is stopped
         sourceSequencer.AllNotesOff();
         sourceSequencer.loop = false;
 
         isPlaying = true;
-        currentSequencerIndex = -1;
 
         // Pause the clock before starting playback
+        clock.Reset();
         ResumeClock();
 
         // Start playing the first sequencer
         StartCoroutine(SmoothTransitionToNextSequencer());
 
         UpdatePatternDisplay();
-        
+
         Debug.Log("Started playing patterns.");
+
+        GameObject.Find("PAUSE").GetComponent<Toggle>().isOn = true;
     }
 
-    void StopCreatedPatterns()
+    public void StopCreatedPatterns()
     {
         if (!patternsCreated)
         {
@@ -286,8 +280,15 @@ public class HelmPatternCreator : MonoBehaviour
             StopSequencer(sequencer);
         }
 
-        // Resume the clock when stopping playback
-        PauseClock();
+        // Reset the clock when stopping playback
+        clock.Reset();
+
+        // Reset the current sequencer index
+        currentSequencerIndex = 0;
+
+        UpdatePatternDisplay();
+
+        isPlaying = false;
 
         Debug.Log("Stopped all patterns.");
     }
@@ -352,8 +353,6 @@ public class HelmPatternCreator : MonoBehaviour
             patternDisplayText.text = $"{displayIndex}/{totalPatterns}";
         }
     }
-
-
 
     // Dummy methods for clock management
     void PauseClock()

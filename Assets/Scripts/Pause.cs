@@ -17,17 +17,19 @@ public class Pause : MonoBehaviour
     {
         if (helmClock != null && pauseToggle != null)
         {
-            // Set the clock to unpause (playing) on start
-            helmClock.pause = false;
+            // Set the clock to pause (playing) on start
+            helmClock.pause = true;
 
             // Initialize the Toggle's state based on the clock's paused state
-            pauseToggle.isOn = helmClock.pause;
+            pauseToggle.isOn = false;
 
             // Add listener for toggle value changes
             pauseToggle.onValueChanged.AddListener(OnToggleValueChanged);
         }
-
-        pauseToggle.isOn = true;
+        else
+        {
+            Debug.LogWarning("helmClock or pauseToggle is not assigned in the inspector.");
+        }
     }
 
     // Called when the Toggle value changes
@@ -42,7 +44,27 @@ public class Pause : MonoBehaviour
             if (isOn)
             {
                 helmClock.Reset();
+                // Make sure the HelmPatternCreator exists and is properly assigned
+                var patternCreator = GameObject.Find("HelmPatternCreator")?.GetComponent<HelmPatternCreator>();                
+                patternCreator.StartPlayingPatterns();
             }
+            else 
+            {
+                // Make sure the HelmPatternCreator exists and is properly assigned
+                var patternCreator = GameObject.Find("HelmPatternCreator")?.GetComponent<HelmPatternCreator>();
+                if (patternCreator != null)
+                {
+                    patternCreator.StopCreatedPatterns();
+                }
+                else
+                {
+                    Debug.LogWarning("HelmPatternCreator not found or missing HelmPatternCreator component.");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("helmClock is not assigned.");
         }
     }
 }
