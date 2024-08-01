@@ -2,68 +2,43 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-using TMPro; // Ensure you have TextMeshPro namespace
+using TMPro;
 using AudioHelm;
 
 public class HelmPatternCreator : MonoBehaviour
 {
-    public HelmSequencer sourceSequencer;    // Existing sequencer
-    public GameObject sequencerPrefab;       // Prefab to instantiate new sequencers
-    public Button createPatternButton;       // Button to create and transfer patterns
-    public Button playPatternsButton;        // Button to start playing the created patterns
-    public Button stopPatternsButton;        // Button to stop all patterns
-    public Button removePatternButton;       // Button to remove a pattern
-    public TextMeshProUGUI patternDisplayText; // TextMeshProUGUI to display both current playing pattern and total patterns
-    public BoardManager boardManager;         // Reference to BoardManager
-    public AudioHelmClock clock;              // Reference to the AudioHelm clock
+    public HelmSequencer sourceSequencer;
+    public GameObject sequencerPrefab;
+    public Button createPatternButton;
+    public Button playPatternsButton;
+    public Button stopPatternsButton;
+    public Button removePatternButton;
+    public TextMeshProUGUI patternDisplayText;
+    public BoardManager boardManager;
+    public AudioHelmClock clock;
 
-    private List<HelmSequencer> targetSequencers = new List<HelmSequencer>(); // List to hold created sequencers
-    private bool patternsCreated = false;     // Flag to check if patterns have been created
-    private bool isPlaying = false;           // Flag to check if patterns are currently playing
-    public int currentSequencerIndex = 0;    // Index of the currently playing sequencer
-    private bool isClockPaused = false;       // Flag to check if the clock is paused
-    private float loopDuration = 0f;          // Duration of the loop in seconds
+    private List<HelmSequencer> targetSequencers = new List<HelmSequencer>();
+    private bool patternsCreated = false;
+    private bool isPlaying = false;
+    private int currentSequencerIndex = -1;
+    private bool isClockPaused = false;
+    private float loopDuration = 0f;
 
     void Start()
     {
-        // Ensure all buttons are assigned
-        if (createPatternButton != null)
-        {
-            createPatternButton.onClick.AddListener(CreateAndTransferPattern);
-        }
-        else
-        {
-            Debug.LogError("Create Pattern Button not assigned.");
-        }
+        if (createPatternButton != null) createPatternButton.onClick.AddListener(CreateAndTransferPattern);
+        else Debug.LogError("Create Pattern Button not assigned.");
 
-        if (playPatternsButton != null)
-        {
-            playPatternsButton.onClick.AddListener(StartPlayingPatterns);
-        }
-        else
-        {
-            Debug.LogError("Play Patterns Button not assigned.");
-        }
+        if (playPatternsButton != null) playPatternsButton.onClick.AddListener(StartPlayingPatterns);
+        else Debug.LogError("Play Patterns Button not assigned.");
 
-        if (stopPatternsButton != null)
-        {
-            stopPatternsButton.onClick.AddListener(StopCreatedPatterns);
-        }
-        else
-        {
-            Debug.LogError("Stop Patterns Button not assigned.");
-        }
+        if (stopPatternsButton != null) stopPatternsButton.onClick.AddListener(StopCreatedPatterns);
+        else Debug.LogError("Stop Patterns Button not assigned.");
 
-        if (removePatternButton != null)
-        {
-            removePatternButton.onClick.AddListener(RemovePattern);
-        }
-        else
-        {
-            Debug.LogError("Remove Pattern Button not assigned.");
-        }
+        if (removePatternButton != null) removePatternButton.onClick.AddListener(RemovePattern);
+        else Debug.LogError("Remove Pattern Button not assigned.");
 
-        UpdatePatternDisplay(); // Initialize the pattern display text
+        UpdatePatternDisplay();
     }
 
     IEnumerator SmoothTransitionToNextSequencer()
@@ -75,12 +50,12 @@ public class HelmPatternCreator : MonoBehaviour
         }
 
         // Ensure all other sequencers have loop set to false
-        for (int i = 0; i < targetSequencers.Count; i++)
+        foreach (var sequencer in targetSequencers)
         {
-            if (i != currentSequencerIndex)
+            if (sequencer != null && targetSequencers.IndexOf(sequencer) != currentSequencerIndex)
             {
-                targetSequencers[i].loop = false;
-                targetSequencers[i].AllNotesOff();
+                sequencer.loop = false;
+                sequencer.AllNotesOff();
             }
         }
 
@@ -98,10 +73,8 @@ public class HelmPatternCreator : MonoBehaviour
             {
                 List<AudioHelm.Note> notes = new List<AudioHelm.Note>(nextSequencer.GetAllNotes());
                 boardManager.ResetBoard();
-                boardManager.UpdateBoardWithNotes(notes); // Update the board with the new notes
-                boardManager.HighlightCellOnStep(nextSequencer.currentIndex); // Highlight the cell
-
-                UpdatePatternDisplay();
+                boardManager.UpdateBoardWithNotes(notes);
+                boardManager.HighlightCellOnStep(nextSequencer.currentIndex);
             }
 
             // Calculate the duration of the loop based on BPM and 16-step cycle
@@ -121,9 +94,17 @@ public class HelmPatternCreator : MonoBehaviour
 
             // Wait until the loop ends
             yield return new WaitUntil(() => boardManager.highlightedCellIndex == 15);
+            
+            int stepsPerBeat = 4; // Adjust this based on how many steps per beat
+
+            // Calculate seconds per beat
+            float secondsPerBeat = 60f / clock.bpm;
+
+            // Calculate seconds per step
+            float secondsPerStep = secondsPerBeat / stepsPerBeat;
 
             // Wait a little longer to ensure the sequencer has time to finish the step
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(secondsPerStep + 0.1f);
 
             // Stop the current sequencer after the loop duration
             StopSequencer(nextSequencer);
@@ -138,17 +119,14 @@ public class HelmPatternCreator : MonoBehaviour
         }
 
         // Resume the clock after stopping the loop
-        if (isClockPaused)
-        {
-            ResumeClock();
-        }
+        if (isClockPaused) ResumeClock();
     }
 
     void PrepareSequencerForNextCycle(HelmSequencer sequencer)
     {
         if (sequencer != null)
         {
-            sequencer.gameObject.SetActive(true); // Ensure the sequencer is active
+            sequencer.gameObject.SetActive(true);
             Debug.Log($"Prepared sequencer for next cycle: {sequencer.name}");
         }
     }
@@ -157,7 +135,7 @@ public class HelmPatternCreator : MonoBehaviour
     {
         if (sequencer != null)
         {
-            sequencer.loop = false; // Stop the sequencer
+            sequencer.loop = false;
             sequencer.AllNotesOff();
             Debug.Log($"Stopped sequencer: {sequencer.name}");
         }
@@ -167,7 +145,7 @@ public class HelmPatternCreator : MonoBehaviour
     {
         if (sequencer != null)
         {
-            sequencer.loop = true; // Start with loop set to true
+            sequencer.loop = true;
             Debug.Log($"Started sequencer: {sequencer.name}");
         }
     }
@@ -180,7 +158,6 @@ public class HelmPatternCreator : MonoBehaviour
             return;
         }
 
-        // Instantiate a new sequencer from the prefab
         GameObject newSequencerObj = Instantiate(sequencerPrefab, transform);
         HelmSequencer newSequencer = newSequencerObj.GetComponent<HelmSequencer>();
 
@@ -190,26 +167,22 @@ public class HelmPatternCreator : MonoBehaviour
             return;
         }
 
-        // Name the new sequencer
         newSequencer.name = "Helm Pattern " + (targetSequencers.Count + 1);
-
-        // Set loop to false when creating
         newSequencer.loop = false;
 
-        // Transfer notes from the source sequencer to the new sequencer
         TransferNotes(sourceSequencer, newSequencer);
 
-        // Add the new sequencer to the top of the list
-        targetSequencers.Insert(0, newSequencer);
+        targetSequencers.Insert(targetSequencers.Count, newSequencer);
 
-        // Set the flag to indicate patterns have been created
         patternsCreated = true;
-
-        // Reset the currentSequencerIndex to reflect new additions
         currentSequencerIndex = 0;
 
-        // Update pattern display
-        UpdatePatternDisplay();
+        if (patternDisplayText != null)
+        {
+            int totalPatterns = targetSequencers.Count;
+            int displayIndex = (totalPatterns > 0) ? (currentSequencerIndex + 1) : 0; // Display index should be 1-based
+            patternDisplayText.text = $"{totalPatterns}/{totalPatterns}";
+        }
 
         Debug.Log("Pattern created and added to the top of the list.");
     }
@@ -218,10 +191,8 @@ public class HelmPatternCreator : MonoBehaviour
     {
         if (source != null && target != null)
         {
-            // Clear existing notes in the target sequencer
             target.Clear();
 
-            // Transfer notes from the source sequencer to the target sequencer
             foreach (AudioHelm.Note note in source.GetAllNotes())
             {
                 target.AddNote(note.note, note.start, note.end, note.velocity);
@@ -244,21 +215,17 @@ public class HelmPatternCreator : MonoBehaviour
             return;
         }
 
-        // Ensure the source sequencer is stopped
         sourceSequencer.AllNotesOff();
         sourceSequencer.loop = false;
         sourceSequencer.gameObject.GetComponent<AudioSource>().volume = 0;
 
         isPlaying = true;
 
-        // Pause the clock before starting playback
         clock.Reset();
         ResumeClock();
 
-        // Initialize the sequencer index
-        currentSequencerIndex = -1; // Set to -1 to ensure the first index is 0 in SmoothTransitionToNextSequencer
+        currentSequencerIndex = -1;
 
-        // Start playing the first sequencer
         StartCoroutine(SmoothTransitionToNextSequencer());
 
         UpdatePatternDisplay();
@@ -276,19 +243,15 @@ public class HelmPatternCreator : MonoBehaviour
             return;
         }
 
-        // Stop playback of all sequencers
         foreach (var sequencer in targetSequencers)
         {
             StopSequencer(sequencer);
         }
 
-        // Reset the clock when stopping playback
         clock.Reset();
 
-        // Reset the current sequencer index
-        currentSequencerIndex = -1; // Set to -1 to ensure correct starting index
+        currentSequencerIndex = -1;
 
-        // Update the pattern display
         UpdatePatternDisplay();
 
         isPlaying = false;
@@ -304,20 +267,16 @@ public class HelmPatternCreator : MonoBehaviour
             return;
         }
 
-        // Remove the last sequencer in the list
         int indexToRemove = targetSequencers.Count - 1;
         HelmSequencer sequencerToRemove = targetSequencers[indexToRemove];
 
         if (sequencerToRemove != null)
         {
-            // Stop the sequencer if it is playing
             StopSequencer(sequencerToRemove);
 
-            // Remove the sequencer from the list and destroy its GameObject
             targetSequencers.RemoveAt(indexToRemove);
             Destroy(sequencerToRemove.gameObject);
 
-            // Update BoardManager if necessary
             if (boardManager != null)
             {
                 boardManager.ResetBoard();
@@ -329,11 +288,9 @@ public class HelmPatternCreator : MonoBehaviour
                 }
             }
 
-            // Update pattern display
-            // Adjust currentSequencerIndex if necessary
             if (targetSequencers.Count == 0)
             {
-                currentSequencerIndex = -1; // No patterns available
+                currentSequencerIndex = -1;
             }
             else if (currentSequencerIndex >= targetSequencers.Count)
             {
@@ -351,13 +308,11 @@ public class HelmPatternCreator : MonoBehaviour
         if (patternDisplayText != null)
         {
             int totalPatterns = targetSequencers.Count;
-            int displayIndex = isPlaying && totalPatterns > 0 ? (currentSequencerIndex + 1) : 0; // Display index should be 1-based
-
+            int displayIndex = (totalPatterns > 0) ? (currentSequencerIndex + 1) : 0; // Display index should be 1-based
             patternDisplayText.text = $"{displayIndex}/{totalPatterns}";
         }
     }
 
-    // Dummy methods for clock management
     void PauseClock()
     {
         if (clock != null)
