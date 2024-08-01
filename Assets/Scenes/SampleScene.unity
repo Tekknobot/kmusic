@@ -4944,34 +4944,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!83 &289942980
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &292045202
 GameObject:
   m_ObjectHideFlags: 0
@@ -19308,7 +19280,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8329820468214787007, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
   m_PrefabInstance: {fileID: 8344174515292366550}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 2019158421}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 03c2100a494de423e9975762c775cfac, type: 3}
@@ -37747,7 +37719,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sourceSequencer: {fileID: 994914757}
-  sequencerPrefab: {fileID: 9130518919848579439, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+  sequencerPrefab: {fileID: 2019158421}
   createPatternButton: {fileID: 643452366}
   playPatternsButton: {fileID: 2101984522}
   stopPatternsButton: {fileID: 1365332597}
@@ -39474,6 +39446,11 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -5.0000153}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &2019158421 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9130518919848579439, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+  m_PrefabInstance: {fileID: 8344174515292366550}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2020548889
 GameObject:
   m_ObjectHideFlags: 0
@@ -41833,7 +41810,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2101984521
 RectTransform:
   m_ObjectHideFlags: 0
@@ -45930,7 +45907,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9130518919848579439, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
       propertyPath: m_Name
-      value: HelmSeqeuncer
+      value: HelmSequencer
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

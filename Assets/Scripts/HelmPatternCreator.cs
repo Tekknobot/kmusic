@@ -116,10 +116,13 @@ public class HelmPatternCreator : MonoBehaviour
                 yield break;
             }
 
+            // Disable AudioSource volume
+            nextSequencer.GetComponent<AudioSource>().volume = 0;
+
             // Start the next sequencer
             StartSequencer(nextSequencer);
 
-            // Enable AudioSource component
+            // Enable AudioSource volume
             nextSequencer.GetComponent<AudioSource>().volume = 1;
 
             // Wait until the loop ends
@@ -204,7 +207,7 @@ public class HelmPatternCreator : MonoBehaviour
         // Transfer notes from the source sequencer to the new sequencer
         TransferNotes(sourceSequencer, newSequencer);
 
-        // Add the new sequencer to the list
+        // Add the new sequencer to the list in the correct order
         targetSequencers.Add(newSequencer);
 
         // Set the flag to indicate patterns have been created
@@ -256,6 +259,9 @@ public class HelmPatternCreator : MonoBehaviour
         clock.Reset();
         ResumeClock();
 
+        // Initialize the sequencer index
+        currentSequencerIndex = -1; // Set to -1 to ensure the first index is 0 in SmoothTransitionToNextSequencer
+
         // Start playing the first sequencer
         StartCoroutine(SmoothTransitionToNextSequencer());
 
@@ -284,7 +290,7 @@ public class HelmPatternCreator : MonoBehaviour
         clock.Reset();
 
         // Reset the current sequencer index
-        currentSequencerIndex = 0;
+        currentSequencerIndex = -1; // Set to -1 to ensure correct starting index
 
         UpdatePatternDisplay();
 
@@ -330,7 +336,7 @@ public class HelmPatternCreator : MonoBehaviour
             // Adjust currentSequencerIndex if necessary
             if (targetSequencers.Count == 0)
             {
-                currentSequencerIndex = 0;
+                currentSequencerIndex = -1; // No patterns available
             }
             else if (currentSequencerIndex >= targetSequencers.Count)
             {
