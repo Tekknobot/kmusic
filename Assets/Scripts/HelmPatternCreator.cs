@@ -273,7 +273,7 @@ public class HelmPatternCreator : MonoBehaviour
     IEnumerator StartPlaybackCoroutine()
     {
         boardManager.ResetBoard();
-        
+
         // Calculate the duration of one bar based on BPM
         float secondsPerBeat = 60f / clock.bpm;
         float oneBarDuration = secondsPerBeat * 4; // Assuming 4 beats per bar

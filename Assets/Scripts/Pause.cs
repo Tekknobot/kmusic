@@ -17,19 +17,17 @@ public class Pause : MonoBehaviour
     {
         if (helmClock != null && pauseToggle != null)
         {
-            // Set the clock to pause (playing) on start
-            helmClock.pause = true;
+            // Set the clock to unpause (playing) on start
+            helmClock.pause = false;
 
             // Initialize the Toggle's state based on the clock's paused state
-            pauseToggle.isOn = false;
+            pauseToggle.isOn = helmClock.pause;
 
             // Add listener for toggle value changes
             pauseToggle.onValueChanged.AddListener(OnToggleValueChanged);
         }
-        else
-        {
-            Debug.LogWarning("helmClock or pauseToggle is not assigned in the inspector.");
-        }
+
+        pauseToggle.isOn = true;
     }
 
     // Called when the Toggle value changes
@@ -43,30 +41,8 @@ public class Pause : MonoBehaviour
             // Reset the clock if the toggle is turned on
             if (isOn)
             {
-                // Make sure the HelmPatternCreator exists and is properly assigned
-                var patternCreator = GameObject.Find("HelmPatternCreator")?.GetComponent<HelmPatternCreator>(); 
-                if (patternCreator.targetSequencers.Count > 0) {
-                    GameObject.Find("HelmSequencer").GetComponent<AudioSource>().volume = 0;
-                }               
-                patternCreator.StartPlayingPatterns();
+                helmClock.Reset();
             }
-            else 
-            {
-                // Make sure the HelmPatternCreator exists and is properly assigned
-                var patternCreator = GameObject.Find("HelmPatternCreator")?.GetComponent<HelmPatternCreator>();
-                if (patternCreator != null)
-                {
-                    patternCreator.StopCreatedPatterns();
-                }
-                else
-                {
-                    Debug.LogWarning("HelmPatternCreator not found or missing HelmPatternCreator component.");
-                }
-            }
-        }
-        else
-        {
-            Debug.LogWarning("helmClock is not assigned.");
         }
     }
 }
