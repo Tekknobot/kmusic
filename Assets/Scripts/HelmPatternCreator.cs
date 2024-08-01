@@ -116,14 +116,8 @@ public class HelmPatternCreator : MonoBehaviour
                 yield break;
             }
 
-            // Disable AudioSource volume
-            nextSequencer.GetComponent<AudioSource>().volume = 0;
-
             // Start the next sequencer
             StartSequencer(nextSequencer);
-
-            // Enable AudioSource volume
-            nextSequencer.GetComponent<AudioSource>().volume = 1;
 
             // Wait until the loop ends
             yield return new WaitUntil(() => boardManager.highlightedCellIndex == 15);
@@ -165,7 +159,6 @@ public class HelmPatternCreator : MonoBehaviour
         {
             sequencer.loop = false; // Stop the sequencer
             sequencer.AllNotesOff();
-            sequencer.GetComponent<AudioSource>().volume = 0; // Mute the AudioSource
             Debug.Log($"Stopped sequencer: {sequencer.name}");
         }
     }
@@ -202,7 +195,6 @@ public class HelmPatternCreator : MonoBehaviour
 
         // Set loop to false when creating
         newSequencer.loop = false;
-        newSequencer.GetComponent<AudioSource>().volume = 0;
 
         // Transfer notes from the source sequencer to the new sequencer
         TransferNotes(sourceSequencer, newSequencer);
