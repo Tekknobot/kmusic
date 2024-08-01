@@ -12527,6 +12527,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 670504442}
   m_CullTransparentMesh: 1
+--- !u!83 &675323896
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 48000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &675760559
 GameObject:
   m_ObjectHideFlags: 0
@@ -33329,6 +33357,8 @@ MonoBehaviour:
   sourceSequencer: {fileID: 994914757}
   sequencerPrefab: {fileID: 2019158421}
   clock: {fileID: 2020880539}
+  boardManager: {fileID: 1307356742}
+  patternUIManager: {fileID: 1172895990}
 --- !u!4 &1705486953
 Transform:
   m_ObjectHideFlags: 0
@@ -37786,60 +37816,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1951229907}
   m_CullTransparentMesh: 1
---- !u!1 &1951593132
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1951593134}
-  - component: {fileID: 1951593133}
-  m_Layer: 0
-  m_Name: HelmPatternCreator
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1951593133
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1951593132}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f8ec3bb4e09785547915b0093018f485, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sourceSequencer: {fileID: 994914757}
-  sequencerPrefab: {fileID: 2019158421}
-  createPatternButton: {fileID: 643452366}
-  playPatternsButton: {fileID: 2101984522}
-  stopPatternsButton: {fileID: 1365332597}
-  removePatternButton: {fileID: 1597036319}
-  patternDisplayText: {fileID: 2038423682}
-  boardManager: {fileID: 1307356742}
-  clock: {fileID: 2020880539}
-  targetSequencers: []
---- !u!4 &1951593134
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1951593132}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.4477608, y: -0.29736257, z: 863.2979}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1957500900
 GameObject:
   m_ObjectHideFlags: 0
@@ -46029,7 +46005,6 @@ SceneRoots:
   - {fileID: 1412768884}
   - {fileID: 2119059804}
   - {fileID: 1744627852}
-  - {fileID: 1951593134}
   - {fileID: 719920309}
   - {fileID: 1705486953}
   - {fileID: 1172895991}

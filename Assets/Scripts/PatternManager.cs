@@ -8,7 +8,8 @@ public class PatternManager : MonoBehaviour
     public HelmSequencer sourceSequencer;
     public GameObject sequencerPrefab;
     public AudioHelmClock clock;
-    public BoardManager boardManager;  // Add reference to BoardManager
+    public BoardManager boardManager;
+    public PatternUIManager patternUIManager; // Reference to the UI manager
 
     private List<HelmSequencer> patterns = new List<HelmSequencer>();
     private int currentPatternIndex = -1;
@@ -19,14 +20,12 @@ public class PatternManager : MonoBehaviour
 
     void Start()
     {
-        // Ensure clock is assigned
         if (clock == null)
         {
             Debug.LogError("AudioHelmClock not assigned.");
             return;
         }
 
-        // Pause the clock initially
         clock.pause = true;
     }
 
@@ -47,23 +46,25 @@ public class PatternManager : MonoBehaviour
             return;
         }
 
-        newSequencer.loop = false;
-        newSequencer.GetComponent<AudioSource>().volume = 0;
+        newSequencer.enabled = false;
 
         TransferNotes(sourceSequencer, newSequencer);
         patterns.Add(newSequencer);
 
-        Debug.Log("Pattern created and added to the list.");
+        Debug.Log($"Pattern created and added to the list. Total patterns: {patterns.Count}");
+
+        UpdateBoardManager();
+        UpdatePatternDisplay(); // Update UI
     }
 
     private void TransferNotes(HelmSequencer source, HelmSequencer target)
     {
         target.Clear();
-
         foreach (AudioHelm.Note note in source.GetAllNotes())
         {
             target.AddNote(note.note, note.start, note.end, note.velocity);
         }
+        Debug.Log("Notes transferred from source to target sequencer.");
     }
 
     public void StartPatterns()
@@ -78,6 +79,11 @@ public class PatternManager : MonoBehaviour
         clock.Reset();
         clock.pause = false;
 
+        if (sourceSequencer != null)
+        {
+            sourceSequencer.GetComponent<HelmSequencer>().enabled = false;
+        }
+
         StartCoroutine(PlayPatternsCoroutine());
     }
 
@@ -88,29 +94,28 @@ public class PatternManager : MonoBehaviour
             currentPatternIndex = (currentPatternIndex + 1) % patterns.Count;
             HelmSequencer currentPattern = patterns[currentPatternIndex];
 
-            StartPattern(currentPattern);
-            UpdateBoardManager(currentPattern);  // Update board manager with the current pattern notes
+            Debug.Log($"Playing pattern index: {currentPatternIndex}");
+
+            foreach (var pattern in patterns)
+            {
+                StopPattern(pattern);
+            }
+
+            currentPattern.enabled = true;
+            UpdateBoardManager(currentPattern);
+            UpdatePatternDisplay(); // Update UI
+            Debug.Log($"Started pattern: {currentPattern.name}");
 
             float secondsPerBeat = 60f / clock.bpm;
             float oneBarDuration = secondsPerBeat * 4;
 
             yield return new WaitForSeconds(oneBarDuration);
-
-            StopPattern(currentPattern);
         }
-    }
-
-    private void StartPattern(HelmSequencer pattern)
-    {
-        pattern.loop = true;
-        pattern.GetComponent<AudioSource>().volume = 1;
-        Debug.Log($"Started pattern: {pattern.name}");
     }
 
     private void StopPattern(HelmSequencer pattern)
     {
-        pattern.loop = false;
-        pattern.GetComponent<AudioSource>().volume = 0;
+        pattern.enabled = false;
         Debug.Log($"Stopped pattern: {pattern.name}");
     }
 
@@ -124,6 +129,13 @@ public class PatternManager : MonoBehaviour
             StopPattern(pattern);
         }
 
+        if (sourceSequencer != null)
+        {
+            sourceSequencer.GetComponent<HelmSequencer>().enabled = true;
+        }
+
+        UpdateBoardManager();
+        UpdatePatternDisplay(); // Update UI
         Debug.Log("Stopped all patterns.");
     }
 
@@ -136,6 +148,9 @@ public class PatternManager : MonoBehaviour
             patterns.RemoveAt(patterns.Count - 1);
 
             Debug.Log("Removed last pattern.");
+
+            UpdateBoardManager();
+            UpdatePatternDisplay(); // Update UI
         }
         else
         {
@@ -143,18 +158,37 @@ public class PatternManager : MonoBehaviour
         }
     }
 
-    private void UpdateBoardManager(HelmSequencer currentPattern)
+    private void UpdateBoardManager(HelmSequencer currentPattern = null)
     {
         if (boardManager != null)
         {
-            List<AudioHelm.Note> notes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
-            boardManager.ResetBoard();
-            boardManager.UpdateBoardWithNotes(notes);
-            boardManager.HighlightCellOnStep(currentPattern.currentIndex);
+            if (currentPattern != null)
+            {
+                List<AudioHelm.Note> notes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
+                boardManager.ResetBoard();
+                boardManager.UpdateBoardWithNotes(notes);
+                boardManager.HighlightCellOnStep(currentPattern.currentIndex);
+            }
+            else
+            {
+                boardManager.ResetBoard();
+            }
         }
         else
         {
             Debug.LogError("BoardManager not assigned.");
+        }
+    }
+
+    private void UpdatePatternDisplay()
+    {
+        if (patternUIManager != null)
+        {
+            patternUIManager.UpdatePatternDisplay();
+        }
+        else
+        {
+            Debug.LogError("PatternUIManager not assigned.");
         }
     }
 }

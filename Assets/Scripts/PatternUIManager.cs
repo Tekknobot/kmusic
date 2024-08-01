@@ -43,7 +43,7 @@ public class PatternUIManager : MonoBehaviour
         UpdatePatternDisplay();
     }
 
-    void UpdatePatternDisplay()
+    public void UpdatePatternDisplay()
     {
         int totalPatterns = patternManager.PatternsCount;
         int currentPatternIndex = patternManager.CurrentPatternIndex + 1; // Display index should be 1-based
