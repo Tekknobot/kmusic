@@ -17,12 +17,13 @@ public class HelmPatternCreator : MonoBehaviour
     public BoardManager boardManager;
     public AudioHelmClock clock;
 
-    private List<HelmSequencer> targetSequencers = new List<HelmSequencer>();
+    public List<HelmSequencer> targetSequencers = new List<HelmSequencer>();
     private bool patternsCreated = false;
     private bool isPlaying = false;
     private int currentSequencerIndex = -1;
     private bool isClockPaused = false;
-    private float loopDuration = 0f;
+    private bool hasStartedPlayback = false; // Flag to check if playback has started
+    private bool initialDelayApplied = false; // Flag for initial delay
 
     void Start()
     {
@@ -49,18 +50,29 @@ public class HelmPatternCreator : MonoBehaviour
             yield break;
         }
 
-        // Ensure all other sequencers have loop set to false
-        foreach (var sequencer in targetSequencers)
+        // Ensure the clock is running
+        if (clock != null)
         {
-            if (sequencer != null && targetSequencers.IndexOf(sequencer) != currentSequencerIndex)
-            {
-                sequencer.loop = false;
-                sequencer.AllNotesOff();
-            }
+            clock.Reset();
+            ResumeClock();
+        }
+        else
+        {
+            Debug.LogError("AudioHelmClock not assigned.");
+            yield break;
         }
 
         while (isPlaying)
         {
+            // Stop and mute all sequencers
+            foreach (var sequencer in targetSequencers)
+            {
+                if (sequencer != null && sequencer.gameObject.activeSelf)
+                {
+                    StopSequencer(sequencer);
+                }
+            }
+
             // Move to the next sequencer index
             currentSequencerIndex = (currentSequencerIndex + 1) % targetSequencers.Count;
             HelmSequencer nextSequencer = targetSequencers[currentSequencerIndex];
@@ -68,7 +80,7 @@ public class HelmPatternCreator : MonoBehaviour
             // Prepare and start the next sequencer
             PrepareSequencerForNextCycle(nextSequencer);
 
-            // Update the BoardManager with the notes of the queued-up sequencer
+            // Update the BoardManager with the notes of the next sequencer
             if (boardManager != null)
             {
                 List<AudioHelm.Note> notes = new List<AudioHelm.Note>(nextSequencer.GetAllNotes());
@@ -77,34 +89,26 @@ public class HelmPatternCreator : MonoBehaviour
                 boardManager.HighlightCellOnStep(nextSequencer.currentIndex);
             }
 
-            // Calculate the duration of the loop based on BPM and 16-step cycle
-            if (clock != null)
+            // Calculate the duration of one bar based on BPM
+            float secondsPerBeat = 60f / clock.bpm;
+            float oneBarDuration = secondsPerBeat * 4; // Assuming 4 beats per bar
+
+            // Start the next sequencer and set its volume to 1
+            StartSequencer(nextSequencer);
+
+            if (initialDelayApplied)
             {
-                float bpm = clock.bpm;
-                loopDuration = (960f / bpm) / 4f; // 16 steps per loop cycle
+                // Wait for the duration of one loop cycle (4 beats) after initial delay
+                yield return new WaitForSeconds(oneBarDuration);
             }
             else
             {
-                Debug.LogError("AudioHelmClock not assigned.");
-                yield break;
+                // Wait for one bar before starting playback
+                yield return new WaitForSeconds(oneBarDuration);
+
+                // Set flag to indicate initial delay has been applied
+                initialDelayApplied = true;
             }
-
-            // Start the next sequencer
-            StartSequencer(nextSequencer);
-
-            // Wait until the loop ends
-            yield return new WaitUntil(() => boardManager.highlightedCellIndex == 15);
-            
-            int stepsPerBeat = 4; // Adjust this based on how many steps per beat
-
-            // Calculate seconds per beat
-            float secondsPerBeat = 60f / clock.bpm;
-
-            // Calculate seconds per step
-            float secondsPerStep = secondsPerBeat / stepsPerBeat;
-
-            // Wait a little longer to ensure the sequencer has time to finish the step
-            yield return new WaitForSeconds(secondsPerStep + 0.1f);
 
             // Stop the current sequencer after the loop duration
             StopSequencer(nextSequencer);
@@ -137,6 +141,14 @@ public class HelmPatternCreator : MonoBehaviour
         {
             sequencer.loop = false;
             sequencer.AllNotesOff();
+
+            // Set volume to 0 when stopping
+            AudioSource audioSource = sequencer.gameObject.GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.volume = 0;
+            }
+
             Debug.Log($"Stopped sequencer: {sequencer.name}");
         }
     }
@@ -146,6 +158,14 @@ public class HelmPatternCreator : MonoBehaviour
         if (sequencer != null)
         {
             sequencer.loop = true;
+
+            // Set volume to 1 when starting
+            AudioSource audioSource = sequencer.gameObject.GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.volume = 1;
+            }
+
             Debug.Log($"Started sequencer: {sequencer.name}");
         }
     }
@@ -169,22 +189,18 @@ public class HelmPatternCreator : MonoBehaviour
 
         newSequencer.name = "Helm Pattern " + (targetSequencers.Count + 1);
         newSequencer.loop = false;
+        newSequencer.gameObject.GetComponent<AudioSource>().volume = 0;
 
         TransferNotes(sourceSequencer, newSequencer);
 
-        targetSequencers.Insert(targetSequencers.Count, newSequencer);
+        targetSequencers.Add(newSequencer);
 
         patternsCreated = true;
         currentSequencerIndex = 0;
 
-        if (patternDisplayText != null)
-        {
-            int totalPatterns = targetSequencers.Count;
-            int displayIndex = (totalPatterns > 0) ? (currentSequencerIndex + 1) : 0; // Display index should be 1-based
-            patternDisplayText.text = $"{totalPatterns}/{totalPatterns}";
-        }
+        UpdatePatternDisplay();
 
-        Debug.Log("Pattern created and added to the top of the list.");
+        Debug.Log("Pattern created and added to the list.");
     }
 
     void TransferNotes(HelmSequencer source, HelmSequencer target)
@@ -215,91 +231,135 @@ public class HelmPatternCreator : MonoBehaviour
             return;
         }
 
-        sourceSequencer.AllNotesOff();
-        sourceSequencer.loop = false;
-        sourceSequencer.gameObject.GetComponent<AudioSource>().volume = 0;
-
-        isPlaying = true;
-
-        clock.Reset();
-        ResumeClock();
-
-        currentSequencerIndex = -1;
-
-        StartCoroutine(SmoothTransitionToNextSequencer());
-
-        UpdatePatternDisplay();
-
-        Debug.Log("Started playing patterns.");
-
-        GameObject.Find("PAUSE").GetComponent<Toggle>().isOn = true;
-    }
-
-    public void StopCreatedPatterns()
-    {
-        if (!patternsCreated)
+        if (hasStartedPlayback)
         {
-            Debug.LogWarning("No patterns created to stop.");
+            Debug.LogWarning("Playback has already started.");
             return;
         }
 
+        // Stop and mute the source sequencer
+        sourceSequencer.AllNotesOff();
+        sourceSequencer.loop = false;
+        AudioSource sourceAudioSource = sourceSequencer.gameObject.GetComponent<AudioSource>();
+        if (sourceAudioSource != null)
+        {
+            sourceAudioSource.volume = 0;
+        }
+
+        // Initialize playback state
+        isPlaying = true;
+        hasStartedPlayback = true; // Set flag to true
+        initialDelayApplied = false; // Reset the initial delay flag
+
+        // Reset and resume the clock
+        clock.Reset();
+        ResumeClock();
+
+        // Stop all sequencers initially and set their volumes to 0
         foreach (var sequencer in targetSequencers)
         {
             StopSequencer(sequencer);
         }
 
-        clock.Reset();
+        // Start a coroutine to handle the initial delay and playback
+        StartCoroutine(StartPlaybackCoroutine());
 
-        currentSequencerIndex = -1;
+        Debug.Log("Started playing patterns.");
 
-        UpdatePatternDisplay();
+        // Ensure the PAUSE toggle is on
+        GameObject.Find("PAUSE").GetComponent<Toggle>().isOn = true;
+    }
 
+    IEnumerator StartPlaybackCoroutine()
+    {
+        boardManager.ResetBoard();
+        
+        // Calculate the duration of one bar based on BPM
+        float secondsPerBeat = 60f / clock.bpm;
+        float oneBarDuration = secondsPerBeat * 4; // Assuming 4 beats per bar
+
+        // Wait for one bar before starting playback
+        yield return new WaitForSeconds(oneBarDuration);
+
+        // Prepare and start the first sequencer
+        if (targetSequencers.Count > 0)
+        {
+            currentSequencerIndex = 0;
+            HelmSequencer firstSequencer = targetSequencers[currentSequencerIndex];
+            PrepareSequencerForNextCycle(firstSequencer);
+            StartSequencer(firstSequencer); // Start only the first sequencer
+
+            // Update the BoardManager with the notes of the first sequencer
+            if (boardManager != null)
+            {
+                List<AudioHelm.Note> notes = new List<AudioHelm.Note>(firstSequencer.GetAllNotes());
+                boardManager.ResetBoard();
+                boardManager.UpdateBoardWithNotes(notes);
+                boardManager.HighlightCellOnStep(firstSequencer.currentIndex);
+            }
+
+            // Update the pattern display to show the first sequencer
+            UpdatePatternDisplay();
+        }
+        else
+        {
+            Debug.LogError("No target sequencers available.");
+            isPlaying = false;
+            yield break;
+        }
+
+        // Start the coroutine to transition between sequencers
+        StartCoroutine(SmoothTransitionToNextSequencer());
+    }
+
+    public void StopCreatedPatterns()
+    {
+        if (clock != null)
+        {
+            clock.pause = true;
+            isClockPaused = true;
+        }
         isPlaying = false;
+        hasStartedPlayback = false; // Reset flag when stopping
+
+        // Stop and mute all sequencers
+        foreach (var sequencer in targetSequencers)
+        {
+            StopSequencer(sequencer);
+        }
 
         Debug.Log("Stopped all patterns.");
     }
 
     void RemovePattern()
     {
-        if (!patternsCreated || targetSequencers.Count == 0)
+        if (targetSequencers.Count > 0)
         {
-            Debug.LogWarning("No patterns created to remove.");
-            return;
-        }
+            HelmSequencer lastSequencer = targetSequencers[targetSequencers.Count - 1];
+            Destroy(lastSequencer.gameObject);
+            targetSequencers.RemoveAt(targetSequencers.Count - 1);
 
-        int indexToRemove = targetSequencers.Count - 1;
-        HelmSequencer sequencerToRemove = targetSequencers[indexToRemove];
-
-        if (sequencerToRemove != null)
-        {
-            StopSequencer(sequencerToRemove);
-
-            targetSequencers.RemoveAt(indexToRemove);
-            Destroy(sequencerToRemove.gameObject);
-
-            if (boardManager != null)
+            if (targetSequencers.Count > 0)
             {
-                boardManager.ResetBoard();
-                if (targetSequencers.Count > 0)
-                {
-                    HelmSequencer remainingSequencer = targetSequencers[Mathf.Clamp(currentSequencerIndex, 0, targetSequencers.Count - 1)];
-                    List<AudioHelm.Note> notes = new List<AudioHelm.Note>(remainingSequencer.GetAllNotes());
-                    boardManager.UpdateBoardWithNotes(notes);
-                }
+                currentSequencerIndex = Mathf.Min(currentSequencerIndex, targetSequencers.Count - 1);
+                HelmSequencer activeSequencer = targetSequencers[currentSequencerIndex];
+                PrepareSequencerForNextCycle(activeSequencer);
+                StartSequencer(activeSequencer);
             }
-
-            if (targetSequencers.Count == 0)
+            else
             {
                 currentSequencerIndex = -1;
-            }
-            else if (currentSequencerIndex >= targetSequencers.Count)
-            {
-                currentSequencerIndex = targetSequencers.Count - 1;
+                isPlaying = false;
             }
 
+            // Update pattern display
             UpdatePatternDisplay();
 
-            Debug.Log("Pattern removed.");
+            Debug.Log("Removed last pattern.");
+        }
+        else
+        {
+            Debug.LogWarning("No patterns to remove.");
         }
     }
 
@@ -313,23 +373,17 @@ public class HelmPatternCreator : MonoBehaviour
         }
     }
 
-    void PauseClock()
-    {
-        if (clock != null)
-        {
-            isClockPaused = true;
-            Debug.Log("Clock paused.");
-            clock.pause = true;
-        }
-    }
-
     void ResumeClock()
     {
         if (clock != null)
         {
+            clock.pause = false;
             isClockPaused = false;
             Debug.Log("Clock resumed.");
-            clock.pause = false;
+        }
+        else
+        {
+            Debug.LogError("AudioHelmClock not assigned.");
         }
     }
 }

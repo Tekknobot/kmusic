@@ -43,9 +43,11 @@ public class Pause : MonoBehaviour
             // Reset the clock if the toggle is turned on
             if (isOn)
             {
-                helmClock.Reset();
                 // Make sure the HelmPatternCreator exists and is properly assigned
-                var patternCreator = GameObject.Find("HelmPatternCreator")?.GetComponent<HelmPatternCreator>();                
+                var patternCreator = GameObject.Find("HelmPatternCreator")?.GetComponent<HelmPatternCreator>(); 
+                if (patternCreator.targetSequencers.Count > 0) {
+                    GameObject.Find("HelmSequencer").GetComponent<AudioSource>().volume = 0;
+                }               
                 patternCreator.StartPlayingPatterns();
             }
             else 
