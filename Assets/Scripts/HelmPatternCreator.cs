@@ -67,7 +67,7 @@ public class HelmPatternCreator : MonoBehaviour
     }
 
     IEnumerator SmoothTransitionToNextSequencer()
-    {        
+    {
         if (targetSequencers.Count == 0)
         {
             Debug.LogError("No target sequencers available for transition.");
@@ -199,16 +199,19 @@ public class HelmPatternCreator : MonoBehaviour
         // Transfer notes from the source sequencer to the new sequencer
         TransferNotes(sourceSequencer, newSequencer);
 
-        // Add the new sequencer to the list in the correct order
-        targetSequencers.Add(newSequencer);
+        // Add the new sequencer to the top of the list
+        targetSequencers.Insert(0, newSequencer);
 
         // Set the flag to indicate patterns have been created
         patternsCreated = true;
 
+        // Reset the currentSequencerIndex to reflect new additions
+        currentSequencerIndex = 0;
+
         // Update pattern display
         UpdatePatternDisplay();
 
-        Debug.Log("Pattern created and transferred.");
+        Debug.Log("Pattern created and added to the top of the list.");
     }
 
     void TransferNotes(HelmSequencer source, HelmSequencer target)
@@ -244,6 +247,7 @@ public class HelmPatternCreator : MonoBehaviour
         // Ensure the source sequencer is stopped
         sourceSequencer.AllNotesOff();
         sourceSequencer.loop = false;
+        sourceSequencer.gameObject.GetComponent<AudioSource>().volume = 0;
 
         isPlaying = true;
 
@@ -284,6 +288,7 @@ public class HelmPatternCreator : MonoBehaviour
         // Reset the current sequencer index
         currentSequencerIndex = -1; // Set to -1 to ensure correct starting index
 
+        // Update the pattern display
         UpdatePatternDisplay();
 
         isPlaying = false;
