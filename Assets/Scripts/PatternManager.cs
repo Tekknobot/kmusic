@@ -15,7 +15,7 @@ public class PatternManager : MonoBehaviour
     public PatternUIManager patternUIManager; // Reference to the UI manager
 
     public List<HelmSequencer> patterns = new List<HelmSequencer>();
-    private int currentPatternIndex = -1;
+    public int currentPatternIndex = -1;
     public bool isPlaying = false;
     private int currentStepIndex = 0; // Track the current step index
 
