@@ -6,21 +6,36 @@ using System;
 
 public class PatternManager : MonoBehaviour
 {
+    public static PatternManager Instance { get; private set; }
+
     public HelmSequencer sourceSequencer;
     public GameObject sequencerPrefab;
     public AudioHelmClock clock;
     public BoardManager boardManager;
     public PatternUIManager patternUIManager; // Reference to the UI manager
 
-    private List<HelmSequencer> patterns = new List<HelmSequencer>();
+    public List<HelmSequencer> patterns = new List<HelmSequencer>();
     private int currentPatternIndex = -1;
-    private bool isPlaying = false;
+    public bool isPlaying = false;
     private int currentStepIndex = 0; // Track the current step index
 
     public int PatternsCount => patterns.Count;
     public int CurrentPatternIndex => currentPatternIndex;
 
-    void Start()
+    private void Awake()
+    {
+        // Ensure this is the only instance
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // Optional: Keep instance between scenes
+    }
+
+    private void Start()
     {
         if (clock == null)
         {
@@ -316,6 +331,20 @@ public class PatternManager : MonoBehaviour
         else
         {
             Debug.LogWarning("No patterns to remove.");
+        }
+    }    
+
+    // New method to get the active sequencer
+    public HelmSequencer GetActiveSequencer()
+    {
+        if (currentPatternIndex >= 0 && currentPatternIndex < patterns.Count)
+        {
+            return patterns[currentPatternIndex];
+        }
+        else
+        {
+            Debug.LogWarning("No active pattern.");
+            return null;
         }
     }    
 }

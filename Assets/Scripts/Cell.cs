@@ -11,6 +11,7 @@ public class Cell : MonoBehaviour
 
     public Sprite defaultSprite;
     public GameObject sequencer;
+    public HelmSequencer activeSequencer;
     public float step;
 
     public Sprite CurrentSprite { get; private set; }
@@ -86,10 +87,15 @@ public class Cell : MonoBehaviour
 
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
-                if (helmSequencer != null)
+                if (PatternManager.Instance.isPlaying == true) {
+                    activeSequencer = PatternManager.Instance.GetActiveSequencer(); // Retrieve the current sequencer
+                }
+                else {
+                    activeSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>(); 
+                }                
+                if (activeSequencer != null)
                 {
-                    helmSequencer.RemoveNotesInRange(midiNote, this.step, this.step + 1);
+                    activeSequencer.RemoveNotesInRange(midiNote, this.step, this.step + 1);
                     KeyManager.Instance.RemoveKeyTileData(oldSprite, (int)step);
                     DataManager.EraseKeyTileDataToFile(KeyManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
@@ -126,10 +132,15 @@ public class Cell : MonoBehaviour
 
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                var helmSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
-                if (helmSequencer != null)
+                if (PatternManager.Instance.isPlaying == true) {
+                    activeSequencer = PatternManager.Instance.GetActiveSequencer(); // Retrieve the current sequencer
+                }
+                else {
+                    activeSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>(); 
+                }      
+                if (activeSequencer != null)
                 {
-                    helmSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    activeSequencer.AddNote(midiNote, step, step + 1, 1.0f);
                     KeyManager.Instance.SaveKeyTileData(newSprite, (int)step);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
