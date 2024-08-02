@@ -7196,34 +7196,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!83 &394482698
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &396069451
 GameObject:
   m_ObjectHideFlags: 0
@@ -29106,6 +29078,18 @@ MonoBehaviour:
   - {fileID: 21300000, guid: ca4f663a50045b94faae83d10ccb51b4, type: 3}
   - {fileID: 21300000, guid: a7e78a2a28226474caca011a5d9eb8e8, type: 3}
   - {fileID: 21300000, guid: 353ba624f317b60438bf29ea73d2bc29, type: 3}
+  - {fileID: 21300000, guid: 9756e11897d72d74f8ff129282280e4f, type: 3}
+  - {fileID: 21300000, guid: 60ef69b6f100cdb4eb03480c6eaaf0b1, type: 3}
+  - {fileID: 21300000, guid: 042ea665dd447c34f848e3b77f16a176, type: 3}
+  - {fileID: 21300000, guid: 011d7e623c4308c4187c6828b527098d, type: 3}
+  - {fileID: 21300000, guid: 85de50c5f66930d488865703e01acd65, type: 3}
+  - {fileID: 21300000, guid: 9105f83d878322849b49ff8263e8d7cc, type: 3}
+  - {fileID: 21300000, guid: 506d68016c08dc14386f7210e9f0703a, type: 3}
+  - {fileID: 21300000, guid: 65945d8342638bf42aea7c65a9ce80a7, type: 3}
+  - {fileID: 21300000, guid: 6bc0bffed3bce01419bb7dd0d6ed76cc, type: 3}
+  - {fileID: 21300000, guid: 5d9d24af9c85bf14c960fe042cc7c55a, type: 3}
+  - {fileID: 21300000, guid: 6867c6e3ead23cc4385027d6d67e32aa, type: 3}
+  - {fileID: 21300000, guid: a19f05b6d1a188a49a47f871a5bb2470, type: 3}
   currentSprite: {fileID: 0}
   midiNote: 0
 --- !u!1 &1475279119
@@ -33359,6 +33343,8 @@ MonoBehaviour:
   clock: {fileID: 2020880539}
   boardManager: {fileID: 1307356742}
   patternUIManager: {fileID: 1172895990}
+  patterns: []
+  isPlaying: 0
 --- !u!4 &1705486953
 Transform:
   m_ObjectHideFlags: 0
@@ -37210,6 +37196,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1916040118}
   m_CullTransparentMesh: 1
+--- !u!83 &1918770146
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 48000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &1921623984
 GameObject:
   m_ObjectHideFlags: 0
