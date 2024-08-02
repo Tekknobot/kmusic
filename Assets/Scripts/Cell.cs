@@ -87,7 +87,7 @@ public class Cell : MonoBehaviour
 
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                if (PatternManager.Instance.isPlaying == true) {
+                if (PatternManager.Instance.patterns.Count > 0) {
                     activeSequencer = PatternManager.Instance.GetActiveSequencer(); // Retrieve the current sequencer
                 }
                 else {
@@ -134,7 +134,7 @@ public class Cell : MonoBehaviour
 
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                if (PatternManager.Instance.isPlaying == true) {
+                if (PatternManager.Instance.patterns.Count > 0) {
                     activeSequencer = PatternManager.Instance.GetActiveSequencer(); // Retrieve the current sequencer
                 }
                 else {
