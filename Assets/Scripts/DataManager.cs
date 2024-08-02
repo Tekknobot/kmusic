@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
-using System; // Add this directive for Exception
 
 public class DataManager : MonoBehaviour
 {
@@ -178,7 +178,6 @@ public class DataManager : MonoBehaviour
         return tileData;
     }
 
-
     // Erase specific key tile data from file
     public static void EraseKeyTileDataToFile(string spriteName, int step)
     {
@@ -232,5 +231,66 @@ public class DataManager : MonoBehaviour
         {
             Debug.LogWarning("Key tile data file does not exist.");
         }
+    }
+
+    // Save patterns to a file
+    public static void SavePatternsToFile(List<PatternData> patterns)
+    {
+        string path = Path.Combine(Application.persistentDataPath, "patterns.dat");
+        Debug.Log("Persistent Data Path: " + Application.persistentDataPath);
+
+        try
+        {
+            using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(fileStream, patterns);
+            }
+        }
+        catch (IOException ex)
+        {
+            Debug.LogError($"IOException while saving patterns: {ex.Message}");
+        }
+    }
+
+    // Load patterns from a file
+    public static List<PatternData> LoadPatternsFromFile()
+    {
+        string path = Path.Combine(Application.persistentDataPath, "patterns.dat");
+        List<PatternData> patterns = new List<PatternData>();
+
+        if (File.Exists(path))
+        {
+            try
+            {
+                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    patterns = (List<PatternData>)formatter.Deserialize(fileStream);
+                }
+            }
+            catch (IOException ex)
+            {
+                Debug.LogError($"IOException while loading patterns: {ex.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Patterns file does not exist.");
+        }
+
+        return patterns;
+    }
+}
+
+[Serializable]
+public class PatternData
+{
+    public string Name;                // Example property
+    public List<TileData> Tiles;       // List of TileData objects
+
+    public PatternData()
+    {
+        Tiles = new List<TileData>();  // Initialize list to avoid null reference
     }
 }

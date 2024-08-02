@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using AudioHelm;
+using System;
 
 public class PatternManager : MonoBehaviour
 {
@@ -28,6 +29,7 @@ public class PatternManager : MonoBehaviour
         }
 
         clock.pause = true;
+        LoadPatterns();
     }
 
     public void CreatePattern()
@@ -56,6 +58,8 @@ public class PatternManager : MonoBehaviour
 
         UpdateBoardManager();
         UpdatePatternDisplay(); // Update UI
+
+        SavePatterns();
     }
 
     private void TransferNotes(HelmSequencer source, HelmSequencer target)
@@ -127,7 +131,7 @@ public class PatternManager : MonoBehaviour
             Debug.Log($"Started pattern: {currentPattern.name}");
 
             // Wait for the duration of one bar
-            yield return new WaitUntil(()=> boardManager.GetHighlightedCellIndex() == 15);
+            yield return new WaitUntil(() => boardManager.GetHighlightedCellIndex() == 15);
 
             yield return new WaitForSeconds(stepDuration); // Adjust if needed
         }
@@ -159,22 +163,24 @@ public class PatternManager : MonoBehaviour
         Debug.Log("Stopped all patterns.");
     }
 
-    public void RemoveLastPattern()
+    public void RemovePattern(int index)
     {
-        if (patterns.Count > 0)
+        if (index >= 0 && index < patterns.Count)
         {
-            HelmSequencer lastPattern = patterns[patterns.Count - 1];
-            Destroy(lastPattern.gameObject);
-            patterns.RemoveAt(patterns.Count - 1);
+            HelmSequencer patternToRemove = patterns[index];
+            Destroy(patternToRemove.gameObject);
+            patterns.RemoveAt(index);
 
-            Debug.Log("Removed last pattern.");
+            Debug.Log($"Removed pattern at index: {index}");
 
             UpdateBoardManager();
             UpdatePatternDisplay(); // Update UI
+
+            SavePatterns(); // Save the updated list of patterns
         }
         else
         {
-            Debug.LogWarning("No patterns to remove.");
+            Debug.LogWarning("Invalid index. Cannot remove pattern.");
         }
     }
 
@@ -210,5 +216,87 @@ public class PatternManager : MonoBehaviour
         {
             Debug.LogError("PatternUIManager not assigned.");
         }
-    }       
+    }   
+
+    public void SavePatterns()
+    {
+        // Convert patterns to PatternData
+        List<PatternData> patternDataList = new List<PatternData>();
+        foreach (var pattern in patterns)
+        {
+            PatternData patternData = ConvertSequencerToPatternData(pattern);
+            patternDataList.Add(patternData);
+        }
+
+        // Save the list of PatternData to file
+        DataManager.SavePatternsToFile(patternDataList);
+        Debug.Log("Patterns saved to file.");
+    }
+
+    private PatternData ConvertSequencerToPatternData(HelmSequencer sequencer)
+    {
+        PatternData patternData = new PatternData
+        {
+            Name = sequencer.name // Or another identifier if needed
+        };
+
+        foreach (AudioHelm.Note note in sequencer.GetAllNotes())
+        {
+            // Convert each note to TileData or appropriate format
+            TileData tileData = new TileData
+            {
+                SpriteName = note.note.ToString(), // Convert note to a string or use another method if needed
+                Step = note.start // Use start or another property as needed
+            };
+            patternData.Tiles.Add(tileData);
+        }
+
+        return patternData;
+    }
+
+    public void LoadPatterns()
+    {
+        // Load the list of PatternData from file
+        List<PatternData> patternDataList = DataManager.LoadPatternsFromFile();
+        patterns.Clear(); // Clear existing patterns
+
+        foreach (var patternData in patternDataList)
+        {
+            HelmSequencer newSequencer = Instantiate(sequencerPrefab).GetComponent<HelmSequencer>();
+            if (newSequencer != null)
+            {
+                newSequencer.enabled = false;
+                PopulateSequencerFromPatternData(newSequencer, patternData);
+                patterns.Add(newSequencer);
+            }
+        }
+
+        Debug.Log("Patterns loaded from file.");
+        UpdatePatternDisplay(); // Update UI to reflect loaded patterns
+    }
+
+    private void PopulateSequencerFromPatternData(HelmSequencer sequencer, PatternData patternData)
+    {
+        foreach (var tile in patternData.Tiles)
+        {
+            // Convert TileData back to AudioHelm.Note
+            // Note: Adjust parsing based on how you saved notes
+            int noteValue;
+            if (int.TryParse(tile.SpriteName, out noteValue)) // Example conversion
+            {
+                AudioHelm.Note note = new AudioHelm.Note
+                {
+                    note = noteValue, // Use integer value for the note
+                    start = tile.Step, // Use start value
+                    end = tile.Step + 1, // Example end value, adjust as needed
+                    velocity = 1.0f // Example default value, adjust as needed
+                };
+                sequencer.AddNote(note.note, note.start, note.end, note.velocity);
+            }
+            else
+            {
+                Debug.LogError($"Failed to parse note value from {tile.SpriteName}");
+            }
+        }
+    }
 }
