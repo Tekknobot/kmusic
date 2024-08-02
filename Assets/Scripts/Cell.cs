@@ -119,6 +119,8 @@ public class Cell : MonoBehaviour
                     Debug.LogError("SampleSequencer component not found on Sequencer.");
                 }
             }
+
+            PatternManager.Instance.SavePatterns();
         }
         else
         {
@@ -165,6 +167,7 @@ public class Cell : MonoBehaviour
 
             DataManager.SaveTileDataToFile(PadManager.Instance.tileDataGroups);
             DataManager.SaveKeyTileDataToFile(KeyManager.Instance.tileData);
+            PatternManager.Instance.SavePatterns();
         }
     }
 

@@ -173,7 +173,7 @@ public class PatternManager : MonoBehaviour
             sourceSequencer.GetComponent<HelmSequencer>().enabled = true;
         }
 
-        UpdateBoardManager();
+        //UpdateBoardManager();
         UpdatePatternDisplay(); // Update UI
         Debug.Log("Stopped all patterns.");
     }
