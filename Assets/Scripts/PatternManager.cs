@@ -148,7 +148,7 @@ public class PatternManager : MonoBehaviour
             // Wait for the duration of one bar
             yield return new WaitUntil(() => boardManager.GetHighlightedCellIndex() == 15);
 
-            yield return new WaitForSeconds(stepDuration + 0.1f); // Adjust if needed
+            yield return new WaitForSeconds(stepDuration); // Adjust if needed
         }
     }
 
