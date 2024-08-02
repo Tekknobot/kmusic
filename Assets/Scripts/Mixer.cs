@@ -17,6 +17,7 @@ public class Mixer : MonoBehaviour
 
     private string[] groupNames = new string[8]; // To store the names of the audio mixer groups
     private Dictionary<string, float> originalVolumes = new Dictionary<string, float>(); // To store original volumes
+    private Dictionary<string, float> currentVolumes = new Dictionary<string, float>(); // To store current volumes
 
     private const string PLAYER_PREFS_PREFIX = "Mixer_"; // Prefix for PlayerPrefs keys
 
@@ -35,12 +36,16 @@ public class Mixer : MonoBehaviour
             Slider slider = sliders[i];
             if (slider != null)
             {
-                slider.onValueChanged.AddListener(delegate { OnSliderValueChanged(slider); });
+                int index = i; // Capture the index for use in the lambda
+                slider.onValueChanged.AddListener(delegate { OnSliderValueChanged(slider, index); });
             }
             else
             {
                 Debug.LogError($"Slider at index {i} is not assigned.");
             }
+
+            // Store the name of each group
+            groupNames[i] = slider.name; // Assuming slider names match group names
         }
 
         // Initialize mute and solo buttons
@@ -56,9 +61,6 @@ public class Mixer : MonoBehaviour
             {
                 Debug.LogError($"Mute button at index {i} is not assigned.");
             }
-
-            // Store the name of each group
-            groupNames[i] = sliders[i].name; // Assuming slider names match group names
         }
 
         // Initialize Helm slider
@@ -88,8 +90,14 @@ public class Mixer : MonoBehaviour
         }
     }
 
-    void OnSliderValueChanged(Slider changedSlider)
+    void OnSliderValueChanged(Slider changedSlider, int index)
     {
+        // Check if the corresponding mute button is on
+        if (muteButtons[index].isOn)
+        {
+            return; // Ignore slider changes when muted
+        }
+
         Debug.Log("Slider value changed: " + changedSlider.value);
 
         // Assuming the slider's name matches the exposed parameter name in the AudioMixer
@@ -106,6 +114,9 @@ public class Mixer : MonoBehaviour
             {
                 Debug.LogError($"Failed to set AudioMixer parameter '{parameterName}'. Ensure the parameter is exposed and the name matches.");
             }
+
+            // Save the current volume
+            currentVolumes[parameterName] = sliderValue;
 
             // Save the slider value
             SaveSliderValue(parameterName, sliderValue);
@@ -132,6 +143,9 @@ public class Mixer : MonoBehaviour
                 Debug.LogError($"Failed to set AudioMixer parameter '{parameterName}'. Ensure the parameter is exposed and the name matches.");
             }
 
+            // Save the current volume
+            currentVolumes[parameterName] = value;
+
             // Save the slider value
             SaveSliderValue(parameterName, value);
             SaveHelmSliderValue(value); // Save Helm slider value to PlayerPrefs
@@ -150,9 +164,25 @@ public class Mixer : MonoBehaviour
 
         if (mixer != null)
         {
-            // Set volume to -80dB if muted, or restore original volume if unmuted
-            float dBValue = isMuted ? -80f : originalVolumes[groupName];
-            mixer.SetFloat(groupName, dBValue);
+            if (isMuted)
+            {
+                // Store the current volume before muting
+                float currentVolume;
+                mixer.GetFloat(groupName, out currentVolume);
+                currentVolumes[groupName] = currentVolume;
+
+                // Set volume to -80dB if muted
+                mixer.SetFloat(groupName, -80f);
+            }
+            else
+            {
+                // Restore the current slider value if unmuted
+                float sliderValue = sliders[index].value;
+                mixer.SetFloat(groupName, sliderValue);
+
+                // Update the currentVolumes dictionary
+                currentVolumes[groupName] = sliderValue;
+            }
         }
         else
         {
@@ -186,7 +216,7 @@ public class Mixer : MonoBehaviour
                     if (slider.name == groupName)
                     {
                         slider.value = savedValue;
-                        OnSliderValueChanged(slider); // Update AudioMixer
+                        OnSliderValueChanged(slider, System.Array.IndexOf(sliders, slider)); // Update AudioMixer
                         break;
                     }
                 }
