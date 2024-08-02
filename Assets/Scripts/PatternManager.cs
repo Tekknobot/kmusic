@@ -14,6 +14,7 @@ public class PatternManager : MonoBehaviour
     private List<HelmSequencer> patterns = new List<HelmSequencer>();
     private int currentPatternIndex = -1;
     private bool isPlaying = false;
+    private int currentStepIndex = 0; // Track the current step index
 
     public int PatternsCount => patterns.Count;
     public int CurrentPatternIndex => currentPatternIndex;
@@ -75,6 +76,12 @@ public class PatternManager : MonoBehaviour
             return;
         }
 
+        if (clock == null)
+        {
+            Debug.LogError("Clock not assigned.");
+            return;
+        }
+
         isPlaying = true;
         clock.Reset();
         clock.pause = false;
@@ -84,32 +91,45 @@ public class PatternManager : MonoBehaviour
             sourceSequencer.GetComponent<HelmSequencer>().enabled = false;
         }
 
+        StopAllCoroutines(); // Stop any previous coroutines to avoid conflicts
         StartCoroutine(PlayPatternsCoroutine());
     }
 
     private IEnumerator PlayPatternsCoroutine()
     {
+        Debug.Log("Coroutine started.");
+
         while (isPlaying)
         {
+            // Calculate the duration of one bar based on BPM
+            float secondsPerBeat = 60f / clock.bpm;
+            float oneBarDuration = secondsPerBeat * 4; // 4 beats per bar
+            float quarterBarDuration = secondsPerBeat; // Duration of one beat
+
+            float stepDuration = secondsPerBeat / 4; // Duration of one step
+
+            // Move to the next pattern
             currentPatternIndex = (currentPatternIndex + 1) % patterns.Count;
             HelmSequencer currentPattern = patterns[currentPatternIndex];
 
             Debug.Log($"Playing pattern index: {currentPatternIndex}");
 
+            // Stop all patterns
             foreach (var pattern in patterns)
             {
                 StopPattern(pattern);
             }
 
+            // Enable and play the current pattern
             currentPattern.enabled = true;
             UpdateBoardManager(currentPattern);
             UpdatePatternDisplay(); // Update UI
             Debug.Log($"Started pattern: {currentPattern.name}");
 
-            float secondsPerBeat = 60f / clock.bpm;
-            float oneBarDuration = secondsPerBeat * 4;
+            // Wait for the duration of one bar
+            yield return new WaitUntil(()=> boardManager.GetHighlightedCellIndex() == 15);
 
-            yield return new WaitForSeconds(oneBarDuration);
+            yield return new WaitForSeconds(stepDuration); // Adjust if needed
         }
     }
 
@@ -167,7 +187,7 @@ public class PatternManager : MonoBehaviour
                 List<AudioHelm.Note> notes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
                 boardManager.ResetBoard();
                 boardManager.UpdateBoardWithNotes(notes);
-                boardManager.HighlightCellOnStep(currentPattern.currentIndex);
+                boardManager.HighlightCellOnStep(currentStepIndex);
             }
             else
             {
@@ -190,5 +210,5 @@ public class PatternManager : MonoBehaviour
         {
             Debug.LogError("PatternUIManager not assigned.");
         }
-    }
+    }       
 }

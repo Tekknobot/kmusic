@@ -28,6 +28,8 @@ public class Pause : MonoBehaviour
         }
 
         pauseToggle.isOn = true;
+
+        helmClock.Reset();
     }
 
     // Called when the Toggle value changes
