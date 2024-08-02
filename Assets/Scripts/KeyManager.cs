@@ -177,14 +177,14 @@ public class KeyManager : MonoBehaviour
 
             // Scale the clicked key temporarily
             StartCoroutine(ScaleKey(clickedKey));
-            BoardManager.Instance.ResetBoard();
+            //BoardManager.Instance.ResetBoard();
         }
 
         // Additional debug information
         Debug.Log($"Clicked Key: {clickedKey.name}");
         
         // Load tile data for keys
-        DisplaySpriteOnMatchingSteps();
+        //DisplaySpriteOnMatchingSteps();
     }
 
     // Method to handle when a key is pressed down
