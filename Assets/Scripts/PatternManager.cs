@@ -299,4 +299,23 @@ public class PatternManager : MonoBehaviour
             }
         }
     }
+
+    public void RemoveLastPattern()
+    {
+        if (patterns.Count > 0)
+        {
+            HelmSequencer lastPattern = patterns[patterns.Count - 1];
+            Destroy(lastPattern.gameObject);
+            patterns.RemoveAt(patterns.Count - 1);
+
+            Debug.Log("Removed last pattern.");
+
+            UpdateBoardManager();
+            UpdatePatternDisplay(); // Update UI
+        }
+        else
+        {
+            Debug.LogWarning("No patterns to remove.");
+        }
+    }    
 }
