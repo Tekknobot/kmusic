@@ -1,8 +1,11 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO; // Add this for file operations
 using AudioHelm;
 using System;
+using System.Linq;
+using TMPro;
 
 public class PatternManager : MonoBehaviour
 {
@@ -21,7 +24,9 @@ public class PatternManager : MonoBehaviour
 
     public int PatternsCount => patterns.Count;
     public int CurrentPatternIndex => currentPatternIndex;
-
+    public static string LastProjectFilename { get; private set; }
+    private static string lastAccessedFile = null;
+    public TextMeshProUGUI projectFileText; // Reference to the TextMeshPro component
     private void Awake()
     {
         // Ensure this is the only instance
@@ -90,7 +95,6 @@ public class PatternManager : MonoBehaviour
         SavePatterns();
     }
 
-
     private void TransferNotes(HelmSequencer source, HelmSequencer target)
     {
         target.Clear();
@@ -134,32 +138,24 @@ public class PatternManager : MonoBehaviour
 
         while (isPlaying)
         {
-            // Calculate the duration of one bar based on BPM
             float secondsPerBeat = 60f / clock.bpm;
-            float oneBarDuration = secondsPerBeat * 4; // 4 beats per bar
-            float quarterBarDuration = secondsPerBeat; // Duration of one beat
-
             float stepDuration = secondsPerBeat / 4; // Duration of one step
 
-            // Move to the next pattern
             currentPatternIndex = (currentPatternIndex + 1) % patterns.Count;
             HelmSequencer currentPattern = patterns[currentPatternIndex];
 
             Debug.Log($"Playing pattern index: {currentPatternIndex}");
 
-            // Stop all patterns
             foreach (var pattern in patterns)
             {
                 StopPattern(pattern);
             }
 
-            // Enable and play the current pattern
             currentPattern.enabled = true;
             UpdateBoardManager(currentPattern);
             UpdatePatternDisplay(); // Update UI
             Debug.Log($"Started pattern: {currentPattern.name}");
 
-            // Wait for the duration of one bar
             yield return new WaitUntil(() => boardManager.GetHighlightedCellIndex() == 15);
 
             yield return new WaitForSeconds(stepDuration); // Adjust if needed
@@ -187,7 +183,6 @@ public class PatternManager : MonoBehaviour
             sourceSequencer.GetComponent<HelmSequencer>().enabled = true;
         }
 
-        //UpdateBoardManager();
         UpdatePatternDisplay(); // Update UI
         Debug.Log("Stopped all patterns.");
     }
@@ -249,7 +244,6 @@ public class PatternManager : MonoBehaviour
 
     public void SavePatterns()
     {
-        // Convert patterns to PatternData
         List<PatternData> patternDataList = new List<PatternData>();
         foreach (var pattern in patterns)
         {
@@ -257,7 +251,6 @@ public class PatternManager : MonoBehaviour
             patternDataList.Add(patternData);
         }
 
-        // Save the list of PatternData to file
         DataManager.SavePatternsToFile(patternDataList);
         Debug.Log("Patterns saved to file.");
     }
@@ -271,11 +264,10 @@ public class PatternManager : MonoBehaviour
 
         foreach (AudioHelm.Note note in sequencer.GetAllNotes())
         {
-            // Convert each note to TileData or appropriate format
             TileData tileData = new TileData
             {
-                SpriteName = note.note.ToString(), // Convert note to a string or use another method if needed
-                Step = note.start // Use start or another property as needed
+                SpriteName = note.note.ToString(),
+                Step = note.start
             };
             patternData.Tiles.Add(tileData);
         }
@@ -285,9 +277,8 @@ public class PatternManager : MonoBehaviour
 
     public void LoadPatterns()
     {
-        // Load the list of PatternData from file
         List<PatternData> patternDataList = DataManager.LoadPatternsFromFile();
-        patterns.Clear(); // Clear existing patterns
+        patterns.Clear();
 
         foreach (var patternData in patternDataList)
         {
@@ -308,17 +299,15 @@ public class PatternManager : MonoBehaviour
     {
         foreach (var tile in patternData.Tiles)
         {
-            // Convert TileData back to AudioHelm.Note
-            // Note: Adjust parsing based on how you saved notes
             int noteValue;
-            if (int.TryParse(tile.SpriteName, out noteValue)) // Example conversion
+            if (int.TryParse(tile.SpriteName, out noteValue))
             {
                 AudioHelm.Note note = new AudioHelm.Note
                 {
-                    note = noteValue, // Use integer value for the note
-                    start = tile.Step, // Use start value
-                    end = tile.Step + 1, // Example end value, adjust as needed
-                    velocity = 1.0f // Example default value, adjust as needed
+                    note = noteValue,
+                    start = tile.Step,
+                    end = tile.Step + 1,
+                    velocity = 1.0f
                 };
                 sequencer.AddNote(note.note, note.start, note.end, note.velocity);
             }
@@ -348,7 +337,6 @@ public class PatternManager : MonoBehaviour
         }
     }    
 
-    // New method to get the active sequencer
     public HelmSequencer GetActiveSequencer()
     {
         if (currentPatternIndex >= 0 && currentPatternIndex < patterns.Count)
@@ -361,4 +349,179 @@ public class PatternManager : MonoBehaviour
             return null;
         }
     }    
+
+    public void SaveProject(string filename)
+    {
+        ProjectData projectData = new ProjectData
+        {
+            Patterns = new List<PatternData>(),
+        };
+
+        foreach (var pattern in patterns)
+        {
+            PatternData patternData = ConvertSequencerToPatternData(pattern);
+            projectData.Patterns.Add(patternData);
+        }
+
+        string json = JsonUtility.ToJson(projectData, true);
+        File.WriteAllText(Path.Combine(Application.persistentDataPath, filename), json);
+        LastProjectFilename = filename; // Store the filename
+        Debug.Log($"Project saved to file: {filename}");
+    }
+
+
+    public void LoadProject(string filename)
+    {
+        string path = Path.Combine(Application.persistentDataPath, filename);
+        if (File.Exists(path))
+        {
+            try
+            {
+                string json = File.ReadAllText(path);
+                ProjectData projectData = JsonUtility.FromJson<ProjectData>(json);
+
+                // Clear current patterns
+                RemoveAllPatterns();
+
+                // Load patterns from project data
+                if (projectData != null && projectData.Patterns != null)
+                {
+                    foreach (var patternData in projectData.Patterns)
+                    {
+                        HelmSequencer newSequencer = Instantiate(sequencerPrefab).GetComponent<HelmSequencer>();
+                        if (newSequencer != null)
+                        {
+                            newSequencer.enabled = false;
+                            PopulateSequencerFromPatternData(newSequencer, patternData);
+                            patterns.Add(newSequencer);
+                        }
+                    }
+
+                    Debug.Log($"Project loaded from file: {filename}");
+                }
+                else
+                {
+                    Debug.LogError("Project data is null or empty.");
+                }
+
+                UpdatePatternDisplay(); // Update UI to reflect loaded patterns
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error loading project: {ex.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"File not found: {filename}");
+        }
+    }
+
+    private void RemoveAllPatterns()
+    {
+        foreach (var pattern in patterns)
+        {
+            Destroy(pattern.gameObject);
+        }
+        patterns.Clear();
+
+        Debug.Log("All patterns removed.");
+    }
+
+
+    public string GenerateUniqueFilename()
+    {
+        // Define the filename pattern to search for
+        string pattern = "Project_*.json";
+        string[] existingFiles = Directory.GetFiles(Application.persistentDataPath, pattern);
+
+        int highestNumber = 0;
+
+        // Iterate through existing files to find the highest number
+        foreach (string file in existingFiles)
+        {
+            // Extract the number from the filename
+            string filename = Path.GetFileNameWithoutExtension(file);
+            string numberPart = filename.Substring("Project_".Length);
+
+            // Try to parse the number
+            if (int.TryParse(numberPart, out int number))
+            {
+                if (number > highestNumber)
+                {
+                    highestNumber = number;
+                }
+            }
+        }
+
+        // Increment the highest number by 1 for the new filename
+        int newNumber = highestNumber + 1;
+        return $"Project_{newNumber}.json";
+    }
+
+
+    public string GetNextProjectFile()
+    {
+        // Get all files starting with "Project" in the persistent data path
+        string[] projectFiles = Directory.GetFiles(Application.persistentDataPath, "Project*.json");
+
+        if (projectFiles.Length == 0)
+        {
+            Debug.LogWarning("No project files found.");
+            return null;
+        }
+
+        // Sort files by creation time to ensure consistent ordering
+        var sortedFiles = projectFiles
+            .Select(file => new FileInfo(file))
+            .OrderBy(fileInfo => fileInfo.CreationTime)
+            .Select(fileInfo => fileInfo.FullName)
+            .ToArray();
+
+        // Find the index of the last accessed file
+        int startIndex = 0;
+        if (!string.IsNullOrEmpty(lastAccessedFile))
+        {
+            startIndex = Array.IndexOf(sortedFiles, lastAccessedFile);
+            startIndex = (startIndex + 1) % sortedFiles.Length; // Move to next file
+        }
+
+        // Get the next file
+        string nextFile = sortedFiles[startIndex];
+        lastAccessedFile = nextFile; // Update the last accessed file
+        LastProjectFilename = Path.GetFileName(nextFile); // Update the last project filename
+        
+        UpdateProjectFileText(); // Update the UI text
+
+        Debug.Log($"Next project file selected: {LastProjectFilename}");
+        return LastProjectFilename;
+    }
+
+    public void LoadNextProject()
+    {
+        string nextFilename = GetNextProjectFile();
+        if (!string.IsNullOrEmpty(nextFilename))
+        {
+            LoadProject(nextFilename);
+            UpdatePatternDisplay(); // Update UI
+        }
+    }  
+
+    private void UpdateProjectFileText()
+    {
+        if (projectFileText != null)
+        {
+            projectFileText.text = $"{LastProjectFilename}";
+        }
+        else
+        {
+            Debug.LogError("TextMeshProUGUI component is not assigned.");
+        }
+    }      
+}
+
+[System.Serializable]
+public class ProjectData
+{
+    public List<PatternData> Patterns = new List<PatternData>();
 }
