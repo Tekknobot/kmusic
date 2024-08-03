@@ -547,6 +547,19 @@ public class PatternManager : MonoBehaviour
             Debug.LogWarning("No current pattern to clear.");
         }
     }
+
+    private void OnApplicationQuit()
+    {
+        // Check if there is a filename for the current project
+        if (!string.IsNullOrEmpty(LastProjectFilename))
+        {
+            SaveProject(LastProjectFilename);
+        }
+        else
+        {
+            Debug.LogWarning("No project filename specified. Patterns will not be saved.");
+        }
+    }    
    
 }
 
