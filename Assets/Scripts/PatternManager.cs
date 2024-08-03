@@ -548,7 +548,7 @@ public class PatternManager : MonoBehaviour
         }
     }
 
-    private void OnApplicationQuit()
+    public void SaveOver()
     {
         // Check if there is a filename for the current project
         if (!string.IsNullOrEmpty(LastProjectFilename))
