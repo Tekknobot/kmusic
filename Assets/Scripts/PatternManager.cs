@@ -49,9 +49,9 @@ public class PatternManager : MonoBehaviour
 
     public void CreatePattern()
     {
-        if (sequencerPrefab == null || sourceSequencer == null)
+        if (sequencerPrefab == null)
         {
-            Debug.LogError("Sequencer Prefab or Source Sequencer not assigned.");
+            Debug.LogError("Sequencer Prefab not assigned.");
             return;
         }
 
@@ -66,7 +66,20 @@ public class PatternManager : MonoBehaviour
 
         newSequencer.enabled = false;
 
-        TransferNotes(sourceSequencer, newSequencer);
+        if (patterns.Count > 0)
+        {
+            HelmSequencer lastSequencer = patterns[patterns.Count - 1];
+            TransferNotes(lastSequencer, newSequencer);
+        }
+        else if (sourceSequencer != null)
+        {
+            TransferNotes(sourceSequencer, newSequencer);
+        }
+        else
+        {
+            Debug.LogWarning("No existing sequencer to copy notes from.");
+        }
+
         patterns.Add(newSequencer);
 
         Debug.Log($"Pattern created and added to the list. Total patterns: {patterns.Count}");
@@ -76,6 +89,7 @@ public class PatternManager : MonoBehaviour
 
         SavePatterns();
     }
+
 
     private void TransferNotes(HelmSequencer source, HelmSequencer target)
     {
