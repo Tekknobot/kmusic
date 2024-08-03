@@ -518,6 +518,36 @@ public class PatternManager : MonoBehaviour
             Debug.LogError("TextMeshProUGUI component is not assigned.");
         }
     }      
+
+    public void ClearCurrentPattern()
+    {
+        if (currentPatternIndex >= 0 && currentPatternIndex < patterns.Count)
+        {
+            // Clear the current pattern's sequencer
+            HelmSequencer currentPattern = patterns[currentPatternIndex];
+            if (currentPattern != null)
+            {
+                currentPattern.Clear(); // Assuming Clear() method clears all notes and resets the sequencer
+                Debug.Log("Current pattern cleared.");
+            }
+
+            // Update the board
+            UpdateBoardManager(currentPattern);
+
+            // Update the UI
+            UpdatePatternDisplay();
+
+            // Save the updated state to reflect the cleared pattern
+            SavePatterns();
+
+            Debug.Log("Board reset, patterns updated, and patterns saved.");
+        }
+        else
+        {
+            Debug.LogWarning("No current pattern to clear.");
+        }
+    }
+   
 }
 
 [System.Serializable]
