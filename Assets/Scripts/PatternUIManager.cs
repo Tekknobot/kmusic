@@ -8,6 +8,8 @@ public class PatternUIManager : MonoBehaviour
     public Button playPatternsButton;
     public Button stopPatternsButton;
     public Button removePatternButton;
+    public Button saveNewProjectButton; // New button for saving the project
+    public Button loadProjectButton;    // New button for loading a project
     public TextMeshProUGUI patternDisplayText;
     public PatternManager patternManager;
 
@@ -17,6 +19,8 @@ public class PatternUIManager : MonoBehaviour
         if (playPatternsButton != null) playPatternsButton.onClick.AddListener(StartPatterns);
         if (stopPatternsButton != null) stopPatternsButton.onClick.AddListener(StopPatterns);
         if (removePatternButton != null) removePatternButton.onClick.AddListener(RemoveLastPattern);
+        if (saveNewProjectButton != null) saveNewProjectButton.onClick.AddListener(SaveNewProject); // Register new button
+        if (loadProjectButton != null) loadProjectButton.onClick.AddListener(LoadProject);           // Register new button
     }
 
     void CreatePattern()
@@ -40,6 +44,18 @@ public class PatternUIManager : MonoBehaviour
     void RemoveLastPattern()
     {
         patternManager.RemoveLastPattern();
+        UpdatePatternDisplay();
+    }
+
+    void SaveNewProject()
+    {
+        patternManager.SavePatterns(); // Call the method to save patterns with a unique filename
+        UpdatePatternDisplay();
+    }
+
+    void LoadProject()
+    {
+        patternManager.LoadPatterns(); // Call the method to load patterns
         UpdatePatternDisplay();
     }
 
