@@ -55,6 +55,7 @@ public class PatternUIManager : MonoBehaviour
     {
         string filename = patternManager.GenerateUniqueFilename(); // Generate unique filename
         patternManager.SaveProject(filename); // Call the method to save project
+        PatternManager.Instance.LoadNewProject(filename);
         UpdatePatternDisplay();
     }
 

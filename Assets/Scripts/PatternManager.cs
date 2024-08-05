@@ -507,6 +507,16 @@ public class PatternManager : MonoBehaviour
         }
     }  
 
+    public void LoadNewProject(string filename)
+    {
+        if (!string.IsNullOrEmpty(filename))
+        {
+            LoadProject(filename);
+            GetNextProjectFile();
+            UpdatePatternDisplay(); // Update UI            
+        }
+    }     
+
     private void UpdateProjectFileText()
     {
         if (projectFileText != null)
