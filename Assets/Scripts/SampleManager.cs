@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 
 public class SampleManager : MonoBehaviour
 {
@@ -18,6 +18,11 @@ public class SampleManager : MonoBehaviour
     public Chop chopScript;                 // Reference to the Chop script
 
     public float bpm = 120f;                // Beats per minute, adjust as needed
+
+    private float timeToPlayNextSample = -1f; // Time to play the next sample
+    private bool isPlayingSample = false;    // Flag to check if a sample is currently being played
+    private AudioClip currentClip;           // Currently playing audio clip
+    private float playbackStartTime;         // Time when the playback starts
 
     private void Awake()
     {
@@ -147,41 +152,52 @@ public class SampleManager : MonoBehaviour
         ManagerHandler.Instance.SetLastClickedManager(true);
 
         // Scale the clicked sample temporarily
-        StartCoroutine(ScaleSample(clickedSample));
+        ScaleSample(clickedSample);
 
         // Play the corresponding audio clip
-        StartCoroutine(PlaySampleAudio(currentSample.name));
+        PlaySampleAudio(currentSample.name);
 
         Debug.Log($"Clicked Sample: {clickedSample.name}");
     }
 
-    // Coroutine to scale the clicked sample
-    private IEnumerator ScaleSample(GameObject sampleObject)
+    // Method to scale the clicked sample
+    private void ScaleSample(GameObject sampleObject)
     {
         Vector3 originalScale = originalScales[sampleObject];
         float scaleUpTime = 0.1f;
         float scaleUpSpeed = 1.2f;
         float scaleDownTime = 0.1f;
 
-        float elapsedTime = 0f;
+        // Start scaling up
+        StartCoroutine(ScaleSampleCoroutine(sampleObject, originalScale, scaleUpTime, scaleUpSpeed, true));
+    }
 
-        // Scale up
-        while (elapsedTime < scaleUpTime)
+    private IEnumerator ScaleSampleCoroutine(GameObject sampleObject, Vector3 originalScale, float duration, float scaleMultiplier, bool scaleUp)
+    {
+        float elapsedTime = 0f;
+        Vector3 targetScale = scaleUp ? originalScale * scaleMultiplier : originalScale;
+
+        while (elapsedTime < duration)
         {
-            sampleObject.transform.localScale = Vector3.Lerp(originalScale, originalScale * scaleUpSpeed, elapsedTime / scaleUpTime);
+            float t = elapsedTime / duration;
+            sampleObject.transform.localScale = Vector3.Lerp(originalScale, targetScale, t);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
 
-        sampleObject.transform.localScale = originalScale * scaleUpSpeed;
+        sampleObject.transform.localScale = targetScale;
 
+        // Pause before scaling down
         yield return new WaitForSeconds(0.2f);
 
-        // Scale down
+        // Start scaling down
         elapsedTime = 0f;
-        while (elapsedTime < scaleDownTime)
+        targetScale = originalScale;
+
+        while (elapsedTime < duration)
         {
-            sampleObject.transform.localScale = Vector3.Lerp(originalScale * scaleUpSpeed, originalScale, elapsedTime / scaleDownTime);
+            float t = elapsedTime / duration;
+            sampleObject.transform.localScale = Vector3.Lerp(sampleObject.transform.localScale, targetScale, t);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
@@ -189,7 +205,7 @@ public class SampleManager : MonoBehaviour
         sampleObject.transform.localScale = originalScale;
     }
 
-    private IEnumerator PlaySampleAudio(string sampleName)
+    private void PlaySampleAudio(string sampleName)
     {
         // Find the index of the sprite
         int index = System.Array.FindIndex(samples, sprite => sprite.name == sampleName);
@@ -206,7 +222,7 @@ public class SampleManager : MonoBehaviour
             if (clip == null)
             {
                 Debug.LogError("AudioSource does not have a clip assigned.");
-                yield break;
+                return;
             }
 
             // Log clip length for reference
@@ -218,11 +234,11 @@ public class SampleManager : MonoBehaviour
 
             // Calculate the time to play the clip based on the timestamp
             double playbackTime = timestamp;
-            
+
             if (playbackTime < 0 || playbackTime > clip.length)
             {
                 Debug.LogError($"Timestamp {timestamp} is out of bounds for audio clip length {clip.length}.");
-                yield break;
+                return;
             }
 
             // Calculate the duration until the next timestamp
@@ -241,18 +257,26 @@ public class SampleManager : MonoBehaviour
             audioSource.Play();
 
             Debug.Log($"Playing sample: {sampleName} from time: {playbackTime} for {durationToNextTimestamp} seconds.");
-            
-            // Wait until the next timestamp or end of clip
-            yield return new WaitForSeconds(durationToNextTimestamp);
 
-            // Stop the audio after the duration to the next timestamp
-            audioSource.Stop();
-            Debug.Log($"Stopped sample: {sampleName} after {durationToNextTimestamp} seconds.");
+            // Schedule stopping of the audio after the duration to the next timestamp
+            timeToPlayNextSample = Time.time + durationToNextTimestamp;
+            isPlayingSample = true;
         }
         else
         {
             // Log an error if the sample name is not found or index is out of bounds
             Debug.LogError($"Sample name '{sampleName}' not found or index is out of bounds.");
+        }
+    }
+
+    private void Update()
+    {
+        // Check if we need to stop playing the sample
+        if (isPlayingSample && Time.time >= timeToPlayNextSample)
+        {
+            audioSource.Stop();
+            isPlayingSample = false;
+            Debug.Log("Stopped sample playback.");
         }
     }
 }
