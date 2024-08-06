@@ -1,26 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; // Ensure this namespace is included for UI elements
-using TMPro; // Import TextMeshPro namespace
+using UnityEngine.UI;
+using TMPro; // Import the TextMeshPro namespace
 
 public class Chop : MonoBehaviour
 {
-    // Reference to the button that will trigger the chop action
-    public Button chopButton;
+    public Button chopButton; // Reference to the button that will trigger the chop action
+    public TextMeshProUGUI feedbackText; // Reference to the TextMeshProUGUI component for feedback
 
-    // Reference to the TextMeshProUGUI component for feedback
-    public TextMeshProUGUI feedbackText;
-
-    // Maximum number of chops
-    private const int MaxChops = 16;
-
-    // List to store data for each chop
-    private List<SampleData> chops = new List<SampleData>();
+    private const int MaxChops = 16; // Maximum number of chops
+    public List<SampleData> chops = new List<SampleData>(); // List to store data for each chop
 
     // Variables for storing chop data
-    private int songIndex = 0;        // Example data - adjust as needed
-    private float timestamp = 0.0f;   // Example data - adjust as needed
-    private int padNumber = 0;        // Example data - adjust as needed
+    private int songIndex = 0; // Example data - adjust as needed
+    private float timestamp = 0.0f; // Example data - adjust as needed
+    private int padNumber = 0; // Example data - adjust as needed
 
     private void Start()
     {
@@ -71,8 +65,24 @@ public class Chop : MonoBehaviour
         }
     }
 
-    // You might want to include additional methods to update songIndex, timestamp, and padNumber
+    // Method to update chop data manually
     public void UpdateChopData(int songIndex, float timestamp, int padNumber)
+    {
+        this.songIndex = songIndex;
+        this.timestamp = timestamp;
+        this.padNumber = padNumber;
+    }
+}
+
+// SampleData class definition
+[System.Serializable]
+public class SampleData
+{
+    public int songIndex;
+    public float timestamp;
+    public int padNumber;
+
+    public SampleData(int songIndex, float timestamp, int padNumber)
     {
         this.songIndex = songIndex;
         this.timestamp = timestamp;

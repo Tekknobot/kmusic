@@ -1,9 +1,7 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Linq; // Add this namespace
+using System.Linq;
+using System.Collections;
 
 public class SampleManager : MonoBehaviour
 {
@@ -18,6 +16,8 @@ public class SampleManager : MonoBehaviour
     private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of samples
 
     private Dictionary<string, List<SampleData>> sampleData = new Dictionary<string, List<SampleData>>(); // Dictionary to store sample data
+
+    private AudioSource audioSource;        // AudioSource to play audio clips
 
     private void Awake()
     {
@@ -39,11 +39,11 @@ public class SampleManager : MonoBehaviour
         // Validate samplePrefab and samples array
         if (!ValidateInitialSettings()) return;
 
+        // Add an AudioSource component to the SampleManager
+        audioSource = gameObject.AddComponent<AudioSource>();
+
         // Generate samples
         GenerateSamples();
-
-        // Start the coroutine to load sample data after a delay
-        StartCoroutine(LoadSampleDataAfterDelay(0.2f)); // Adjust the delay time as needed
     }
 
     private bool ValidateInitialSettings()
@@ -61,21 +61,6 @@ public class SampleManager : MonoBehaviour
         }
 
         return true;
-    }
-
-    private IEnumerator LoadSampleDataAfterDelay(float delaySeconds)
-    {
-        // Wait for the specified delay
-        yield return new WaitForSeconds(delaySeconds);
-
-        // Load the sample data from file
-        sampleData = DataManager.LoadSampleDataFromFile();
-
-        // Log the loaded sample data
-        foreach (var entry in sampleData)
-        {
-            Debug.Log($"Loaded sample data: Sample = {entry.Key}, Data = {string.Join(", ", entry.Value.Select(d => $"Index={d.songIndex}, Timestamp={d.timestamp}, Pad={d.padNumber}"))}");
-        }
     }
 
     private void GenerateSamples()
@@ -141,6 +126,9 @@ public class SampleManager : MonoBehaviour
         // Scale the clicked sample temporarily
         StartCoroutine(ScaleSample(clickedSample));
 
+        // Play the corresponding audio clip
+        PlaySampleAudio(currentSample);
+
         Debug.Log($"Clicked Sample: {clickedSample.name}");
     }
 
@@ -176,6 +164,23 @@ public class SampleManager : MonoBehaviour
         }
 
         sampleObject.transform.localScale = originalScale;
+    }
+
+    // Method to play the corresponding audio clip for the sample
+    private void PlaySampleAudio(Sprite sample)
+    {
+        // Assuming you have a way to get the audio clip from the sprite name
+        AudioClip audioClip = KMusicPlayer.Instance.GetCurrentClip();
+        if (audioClip != null)
+        {
+            audioSource.clip = audioClip;
+            audioSource.Play();
+            Debug.Log($"Playing audio for sample: {sample.name}");
+        }
+        else
+        {
+            Debug.LogError($"Audio clip for sample {sample.name} not found.");
+        }
     }
 
     // Method to save sample data
@@ -296,22 +301,5 @@ public class SampleManager : MonoBehaviour
 
         Debug.LogError($"Sample with name {sampleName} not found.");
         return null;
-    }
-}
-
-[System.Serializable]
-public class SampleData
-{
-    public int songIndex;
-    public float timestamp;
-    public int padNumber;
-
-    public SampleData() { }
-
-    public SampleData(int songIndex, float timestamp, int padNumber)
-    {
-        this.songIndex = songIndex;
-        this.timestamp = timestamp;
-        this.padNumber = padNumber;
     }
 }

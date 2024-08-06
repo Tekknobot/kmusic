@@ -4,11 +4,30 @@ using TMPro; // Import the TextMesh Pro namespace
 
 public class KMusicPlayer : MonoBehaviour
 {
+    public static KMusicPlayer Instance { get; private set; }
+
     public MultipleAudioLoader audioLoader; // Reference to the MultipleAudioLoader script
     public AudioSource audioSource; // AudioSource to play audio clips
     public TMP_Text statusText; // UI TextMesh Pro element to display the status
 
     public int currentClipIndex = -1; // Index of the currently playing audio clip
+
+    private void Awake()
+    {
+        // Check if there is already an instance of KMusicPlayer
+        if (Instance == null)
+        {
+            // Set this instance as the singleton instance
+            Instance = this;
+            // Ensure this instance persists across scenes
+            DontDestroyOnLoad(gameObject);
+        }
+        else if (Instance != this)
+        {
+            // Destroy this instance if it is not the singleton
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {
@@ -145,8 +164,8 @@ public class KMusicPlayer : MonoBehaviour
         {
             audioSource.clip = clip;
             audioSource.Play();
-            int index = audioLoader.audioClips.IndexOf(clip);
-            statusText.text = "Playing: Sample " + (index + 1);
+            currentClipIndex = audioLoader.audioClips.IndexOf(clip);
+            statusText.text = "Playing: Sample " + (currentClipIndex + 1);
         }
     }
 
@@ -162,5 +181,10 @@ public class KMusicPlayer : MonoBehaviour
             Debug.LogError("Failed to parse index from filename: " + fileName);
             return 0;
         }
+    }
+
+    public AudioClip GetCurrentClip()
+    {
+        return audioSource.clip;
     }
 }

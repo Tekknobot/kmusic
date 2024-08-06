@@ -1996,6 +1996,7 @@ GameObject:
   - component: {fileID: 84825293}
   - component: {fileID: 84825292}
   - component: {fileID: 84825291}
+  - component: {fileID: 84825294}
   m_Layer: 5
   m_Name: ChopButton
   m_TagString: Untagged
@@ -2104,6 +2105,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 84825289}
   m_CullTransparentMesh: 1
+--- !u!114 &84825294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84825289}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d95bd1abbbb8ff499fc684fbd0912c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bpm: 120
+  allSamples: []
+  selectedSamples: []
+  clock: {fileID: 2020880539}
+  chopButton: {fileID: 84825291}
 --- !u!1 &87624998
 GameObject:
   m_ObjectHideFlags: 0
@@ -15684,7 +15702,7 @@ Transform:
   m_GameObject: {fileID: 749442883}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -175.46947, y: -263.95834, z: -4525.0005}
+  m_LocalPosition: {x: -175.46947, y: -301.6667, z: -4525.0005}
   m_LocalScale: {x: 50.277782, y: 50.277782, z: 50.277782}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -20979,7 +20997,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_margin: {x: -95.623955, y: 0, z: -100.05102, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -21379,7 +21397,7 @@ MonoBehaviour:
   audioLoader: {fileID: 531143748}
   audioSource: {fileID: 1015420081}
   statusText: {fileID: 1625288055}
-  currentClipIndex: 0
+  currentClipIndex: -1
 --- !u!4 &1015420080
 Transform:
   m_ObjectHideFlags: 0
@@ -45295,34 +45313,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2092386982}
   m_CullTransparentMesh: 1
---- !u!83 &2093688074
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &2093890593
 GameObject:
   m_ObjectHideFlags: 0
