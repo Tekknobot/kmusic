@@ -5,6 +5,7 @@ using TMPro; // Import the TextMesh Pro namespace
 public class MusicPlayerUIController : MonoBehaviour
 {
     public KMusicPlayer musicPlayer; // Reference to the KMusicPlayer script
+    public WaveformVisualizer waveformVisualizer; // Reference to the WaveformVisualizer
 
     // UI Buttons
     public Button playNextButton;
@@ -19,10 +20,10 @@ public class MusicPlayerUIController : MonoBehaviour
 
     private void Start()
     {
-        // Check if the musicPlayer is assigned
-        if (musicPlayer == null)
+        // Check if the musicPlayer and waveformVisualizer are assigned
+        if (musicPlayer == null || waveformVisualizer == null)
         {
-            Debug.LogError("KMusicPlayer is not assigned.");
+            Debug.LogError("KMusicPlayer or WaveformVisualizer is not assigned.");
             return;
         }
 
@@ -99,6 +100,7 @@ public class MusicPlayerUIController : MonoBehaviour
         {
             musicPlayer.PlayNextClip();
             UpdateStatusText();
+            StartWaveformVisualizer();
         }
     }
 
@@ -108,6 +110,7 @@ public class MusicPlayerUIController : MonoBehaviour
         {
             musicPlayer.PlayPreviousClip();
             UpdateStatusText();
+            StartWaveformVisualizer();
         }
     }
 
@@ -117,6 +120,7 @@ public class MusicPlayerUIController : MonoBehaviour
         {
             StartCoroutine(musicPlayer.LoadAndPlayClipAtIndex(musicPlayer.currentClipIndex));
             UpdateStatusText();
+            StartWaveformVisualizer();
         }
         else
         {
@@ -130,6 +134,7 @@ public class MusicPlayerUIController : MonoBehaviour
         {
             musicPlayer.Pause();
             UpdateStatusText();
+            waveformVisualizer.StopWave(); // Stop visualizer when pausing
         }
     }
 
@@ -139,6 +144,7 @@ public class MusicPlayerUIController : MonoBehaviour
         {
             musicPlayer.Stop();
             UpdateStatusText();
+            waveformVisualizer.StopWave(); // Stop visualizer when stopping
         }
     }
 
@@ -148,6 +154,7 @@ public class MusicPlayerUIController : MonoBehaviour
         {
             musicPlayer.Resume();
             UpdateStatusText();
+            StartWaveformVisualizer();
         }
     }
 
@@ -156,6 +163,15 @@ public class MusicPlayerUIController : MonoBehaviour
         if (statusText != null)
         {
             statusText.text = musicPlayer.statusText.text;
+        }
+    }
+
+    private void StartWaveformVisualizer()
+    {
+        if (waveformVisualizer != null && musicPlayer.audioSource != null && musicPlayer.audioSource.clip != null)
+        {
+            waveformVisualizer.audioSource = musicPlayer.audioSource; // Ensure the visualizer is using the correct audio source
+            waveformVisualizer.StartWave();
         }
     }
 }

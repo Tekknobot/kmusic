@@ -18,7 +18,7 @@ public class KMusicPlayer : MonoBehaviour
             return;
         }
 
-        // Start with an invalid index
+        // Initialize index
         currentClipIndex = -1;
     }
 
@@ -30,9 +30,7 @@ public class KMusicPlayer : MonoBehaviour
             return;
         }
 
-        // Increment index and wrap around if needed
         currentClipIndex = (currentClipIndex + 1) % audioLoader.audioClips.Count;
-
         StartCoroutine(LoadAndPlayClipAtIndex(currentClipIndex));
     }
 
@@ -44,9 +42,7 @@ public class KMusicPlayer : MonoBehaviour
             return;
         }
 
-        // Decrement index and wrap around if needed
         currentClipIndex = (currentClipIndex - 1 + audioLoader.audioClips.Count) % audioLoader.audioClips.Count;
-
         StartCoroutine(LoadAndPlayClipAtIndex(currentClipIndex));
     }
 
@@ -64,7 +60,6 @@ public class KMusicPlayer : MonoBehaviour
             }
             else
             {
-                // Request loading if clip is not available
                 yield return StartCoroutine(audioLoader.LoadAudioClip("clip_" + index + ".mp3", loadedClip =>
                 {
                     if (loadedClip != null)
@@ -128,18 +123,15 @@ public class KMusicPlayer : MonoBehaviour
 
     public IEnumerator LoadAndPlayClipByFileName(string fileName)
     {
-        // Check if the clip is already loaded
         AudioClip clip = audioLoader.GetClipByFileName(fileName);
         if (clip == null)
         {
-            // Load the clip if it's not already loaded
             yield return StartCoroutine(audioLoader.LoadAudioClip(fileName, loadedClip =>
             {
                 if (loadedClip != null)
                 {
                     audioSource.clip = loadedClip;
                     audioSource.Play();
-                    // Assume file names follow "clip_1.mp3" format
                     int index = ExtractIndexFromFileName(fileName);
                     statusText.text = "Playing: Sample " + (index + 1);
                 }
@@ -151,7 +143,6 @@ public class KMusicPlayer : MonoBehaviour
         }
         else
         {
-            // Play the already loaded clip
             audioSource.clip = clip;
             audioSource.Play();
             int index = audioLoader.audioClips.IndexOf(clip);
@@ -159,13 +150,10 @@ public class KMusicPlayer : MonoBehaviour
         }
     }
 
-    // Helper method to extract the index from the filename
     private int ExtractIndexFromFileName(string fileName)
     {
-        // Example filename: "clip_1.mp3"
         string numberPart = fileName.Replace("clip_", "").Replace(".mp3", "");
-        int index;
-        if (int.TryParse(numberPart, out index))
+        if (int.TryParse(numberPart, out int index))
         {
             return index;
         }

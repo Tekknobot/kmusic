@@ -88,7 +88,7 @@ public class MusicPlayerToggle : MonoBehaviour
 
             if (sampleManagerObject != null)
             {
-                sampleManagerObject.SetActive(true);
+                sampleManagerObject.SetActive(false);
             }
             else
             {
@@ -97,7 +97,7 @@ public class MusicPlayerToggle : MonoBehaviour
 
             if (mixerGroupObject != null)
             {
-                mixerGroupObject.SetActive(true);
+                mixerGroupObject.SetActive(false);
             }
             else
             {
