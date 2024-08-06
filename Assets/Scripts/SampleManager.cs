@@ -1,7 +1,6 @@
 using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 
 public class SampleManager : MonoBehaviour
 {
@@ -16,7 +15,9 @@ public class SampleManager : MonoBehaviour
     private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of samples
 
     private AudioSource audioSource;        // AudioSource to play audio clips
-    public Chop chopScript; // Reference to the Chop script
+    public Chop chopScript;                 // Reference to the Chop script
+
+    public float bpm = 120f;                // Beats per minute, adjust as needed
 
     private void Awake()
     {
@@ -35,6 +36,8 @@ public class SampleManager : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("SampleManager Start method called");
+
         // Validate samplePrefab and samples array
         if (!ValidateInitialSettings()) return;
 
@@ -45,6 +48,14 @@ public class SampleManager : MonoBehaviour
         if (chopScript == null)
         {
             Debug.LogError("Chop script is not assigned.");
+            return;
+        }
+
+        // Debugging: Print out timestamps and sample names
+        Debug.Log("Printing timestamps:");
+        for (int i = 0; i < chopScript.timestamps.Count; i++)
+        {
+            Debug.Log($"Timestamp for sample {i + 1}: {chopScript.timestamps[i]}");
         }
 
         // Ensure the AudioSource is assigned
@@ -55,23 +66,6 @@ public class SampleManager : MonoBehaviour
 
         // Generate samples
         GenerateSamples();
-    }
-
-
-    public void PlaySample(int padIndex)
-    {
-        if (chopScript != null && padIndex >= 0 && padIndex < chopScript.timestamps.Count)
-        {
-            // Get the timestamp from the Chop script
-            float timestamp = chopScript.timestamps[padIndex];
-            audioSource.time = timestamp;
-            audioSource.Play();
-            Debug.Log($"Playing sample at timestamp: {timestamp}");
-        }
-        else
-        {
-            Debug.LogError("Invalid pad index or Chop script not assigned.");
-        }
     }
 
     private bool ValidateInitialSettings()
@@ -146,7 +140,8 @@ public class SampleManager : MonoBehaviour
 
     public void OnSampleClicked(GameObject clickedSample)
     {
-        currentSample = clickedSample.GetComponent<SpriteRenderer>().sprite;
+        lastClickedSample = clickedSample.GetComponent<SpriteRenderer>().sprite;
+        currentSample = lastClickedSample;
 
         // Set SampleManager as the last clicked manager
         ManagerHandler.Instance.SetLastClickedManager(true);
@@ -155,7 +150,7 @@ public class SampleManager : MonoBehaviour
         StartCoroutine(ScaleSample(clickedSample));
 
         // Play the corresponding audio clip
-        PlaySampleAudio(currentSample);
+        StartCoroutine(PlaySampleAudio(currentSample.name));
 
         Debug.Log($"Clicked Sample: {clickedSample.name}");
     }
@@ -194,20 +189,70 @@ public class SampleManager : MonoBehaviour
         sampleObject.transform.localScale = originalScale;
     }
 
-    // Method to play the corresponding audio clip for the sample
-    private void PlaySampleAudio(Sprite sample)
+    private IEnumerator PlaySampleAudio(string sampleName)
     {
-        // Assuming you have a way to get the audio clip from the sprite name
-        AudioClip audioClip = KMusicPlayer.Instance.GetCurrentClip();
-        if (audioClip != null)
+        // Find the index of the sprite
+        int index = System.Array.FindIndex(samples, sprite => sprite.name == sampleName);
+
+        if (index != -1 && index < chopScript.timestamps.Count)
         {
-            audioSource.clip = audioClip;
+            // Get the timestamp for the sample
+            float timestamp = chopScript.timestamps[index];
+            Debug.Log($"Playing sample: {sampleName} with timestamp: {timestamp}");
+
+            // Ensure the audio clip is assigned to the AudioSource
+            AudioClip clip = KMusicPlayer.Instance.audioSource.clip;
+
+            if (clip == null)
+            {
+                Debug.LogError("AudioSource does not have a clip assigned.");
+                yield break;
+            }
+
+            // Log clip length for reference
+            Debug.Log($"Audio clip length: {clip.length}");
+
+            // Ensure audioSource is stopped before scheduling
+            audioSource.Stop();
+            audioSource.clip = clip;
+
+            // Calculate the time to play the clip based on the timestamp
+            double playbackTime = timestamp;
+            
+            if (playbackTime < 0 || playbackTime > clip.length)
+            {
+                Debug.LogError($"Timestamp {timestamp} is out of bounds for audio clip length {clip.length}.");
+                yield break;
+            }
+
+            // Calculate the duration until the next timestamp
+            float durationToNextTimestamp = 0f;
+            if (index + 1 < chopScript.timestamps.Count)
+            {
+                durationToNextTimestamp = chopScript.timestamps[index + 1] - timestamp;
+            }
+            else
+            {
+                durationToNextTimestamp = clip.length - (float)playbackTime;
+            }
+
+            // Play the clip from the calculated time
+            audioSource.time = (float)playbackTime;
             audioSource.Play();
-            Debug.Log($"Playing audio for sample: {sample.name}");
+
+            Debug.Log($"Playing sample: {sampleName} from time: {playbackTime} for {durationToNextTimestamp} seconds.");
+            
+            // Wait until the next timestamp or end of clip
+            yield return new WaitForSeconds(durationToNextTimestamp);
+
+            // Stop the audio after the duration to the next timestamp
+            audioSource.Stop();
+            Debug.Log($"Stopped sample: {sampleName} after {durationToNextTimestamp} seconds.");
         }
         else
         {
-            Debug.LogError($"Audio clip for sample {sample.name} not found.");
+            // Log an error if the sample name is not found or index is out of bounds
+            Debug.LogError($"Sample name '{sampleName}' not found or index is out of bounds.");
         }
     }
 }
