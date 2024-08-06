@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq; // Add this namespace
 
 public class SampleManager : MonoBehaviour
 {
@@ -16,7 +17,7 @@ public class SampleManager : MonoBehaviour
 
     private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of samples
 
-    private Dictionary<string, List<int>> sampleData = new Dictionary<string, List<int>>(); // Dictionary to store sample data
+    private Dictionary<string, List<SampleData>> sampleData = new Dictionary<string, List<SampleData>>(); // Dictionary to store sample data
 
     private void Awake()
     {
@@ -73,7 +74,7 @@ public class SampleManager : MonoBehaviour
         // Log the loaded sample data
         foreach (var entry in sampleData)
         {
-            Debug.Log($"Loaded sample data: Sample = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
+            Debug.Log($"Loaded sample data: Sample = {entry.Key}, Data = {string.Join(", ", entry.Value.Select(d => $"Index={d.songIndex}, Timestamp={d.timestamp}, Pad={d.padNumber}"))}");
         }
     }
 
@@ -178,25 +179,24 @@ public class SampleManager : MonoBehaviour
     }
 
     // Method to save sample data
-    public void SaveSampleData(Sprite sample, int step)
+    public void SaveSampleData(Sprite sample, int songIndex, float timestamp, int padNumber)
     {
         if (sample != null)
         {
             string sampleName = sample.name;
 
+            var newSampleData = new SampleData(songIndex, timestamp, padNumber);
+
             if (sampleData.ContainsKey(sampleName))
             {
-                if (!sampleData[sampleName].Contains(step))
-                {
-                    sampleData[sampleName].Add(step); // Add the new step if it doesn't already exist
-                }
+                sampleData[sampleName].Add(newSampleData);
             }
             else
             {
-                sampleData.Add(sampleName, new List<int> { step }); // Create a new entry with the step
+                sampleData.Add(sampleName, new List<SampleData> { newSampleData });
             }
 
-            Debug.Log($"Saved Sample Data: Sample = {sample.name}, Step = {step}");
+            Debug.Log($"Saved Sample Data: Sample = {sample.name}, SongIndex = {songIndex}, Timestamp = {timestamp}, PadNumber = {padNumber}");
         }
         else
         {
@@ -205,7 +205,7 @@ public class SampleManager : MonoBehaviour
     }
 
     // Method to remove sample data
-    public void RemoveSampleData(Sprite sample, int step)
+    public void RemoveSampleData(Sprite sample, int songIndex, float timestamp, int padNumber)
     {
         if (sample == null)
         {
@@ -221,24 +221,27 @@ public class SampleManager : MonoBehaviour
             return;
         }
 
-        List<int> steps = sampleData[sampleName];
+        List<SampleData> sampleDatas = sampleData[sampleName];
 
-        if (!steps.Contains(step))
+        SampleData dataToRemove = sampleDatas.Find(d => d.songIndex == songIndex && d.timestamp == timestamp && d.padNumber == padNumber);
+
+        if (dataToRemove != null)
         {
-            Debug.LogWarning($"Step {step} not found for Sample = {sampleName}.");
-            return;
-        }
+            sampleDatas.Remove(dataToRemove);
 
-        steps.Remove(step);
-
-        if (steps.Count == 0)
-        {
-            sampleData.Remove(sampleName);
-            Debug.Log($"Removed Sample Data: Sample = {sample.name}, Step = {step}");
+            if (sampleDatas.Count == 0)
+            {
+                sampleData.Remove(sampleName);
+                Debug.Log($"Removed Sample Data: Sample = {sample.name}, SongIndex = {songIndex}, Timestamp = {timestamp}, PadNumber = {padNumber}");
+            }
+            else
+            {
+                Debug.Log($"Removed Sample Data: SongIndex = {songIndex}, Timestamp = {timestamp}, PadNumber = {padNumber} from Sample = {sample.name}");
+            }
         }
         else
         {
-            Debug.Log($"Removed Step = {step} from Sample = {sample.name}");
+            Debug.LogWarning($"Sample Data not found: SongIndex = {songIndex}, Timestamp = {timestamp}, PadNumber = {padNumber} for Sample = {sampleName}");
         }
     }
 
@@ -250,20 +253,20 @@ public class SampleManager : MonoBehaviour
         foreach (var entry in sampleData)
         {
             string sampleName = entry.Key;
-            List<int> steps = entry.Value;
+            List<SampleData> dataList = entry.Value;
             Sprite sample = GetSampleByName(sampleName);
 
             if (sample != null)
             {
-                Debug.Log($"Displaying sample {sample.name} for steps {string.Join(", ", steps)}");
+                Debug.Log($"Displaying sample {sample.name} for data {string.Join(", ", dataList.Select(d => $"Index={d.songIndex}, Timestamp={d.timestamp}, Pad={d.padNumber}"))}");
 
-                foreach (var step in steps)
+                foreach (var data in dataList)
                 {
-                    Cell cell = BoardManager.Instance.GetCellByStep(step); // Assume you have a method to get a cell by step
+                    Cell cell = BoardManager.Instance.GetCellByStep(data.padNumber); // Adjust as needed
                     if (cell != null)
                     {
                         cell.SetSprite(sample); // Assume Cell has a method to set the sprite
-                        Debug.Log($"Displayed sample {sample.name} on cell at step {step}");
+                        Debug.Log($"Displayed sample {sample.name} on cell at pad number {data.padNumber}");
                     }
                 }
             }
@@ -299,12 +302,16 @@ public class SampleManager : MonoBehaviour
 [System.Serializable]
 public class SampleData
 {
-    public string SampleName; // Store sample name instead of sample object
-    public float Step;
-}
+    public int songIndex;
+    public float timestamp;
+    public int padNumber;
 
-[System.Serializable]
-public class SampleDataList
-{
-    public List<SampleData> sampleData;
+    public SampleData() { }
+
+    public SampleData(int songIndex, float timestamp, int padNumber)
+    {
+        this.songIndex = songIndex;
+        this.timestamp = timestamp;
+        this.padNumber = padNumber;
+    }
 }

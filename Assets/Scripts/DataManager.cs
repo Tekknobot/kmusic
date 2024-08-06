@@ -8,21 +8,91 @@ public class DataManager : MonoBehaviour
 {
     private static string filePath = "sampleData.dat";
 
-    public static Dictionary<string, List<int>> LoadSampleDataFromFile()
+    public static Dictionary<string, List<SampleData>> LoadSampleDataFromFile()
     {
         if (File.Exists(filePath))
         {
-            BinaryFormatter formatter = new BinaryFormatter();
-            using (FileStream stream = new FileStream(filePath, FileMode.Open))
+            try
             {
-                return formatter.Deserialize(stream) as Dictionary<string, List<int>>;
+                using (FileStream stream = new FileStream(filePath, FileMode.Open))
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    var oldData = formatter.Deserialize(stream) as Dictionary<string, List<int>>;
+                    
+                    if (oldData != null)
+                    {
+                        // Convert to Dictionary<string, List<SampleData>>
+                        var newData = ConvertToSampleData(oldData);
+                        return newData;
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Deserialized data is null.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to load sample data: {ex.Message}");
             }
         }
         else
         {
-            return new Dictionary<string, List<int>>();
+            Debug.LogWarning("Sample data file does not exist.");
+        }
+        return new Dictionary<string, List<SampleData>>();
+    }
+
+
+    public static void SaveSampleDataToFile(Dictionary<string, List<SampleData>> data)
+    {
+        // Convert Dictionary<string, List<SampleData>> to Dictionary<string, List<int>>
+        var oldData = ConvertToIntData(data);
+
+        BinaryFormatter formatter = new BinaryFormatter();
+        using (FileStream stream = new FileStream(filePath, FileMode.Create))
+        {
+            formatter.Serialize(stream, oldData);
         }
     }
+
+    private static Dictionary<string, List<SampleData>> ConvertToSampleData(Dictionary<string, List<int>> oldData)
+    {
+        var newData = new Dictionary<string, List<SampleData>>();
+
+        foreach (var kvp in oldData)
+        {
+            var sampleDataList = new List<SampleData>();
+            foreach (var value in kvp.Value)
+            {
+                var sampleData = new SampleData { songIndex = value }; // Adjust property assignment as needed
+                sampleDataList.Add(sampleData);
+            }
+            newData[kvp.Key] = sampleDataList;
+        }
+
+        return newData;
+    }
+
+
+    private static Dictionary<string, List<int>> ConvertToIntData(Dictionary<string, List<SampleData>> sampleDataDict)
+    {
+        var intDataDict = new Dictionary<string, List<int>>();
+
+        foreach (var kvp in sampleDataDict)
+        {
+            var intList = new List<int>();
+            foreach (var sampleData in kvp.Value)
+            {
+                // Assuming you want to store songIndex; adjust accordingly
+                intList.Add(sampleData.songIndex);
+            }
+            intDataDict[kvp.Key] = intList;
+        }
+
+        return intDataDict;
+    }
+
 
     public static void SaveSampleDataToFile(Dictionary<string, List<int>> data)
     {
