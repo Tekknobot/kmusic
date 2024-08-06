@@ -8,6 +8,8 @@ public class SamplerToggle : MonoBehaviour
     public GameObject sampleManagerObject; // Reference to the SampleManager GameObject
     public Toggle toggle; // Reference to the Toggle UI element
 
+    public Toggle musicPlayerToggle;
+
     private void Start()
     {
         // Initialize the toggle and set up the listener
@@ -54,6 +56,8 @@ public class SamplerToggle : MonoBehaviour
             {
                 Debug.LogError("KeyManagerObject is not assigned in SamplerToggle.");
             }
+
+            musicPlayerToggle.enabled = false;
         }
         else
         {
@@ -84,6 +88,8 @@ public class SamplerToggle : MonoBehaviour
             {
                 Debug.LogError("KeyManagerObject is not assigned in SamplerToggle.");
             }
+
+            musicPlayerToggle.enabled = true;
         }
     }
 }

@@ -9,6 +9,8 @@ public class MusicPlayerToggle : MonoBehaviour
     public GameObject mixerGroupObject; // Reference to the MixerGroup GameObject
     public Toggle toggle; // Reference to the Toggle UI element
 
+    public Toggle samplerToggle;
+
     private void Start()
     {
         // Initialize the toggle and set up the listener
@@ -64,6 +66,8 @@ public class MusicPlayerToggle : MonoBehaviour
             {
                 Debug.LogError("MixerGroupObject is not assigned in MusicPlayerToggle.");
             }
+
+            samplerToggle.enabled = false;
         }
         else
         {
@@ -103,6 +107,8 @@ public class MusicPlayerToggle : MonoBehaviour
             {
                 Debug.LogError("MixerGroupObject is not assigned in MusicPlayerToggle.");
             }
+
+            samplerToggle.enabled = true;
         }
     }
 }
