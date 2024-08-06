@@ -1,190 +1,165 @@
 using UnityEngine;
 using System.Collections;
-using TMPro; // Import the TextMesh Pro namespace
+using System.Collections.Generic;
+using TMPro;
+using System.IO;
+using UnityEngine.Networking; // Ensure this namespace is included
 
 public class KMusicPlayer : MonoBehaviour
 {
-    public static KMusicPlayer Instance { get; private set; }
+    public static KMusicPlayer Instance { get; private set; } // Singleton instance
 
-    public MultipleAudioLoader audioLoader; // Reference to the MultipleAudioLoader script
     public AudioSource audioSource; // AudioSource to play audio clips
-    public TMP_Text statusText; // UI TextMesh Pro element to display the status
+    public TMP_Text trackNameText;  // TextMesh Pro text to display the current track name
 
-    public int currentClipIndex = -1; // Index of the currently playing audio clip
+    private List<string> clipFileNames = new List<string>(); // List to store filenames
+    private int currentIndex = -1; // Index of the currently playing track
 
     private void Awake()
     {
-        // Check if there is already an instance of KMusicPlayer
+        // Implement singleton pattern
         if (Instance == null)
         {
-            // Set this instance as the singleton instance
             Instance = this;
-            // Ensure this instance persists across scenes
-            DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(gameObject); // Ensure this instance persists across scenes
         }
-        else if (Instance != this)
+        else
         {
-            // Destroy this instance if it is not the singleton
-            Destroy(gameObject);
+            Destroy(gameObject); // Destroy duplicate instances
         }
     }
 
     private void Start()
     {
-        if (audioLoader == null || audioSource == null || statusText == null)
+        // Ensure the AudioSource is set
+        if (audioSource == null)
         {
-            Debug.LogError("AudioLoader, AudioSource, or StatusText is not assigned.");
+            Debug.LogError("AudioSource is not assigned.");
             return;
         }
 
-        // Initialize index
-        currentClipIndex = -1;
+        // Load all audio file names
+        LoadAudioFileNames();
     }
 
-    public void PlayNextClip()
+    // Load all audio file names from a directory
+    private void LoadAudioFileNames()
     {
-        if (audioLoader.audioClips.Count == 0)
+        string directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles");
+        if (Directory.Exists(directoryPath))
         {
-            statusText.text = "No audio clips available.";
-            return;
-        }
-
-        currentClipIndex = (currentClipIndex + 1) % audioLoader.audioClips.Count;
-        StartCoroutine(LoadAndPlayClipAtIndex(currentClipIndex));
-    }
-
-    public void PlayPreviousClip()
-    {
-        if (audioLoader.audioClips.Count == 0)
-        {
-            statusText.text = "No audio clips available.";
-            return;
-        }
-
-        currentClipIndex = (currentClipIndex - 1 + audioLoader.audioClips.Count) % audioLoader.audioClips.Count;
-        StartCoroutine(LoadAndPlayClipAtIndex(currentClipIndex));
-    }
-
-    public IEnumerator LoadAndPlayClipAtIndex(int index)
-    {
-        if (index >= 0 && index < audioLoader.audioClips.Count)
-        {
-            AudioClip clip = audioLoader.audioClips[index];
-
-            if (clip != null)
+            string[] files = Directory.GetFiles(directoryPath);
+            foreach (string file in files)
             {
-                audioSource.clip = clip;
-                audioSource.Play();
-                statusText.text = "Playing: Sample " + (index + 1);
-            }
-            else
-            {
-                yield return StartCoroutine(audioLoader.LoadAudioClip("clip_" + index + ".mp3", loadedClip =>
-                {
-                    if (loadedClip != null)
-                    {
-                        audioSource.clip = loadedClip;
-                        audioSource.Play();
-                        statusText.text = "Playing: Sample " + (index + 1);
-                    }
-                    else
-                    {
-                        statusText.text = "Failed to load clip.";
-                    }
-                }));
+                string fileName = Path.GetFileName(file);
+                clipFileNames.Add(fileName);
+                Debug.Log("Found file: " + fileName);
             }
         }
         else
         {
-            Debug.LogError("Invalid clip index: " + index);
-            statusText.text = "Invalid clip index.";
+            Debug.LogError("Directory does not exist: " + directoryPath);
         }
     }
 
-    public void Pause()
+    // Play a specific track by filename
+    public void PlayTrack(string fileName)
     {
-        if (audioSource.isPlaying)
+        if (clipFileNames.Contains(fileName))
         {
-            audioSource.Pause();
-            statusText.text = "Paused: Sample " + (currentClipIndex + 1);
+            StartCoroutine(LoadAndPlayClip(fileName));
         }
         else
         {
-            statusText.text = "No clip is playing to pause.";
+            Debug.LogError("File not found in the list: " + fileName);
         }
     }
 
-    public void Stop()
+    // Play the next track
+    public void PlayNextTrack()
+    {
+        if (clipFileNames.Count == 0) return;
+
+        // Determine the next track index
+        currentIndex = (currentIndex + 1) % clipFileNames.Count;
+        PlayTrack(clipFileNames[currentIndex]);
+    }
+
+    // Play the previous track
+    public void PlayPreviousTrack()
+    {
+        if (clipFileNames.Count == 0) return;
+
+        // Determine the previous track index
+        currentIndex = (currentIndex - 1 + clipFileNames.Count) % clipFileNames.Count;
+        PlayTrack(clipFileNames[currentIndex]);
+    }
+
+    // Stop playback
+    public void StopPlayback()
     {
         if (audioSource.isPlaying)
         {
             audioSource.Stop();
-            statusText.text = "Stopped";
-        }
-        else
-        {
-            statusText.text = "No clip is playing to stop.";
+            UpdateTrackName(null);
         }
     }
 
-    public void Resume()
+    // Load and play an audio clip
+    private IEnumerator LoadAndPlayClip(string fileName)
     {
-        if (!audioSource.isPlaying && audioSource.clip != null)
-        {
-            audioSource.Play();
-            statusText.text = "Resumed: Sample " + (currentClipIndex + 1);
-        }
-        else if (audioSource.clip == null)
-        {
-            statusText.text = "No clip is available to resume.";
-        }
-    }
+        string filePath = Path.Combine(Application.persistentDataPath, "AudioFiles", fileName);
+        string fileUrl = "file://" + filePath;
+        string extension = Path.GetExtension(fileName).ToLower();
 
-    public IEnumerator LoadAndPlayClipByFileName(string fileName)
-    {
-        AudioClip clip = audioLoader.GetClipByFileName(fileName);
-        if (clip == null)
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(fileUrl, GetAudioType(extension)))
         {
-            yield return StartCoroutine(audioLoader.LoadAudioClip(fileName, loadedClip =>
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
             {
-                if (loadedClip != null)
-                {
-                    audioSource.clip = loadedClip;
-                    audioSource.Play();
-                    int index = ExtractIndexFromFileName(fileName);
-                    statusText.text = "Playing: Sample " + (index + 1);
-                }
-                else
-                {
-                    statusText.text = "Failed to load and play the audio clip: " + fileName;
-                }
-            }));
-        }
-        else
-        {
-            audioSource.clip = clip;
-            audioSource.Play();
-            currentClipIndex = audioLoader.audioClips.IndexOf(clip);
-            statusText.text = "Playing: Sample " + (currentClipIndex + 1);
+                AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
+                audioSource.clip = clip;
+                audioSource.Play();
+                currentIndex = clipFileNames.IndexOf(fileName);
+                UpdateTrackName(fileName);
+            }
+            else
+            {
+                Debug.LogError("Failed to load audio file: " + www.error);
+                UpdateTrackName(null);
+            }
         }
     }
 
-    private int ExtractIndexFromFileName(string fileName)
+    // Update the track name display
+    private void UpdateTrackName(string fileName)
     {
-        string numberPart = fileName.Replace("clip_", "").Replace(".mp3", "");
-        if (int.TryParse(numberPart, out int index))
+        if (trackNameText != null)
         {
-            return index;
-        }
-        else
-        {
-            Debug.LogError("Failed to parse index from filename: " + fileName);
-            return 0;
+            if (string.IsNullOrEmpty(fileName))
+            {
+                trackNameText.text = "No Track Loaded";
+            }
+            else
+            {
+                trackNameText.text = "Now Playing: " + fileName;
+            }
         }
     }
 
-    public AudioClip GetCurrentClip()
+    // Get the type of audio file
+    private AudioType GetAudioType(string extension)
     {
-        return audioSource.clip;
+        switch (extension)
+        {
+            case ".wav":
+                return AudioType.WAV;
+            case ".mp3":
+                return AudioType.MPEG;
+            default:
+                Debug.LogError("Unsupported audio file type: " + extension);
+                return AudioType.UNKNOWN;
+        }
     }
 }

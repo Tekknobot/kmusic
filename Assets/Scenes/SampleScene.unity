@@ -10544,34 +10544,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!83 &523452723
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &531143747
 GameObject:
   m_ObjectHideFlags: 0
@@ -10583,7 +10555,6 @@ GameObject:
   - component: {fileID: 531143749}
   - component: {fileID: 531143748}
   - component: {fileID: 531143750}
-  - component: {fileID: 531143751}
   m_Layer: 0
   m_Name: MultipleAudioLoader
   m_TagString: Untagged
@@ -10605,8 +10576,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   directoryPath: AudioFiles
   audioSource: {fileID: 531143750}
-  audioClips: []
   statusText: {fileID: 1625288055}
+  clipFileNames: []
+  currentClip: {fileID: 0}
+  currentIndex: -1
 --- !u!4 &531143749
 Transform:
   m_ObjectHideFlags: 0
@@ -10718,20 +10691,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &531143751
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 531143747}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 169d24d93e83e2d489f5c3ce07d7da44, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  originalWavPath: 
-  clipCount: 16
 --- !u!1 &534982844
 GameObject:
   m_ObjectHideFlags: 0
@@ -21544,10 +21503,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 255d545fe2bbd2e4ab1c189d747fc8d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  audioLoader: {fileID: 531143748}
   audioSource: {fileID: 1015420081}
-  statusText: {fileID: 1625288055}
-  currentClipIndex: -1
+  trackNameText: {fileID: 0}
 --- !u!4 &1015420080
 Transform:
   m_ObjectHideFlags: 0
@@ -21671,15 +21628,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c14ce287b0280c408e3e74a6d6ee38b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  musicPlayer: {fileID: 1015420079}
-  waveformVisualizer: {fileID: 1015420083}
-  playNextButton: {fileID: 1258765282}
-  playPreviousButton: {fileID: 1579961366}
   playButton: {fileID: 392017513}
   pauseButton: {fileID: 2095833198}
   stopButton: {fileID: 1674568692}
-  resumeButton: {fileID: 1184071770}
-  statusText: {fileID: 1625288055}
+  nextButton: {fileID: 1258765282}
+  previousButton: {fileID: 1579961366}
+  trackNameText: {fileID: 1625288055}
+  waveform: {fileID: 1015420078}
 --- !u!114 &1015420083
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32701,6 +32656,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: bf54ab4da99c1b7439bb140a9aa5a550, type: 3}
   currentSample: {fileID: 0}
   chopScript: {fileID: 84825294}
+  bpm: 120
 --- !u!4 &1490057406
 Transform:
   m_ObjectHideFlags: 0
@@ -36894,6 +36850,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1674568690}
   m_CullTransparentMesh: 1
+--- !u!83 &1678520956
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 48000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &1679931502
 GameObject:
   m_ObjectHideFlags: 0

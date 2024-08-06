@@ -3,52 +3,65 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine.Networking;
-using TMPro; // Import the TextMesh Pro namespace
+using TMPro;
 
 public class MultipleAudioLoader : MonoBehaviour
 {
-    public static MultipleAudioLoader Instance { get; private set; } // Singleton instance
+    public static MultipleAudioLoader Instance { get; private set; }
 
-    public string directoryPath = "AudioFiles"; // Sub-directory in the persistent data path
+    public string directoryPath = "AudioFiles";
     private string fullPath;
-    public AudioSource audioSource; // AudioSource to play audio clips
+    public AudioSource audioSource;
+    public TMP_Text statusText;
 
-    public List<AudioClip> audioClips = new List<AudioClip>(); // List to hold loaded audio clips
-    private Dictionary<string, AudioClip> clipDictionary = new Dictionary<string, AudioClip>(); // Dictionary to map filenames to clips
-    public TMP_Text statusText; // UI TextMesh Pro element to display the status
+    private Dictionary<string, AudioClip> clipDictionary = new Dictionary<string, AudioClip>();
+    public List<string> clipFileNames = new List<string>();
+    private string[] allFilePaths;
+    public AudioClip currentClip;
 
-    private int currentClipIndex = -1; // Index of the currently playing clip
+    public int currentIndex = -1; // To keep track of the current clip index
 
     private void Awake()
     {
-        // Implement singleton pattern
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Ensure this instance persists across scenes
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
-            Destroy(gameObject); // Destroy duplicate instances
+            Destroy(gameObject);
         }
     }
 
     private void Start()
     {
+        Debug.Log("Start method called.");
         fullPath = Path.Combine(Application.persistentDataPath, directoryPath);
         Debug.Log("Audio directory path: " + fullPath);
 
-        // Test if files exist
+        StartCoroutine(InitializeAudioFiles());
+    }
+
+    private IEnumerator InitializeAudioFiles()
+    {
+        yield return new WaitForSeconds(1f);
+        LoadAllAudioFiles();
+    }
+
+    private void LoadAllAudioFiles()
+    {
         if (Directory.Exists(fullPath))
         {
             string[] files = Directory.GetFiles(fullPath);
+            allFilePaths = files;
+
             foreach (string file in files)
             {
-                Debug.Log("Found file: " + file);
+                string fileName = Path.GetFileName(file);
+                clipFileNames.Add(fileName);
+                Debug.Log("Found file: " + fileName);
             }
-
-            // Load all audio files
-            StartCoroutine(LoadAllAudioClips());
         }
         else
         {
@@ -56,34 +69,20 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
-    private IEnumerator LoadAllAudioClips()
+    public IEnumerator LoadAndPlayClip(string fileName)
     {
-        string[] files = Directory.GetFiles(fullPath);
-        for (int i = 0; i < files.Length; i++)
+        if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
         {
-            string fileName = Path.GetFileName(files[i]);
-            yield return StartCoroutine(LoadAudioClip(fileName));
+            audioSource.clip = loadedClip;
+            audioSource.Play();
+            UpdateStatusText("Playing: " + fileName);
+            yield break;
         }
 
-        if (audioClips.Count > 0)
-        {
-            currentClipIndex = 0; // Set the initial clip index
-            Debug.Log("All audio clips loaded. Ready to play.");
-        }
-        else
-        {
-            Debug.LogError("No audio clips were loaded.");
-        }
-    }
-
-    // Method to load an audio clip by filename
-    public IEnumerator LoadAudioClip(string fileName, System.Action<AudioClip> onClipLoaded = null)
-    {
         string filePath = Path.Combine(fullPath, fileName);
         string fileUrl = "file://" + filePath;
         string extension = Path.GetExtension(fileName).ToLower();
 
-        // Debug log to verify the URL
         Debug.Log("Loading audio clip from: " + fileUrl);
 
         using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(fileUrl, GetAudioType(extension)))
@@ -92,78 +91,53 @@ public class MultipleAudioLoader : MonoBehaviour
 
             if (www.result == UnityWebRequest.Result.Success)
             {
-                AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
-                audioClips.Add(clip); // Cache the loaded clip
-                clipDictionary[fileName] = clip; // Map filename to the loaded clip
+                if (currentClip != null)
+                {
+                    Resources.UnloadAsset(currentClip);
+                    Debug.Log("Unloaded previous clip.");
+                }
 
-                // Debug log to confirm successful loading
-                Debug.Log("Successfully loaded audio clip: " + fileName);
-                onClipLoaded?.Invoke(clip);
+                AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
+                clipDictionary[fileName] = newClip;
+                currentClip = newClip;
+                audioSource.clip = newClip;
+                //audioSource.Play();
+                UpdateStatusText("Playing: " + fileName);
             }
             else
             {
                 Debug.LogError("Failed to load audio file: " + www.error);
-                onClipLoaded?.Invoke(null);
+                UpdateStatusText("Failed to play: " + fileName);
             }
         }
     }
 
-    // Method to load and play the next audio clip
+    public void PlayAudioClip(string fileName)
+    {
+        currentIndex = clipFileNames.IndexOf(fileName);
+        StartCoroutine(LoadAndPlayClip(fileName));
+    }
+
     public void PlayNextClip()
     {
-        if (audioClips.Count > 0)
+        if (clipFileNames.Count > 0 && currentIndex >= 0)
         {
-            currentClipIndex = (currentClipIndex + 1) % audioClips.Count;
-            StartCoroutine(PlayClipAtIndex(currentClipIndex));
-        }
-        else
-        {
-            Debug.LogError("No audio clips available to play.");
+            currentIndex = (currentIndex + 1) % clipFileNames.Count;
+            string nextClipFileName = clipFileNames[currentIndex];
+            Debug.Log("Next clip filename: " + nextClipFileName);
+            PlayAudioClip(nextClipFileName);
         }
     }
 
-    // Method to load and play the previous audio clip
     public void PlayPreviousClip()
     {
-        if (audioClips.Count > 0)
+        if (clipFileNames.Count > 0 && currentIndex >= 0)
         {
-            currentClipIndex = (currentClipIndex - 1 + audioClips.Count) % audioClips.Count;
-            StartCoroutine(PlayClipAtIndex(currentClipIndex));
+            currentIndex = (currentIndex - 1 + clipFileNames.Count) % clipFileNames.Count;
+            string prevClipFileName = clipFileNames[currentIndex];
+            Debug.Log("Previous clip filename: " + prevClipFileName);
+            PlayAudioClip(prevClipFileName);
         }
-        else
-        {
-            Debug.LogError("No audio clips available to play.");
-        }
-    }
-
-    private IEnumerator PlayClipAtIndex(int index)
-    {
-        if (index >= 0 && index < audioClips.Count)
-        {
-            AudioClip clip = audioClips[index];
-            if (clip != null)
-            {
-                audioSource.clip = clip;
-                audioSource.Play();
-                Debug.Log("Playing audio clip: " + clip.name);
-
-                // Update status text if needed
-                if (statusText != null)
-                {
-                    statusText.text = "Playing: " + clip.name;
-                }
-            }
-            else
-            {
-                Debug.LogError("Audio clip at index " + index + " is null.");
-            }
-        }
-        else
-        {
-            Debug.LogError("Invalid clip index: " + index);
-        }
-
-        yield return null; // Ensure the coroutine completes
     }
 
     private AudioType GetAudioType(string extension)
@@ -180,42 +154,11 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
-    // Method to play an audio clip by filename
-    public void PlayAudioClip(string fileName)
+    private void UpdateStatusText(string text)
     {
-        StartCoroutine(LoadAudioClip(fileName, clip =>
+        if (statusText != null)
         {
-            if (clip != null)
-            {
-                audioSource.clip = clip;
-                audioSource.Play();
-
-                // Debug log to confirm playback
-                Debug.Log("Playing audio clip: " + fileName);
-
-                // Update status text if needed
-                if (statusText != null)
-                {
-                    statusText.text = "Playing: " + fileName;
-                }
-            }
-            else
-            {
-                Debug.LogError("Failed to play audio clip: " + fileName);
-            }
-        }));
-    }
-
-    // Method to load an audio clip without playing it
-    public IEnumerator LoadAudioClipWithoutPlaying(string fileName)
-    {
-        yield return StartCoroutine(LoadAudioClip(fileName));
-    }
-
-    // Method to get a clip by filename
-    public AudioClip GetClipByFileName(string fileName)
-    {
-        clipDictionary.TryGetValue(fileName, out AudioClip clip);
-        return clip;
+            statusText.text = text;
+        }
     }
 }
