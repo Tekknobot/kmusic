@@ -9,12 +9,9 @@ public class Chop : MonoBehaviour
     public TextMeshProUGUI feedbackText; // Reference to the TextMeshProUGUI component for feedback
 
     private const int MaxChops = 16; // Maximum number of chops
-    public List<SampleData> chops = new List<SampleData>(); // List to store data for each chop
+    public List<float> timestamps = new List<float>(); // List to store timestamps
 
-    // Variables for storing chop data
-    private int songIndex = 0; // Example data - adjust as needed
-    private float timestamp = 0.0f; // Example data - adjust as needed
-    private int padNumber = 0; // Example data - adjust as needed
+    private AudioSource audioSource; // Reference to the AudioSource
 
     private void Start()
     {
@@ -33,24 +30,32 @@ public class Chop : MonoBehaviour
         {
             Debug.LogError("Feedback TextMeshProUGUI is not assigned.");
         }
+
+        // Get the AudioSource component from the same GameObject
+        audioSource = GameObject.Find("MusicPlayer").GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            Debug.LogError("AudioSource component is not assigned or found.");
+        }
     }
 
     private void OnChopButtonClick()
     {
-        if (chops.Count >= MaxChops)
+        if (timestamps.Count >= MaxChops)
         {
             UpdateFeedbackText("Maximum number of chops reached.");
             return;
         }
 
-        // Create a new SampleData instance with the current data
-        SampleData newChop = new SampleData(songIndex, timestamp, padNumber);
+        if (audioSource != null)
+        {
+            // Record the current timestamp of the audio source
+            float timestamp = audioSource.time;
+            timestamps.Add(timestamp);
 
-        // Add the new chop data to the list
-        chops.Add(newChop);
-
-        // Update feedback with the added chop data
-        UpdateFeedbackText($"Added chop: SongIndex={newChop.songIndex}, Timestamp={newChop.timestamp}, PadNumber={newChop.padNumber}");
+            // Update feedback with the added timestamp
+            UpdateFeedbackText($"Added chop: Timestamp={timestamp}");
+        }
     }
 
     private void UpdateFeedbackText(string message)
@@ -63,29 +68,5 @@ public class Chop : MonoBehaviour
         {
             Debug.LogError("Feedback TextMeshProUGUI is not assigned.");
         }
-    }
-
-    // Method to update chop data manually
-    public void UpdateChopData(int songIndex, float timestamp, int padNumber)
-    {
-        this.songIndex = songIndex;
-        this.timestamp = timestamp;
-        this.padNumber = padNumber;
-    }
-}
-
-// SampleData class definition
-[System.Serializable]
-public class SampleData
-{
-    public int songIndex;
-    public float timestamp;
-    public int padNumber;
-
-    public SampleData(int songIndex, float timestamp, int padNumber)
-    {
-        this.songIndex = songIndex;
-        this.timestamp = timestamp;
-        this.padNumber = padNumber;
     }
 }

@@ -1997,6 +1997,7 @@ GameObject:
   - component: {fileID: 84825292}
   - component: {fileID: 84825291}
   - component: {fileID: 84825294}
+  - component: {fileID: 84825295}
   m_Layer: 5
   m_Name: ChopButton
   m_TagString: Untagged
@@ -2066,7 +2067,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 84825292}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 84825289}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &84825292
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2117,11 +2130,105 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d95bd1abbbb8ff499fc684fbd0912c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bpm: 120
-  allSamples: []
-  selectedSamples: []
-  clock: {fileID: 2020880539}
   chopButton: {fileID: 84825291}
+  feedbackText: {fileID: 986410955}
+  timestamps: []
+--- !u!82 &84825295
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 84825289}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: -2299534327480482027, guid: 4f12f51b6d6902545a0f82ffd1d0f18d, type: 2}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &87624998
 GameObject:
   m_ObjectHideFlags: 0
@@ -10448,6 +10555,7 @@ GameObject:
   - component: {fileID: 531143749}
   - component: {fileID: 531143748}
   - component: {fileID: 531143750}
+  - component: {fileID: 531143751}
   m_Layer: 0
   m_Name: MultipleAudioLoader
   m_TagString: Untagged
@@ -10582,6 +10690,20 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &531143751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 531143747}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 169d24d93e83e2d489f5c3ce07d7da44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  originalWavPath: 
+  clipCount: 16
 --- !u!1 &534982844
 GameObject:
   m_ObjectHideFlags: 0
@@ -16976,6 +17098,34 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -5.0000153}
   m_SizeDelta: {x: 0, y: -20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!83 &805702541
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 48000
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &820157712
 GameObject:
   m_ObjectHideFlags: 0
@@ -32518,7 +32668,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1490057405
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32550,6 +32700,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 5030641b0a2f0cf42b0844e983e59983, type: 3}
   - {fileID: 21300000, guid: bf54ab4da99c1b7439bb140a9aa5a550, type: 3}
   currentSample: {fileID: 0}
+  chopScript: {fileID: 84825294}
 --- !u!4 &1490057406
 Transform:
   m_ObjectHideFlags: 0

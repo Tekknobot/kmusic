@@ -15,9 +15,8 @@ public class SampleManager : MonoBehaviour
 
     private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of samples
 
-    private Dictionary<string, List<SampleData>> sampleData = new Dictionary<string, List<SampleData>>(); // Dictionary to store sample data
-
     private AudioSource audioSource;        // AudioSource to play audio clips
+    public Chop chopScript; // Reference to the Chop script
 
     private void Awake()
     {
@@ -42,8 +41,37 @@ public class SampleManager : MonoBehaviour
         // Add an AudioSource component to the SampleManager
         audioSource = gameObject.AddComponent<AudioSource>();
 
+        // Ensure the Chop script is assigned
+        if (chopScript == null)
+        {
+            Debug.LogError("Chop script is not assigned.");
+        }
+
+        // Ensure the AudioSource is assigned
+        if (audioSource == null)
+        {
+            Debug.LogError("AudioSource component is not assigned.");
+        }
+
         // Generate samples
         GenerateSamples();
+    }
+
+
+    public void PlaySample(int padIndex)
+    {
+        if (chopScript != null && padIndex >= 0 && padIndex < chopScript.timestamps.Count)
+        {
+            // Get the timestamp from the Chop script
+            float timestamp = chopScript.timestamps[padIndex];
+            audioSource.time = timestamp;
+            audioSource.Play();
+            Debug.Log($"Playing sample at timestamp: {timestamp}");
+        }
+        else
+        {
+            Debug.LogError("Invalid pad index or Chop script not assigned.");
+        }
     }
 
     private bool ValidateInitialSettings()
@@ -181,125 +209,5 @@ public class SampleManager : MonoBehaviour
         {
             Debug.LogError($"Audio clip for sample {sample.name} not found.");
         }
-    }
-
-    // Method to save sample data
-    public void SaveSampleData(Sprite sample, int songIndex, float timestamp, int padNumber)
-    {
-        if (sample != null)
-        {
-            string sampleName = sample.name;
-
-            var newSampleData = new SampleData(songIndex, timestamp, padNumber);
-
-            if (sampleData.ContainsKey(sampleName))
-            {
-                sampleData[sampleName].Add(newSampleData);
-            }
-            else
-            {
-                sampleData.Add(sampleName, new List<SampleData> { newSampleData });
-            }
-
-            Debug.Log($"Saved Sample Data: Sample = {sample.name}, SongIndex = {songIndex}, Timestamp = {timestamp}, PadNumber = {padNumber}");
-        }
-        else
-        {
-            Debug.LogError("Sample is null. Cannot save sample data.");
-        }
-    }
-
-    // Method to remove sample data
-    public void RemoveSampleData(Sprite sample, int songIndex, float timestamp, int padNumber)
-    {
-        if (sample == null)
-        {
-            Debug.LogError("Sample is null. Cannot remove sample data.");
-            return;
-        }
-
-        string sampleName = sample.name;
-
-        if (!sampleData.ContainsKey(sampleName))
-        {
-            Debug.LogWarning($"Sample = {sampleName} not found in sample data.");
-            return;
-        }
-
-        List<SampleData> sampleDatas = sampleData[sampleName];
-
-        SampleData dataToRemove = sampleDatas.Find(d => d.songIndex == songIndex && d.timestamp == timestamp && d.padNumber == padNumber);
-
-        if (dataToRemove != null)
-        {
-            sampleDatas.Remove(dataToRemove);
-
-            if (sampleDatas.Count == 0)
-            {
-                sampleData.Remove(sampleName);
-                Debug.Log($"Removed Sample Data: Sample = {sample.name}, SongIndex = {songIndex}, Timestamp = {timestamp}, PadNumber = {padNumber}");
-            }
-            else
-            {
-                Debug.Log($"Removed Sample Data: SongIndex = {songIndex}, Timestamp = {timestamp}, PadNumber = {padNumber} from Sample = {sample.name}");
-            }
-        }
-        else
-        {
-            Debug.LogWarning($"Sample Data not found: SongIndex = {songIndex}, Timestamp = {timestamp}, PadNumber = {padNumber} for Sample = {sampleName}");
-        }
-    }
-
-    // Method to display samples on steps with matching data
-    public void DisplaySamplesOnMatchingSteps()
-    {
-        Debug.Log("Displaying all saved samples for SampleManager.");
-
-        foreach (var entry in sampleData)
-        {
-            string sampleName = entry.Key;
-            List<SampleData> dataList = entry.Value;
-            Sprite sample = GetSampleByName(sampleName);
-
-            if (sample != null)
-            {
-                Debug.Log($"Displaying sample {sample.name} for data {string.Join(", ", dataList.Select(d => $"Index={d.songIndex}, Timestamp={d.timestamp}, Pad={d.padNumber}"))}");
-
-                foreach (var data in dataList)
-                {
-                    Cell cell = BoardManager.Instance.GetCellByStep(data.padNumber); // Adjust as needed
-                    if (cell != null)
-                    {
-                        cell.SetSprite(sample); // Assume Cell has a method to set the sprite
-                        Debug.Log($"Displayed sample {sample.name} on cell at pad number {data.padNumber}");
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogError($"Sample with name {sampleName} not found.");
-            }
-        }
-    }
-
-    // Helper method to get a sample by its name
-    public Sprite GetSampleByName(string sampleName)
-    {
-        if (samples == null || samples.Length == 0)
-        {
-            Debug.LogError("The samples array is null or empty.");
-            return null;
-        }
-
-        foreach (Sprite sample in samples)
-        {
-            if (sample.name == sampleName)
-            {
-                return sample;
-            }
-        }
-
-        Debug.LogError($"Sample with name {sampleName} not found.");
-        return null;
     }
 }
