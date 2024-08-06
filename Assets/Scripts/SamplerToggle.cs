@@ -10,6 +10,9 @@ public class SamplerToggle : MonoBehaviour
 
     public Toggle musicPlayerToggle;
 
+    private Vector3 offscreenPosition = new Vector3(-1000, 0, 0); // Define an offscreen position
+    private Vector3 onscreenPosition = new Vector3(6.810134f, -1.697827f, 1.511794f); // Define the onscreen position (default)
+
     private void Start()
     {
         // Initialize the toggle and set up the listener
@@ -29,15 +32,8 @@ public class SamplerToggle : MonoBehaviour
     {
         if (isOn)
         {
-            // Toggle is on: Show SampleManager and hide MixerGroup and KeyManager
-            if (sampleManagerObject != null)
-            {
-                sampleManagerObject.SetActive(true);
-            }
-            else
-            {
-                Debug.LogError("SampleManagerObject is not assigned in SamplerToggle.");
-            }
+            // Toggle is on: Show SampleManager offscreen and hide MixerGroup and KeyManager
+            MoveSampleManagerToOnscreen();
 
             if (mixerGroupObject != null)
             {
@@ -61,15 +57,8 @@ public class SamplerToggle : MonoBehaviour
         }
         else
         {
-            // Toggle is off: Show MixerGroup and KeyManager, hide SampleManager
-            if (sampleManagerObject != null)
-            {
-                sampleManagerObject.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("SampleManagerObject is not assigned in SamplerToggle.");
-            }
+            // Toggle is off: Show SampleManager on screen and hide MixerGroup and KeyManager
+            MoveSampleManagerToOffscreen();
 
             if (mixerGroupObject != null)
             {
@@ -90,6 +79,32 @@ public class SamplerToggle : MonoBehaviour
             }
 
             musicPlayerToggle.enabled = true;
+        }
+    }
+
+    private void MoveSampleManagerToOffscreen()
+    {
+        if (sampleManagerObject != null)
+        {
+            sampleManagerObject.transform.position = offscreenPosition;
+            sampleManagerObject.SetActive(true); // Make sure it's active so it can be moved
+        }
+        else
+        {
+            Debug.LogError("SampleManagerObject is not assigned in SamplerToggle.");
+        }
+    }
+
+    private void MoveSampleManagerToOnscreen()
+    {
+        if (sampleManagerObject != null)
+        {
+            sampleManagerObject.transform.position = onscreenPosition;
+            sampleManagerObject.SetActive(true); // Make sure it's active when moved back on screen
+        }
+        else
+        {
+            Debug.LogError("SampleManagerObject is not assigned in SamplerToggle.");
         }
     }
 }

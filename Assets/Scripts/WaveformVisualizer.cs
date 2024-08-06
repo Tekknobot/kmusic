@@ -12,7 +12,16 @@ public class WaveformVisualizer : MonoBehaviour
     private GameObject[] bars;
     private Coroutine waveformCoroutine;
 
-    public void Start()
+    private void Awake()
+    {
+        // Ensure AudioSource is assigned
+        if (audioSource == null)
+        {
+            audioSource = GetComponent<AudioSource>();
+        }
+    }
+
+    public void CreateWave()
     {
         samples = new float[sampleSize];
         bars = new GameObject[sampleSize];
@@ -23,6 +32,8 @@ public class WaveformVisualizer : MonoBehaviour
             bars[i] = Instantiate(barPrefab, barsParent);
             bars[i].transform.localPosition = new Vector3(i * 0.1f, 0, 0); // Adjust spacing as needed
         }
+
+        Debug.Log("Waveform bars created.");
     }
 
     public void StartWave()
@@ -32,9 +43,10 @@ public class WaveformVisualizer : MonoBehaviour
         {
             StopCoroutine(waveformCoroutine);
         }
-        
+
         // Start the new coroutine
         waveformCoroutine = StartCoroutine(UpdateWaveform());
+        Debug.Log("Waveform started.");
     }
 
     public void StopWave()
@@ -45,13 +57,16 @@ public class WaveformVisualizer : MonoBehaviour
             StopCoroutine(waveformCoroutine);
             waveformCoroutine = null;
         }
-        
+
         // Optionally, clear or reset the visualizer
-        ClearWaveform();
+        //ClearWaveform();
+        Debug.Log("Waveform stopped.");
     }
 
     private IEnumerator UpdateWaveform()
     {
+        Debug.Log("UpdateWaveform coroutine started.");
+        
         while (audioSource.isPlaying)
         {
             audioSource.GetOutputData(samples, 0);
@@ -62,7 +77,7 @@ public class WaveformVisualizer : MonoBehaviour
             }
             yield return null; // Wait for the next frame
         }
-        
+
         // Optionally stop the visualizer when audio stops
         StopWave();
     }
@@ -70,9 +85,16 @@ public class WaveformVisualizer : MonoBehaviour
     private void ClearWaveform()
     {
         // Optionally, clear the waveform bars or reset their state
-        foreach (var bar in bars)
+        if (bars != null)
         {
-            bar.transform.localScale = new Vector3(1, 0, 1); // Reset scale or hide
+            foreach (var bar in bars)
+            {
+                if (bar != null)
+                {
+                    bar.transform.localScale = new Vector3(1, 0, 1); // Reset scale or hide
+                }
+            }
         }
+        Debug.Log("Waveform cleared.");
     }
 }

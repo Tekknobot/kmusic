@@ -39,6 +39,9 @@ public class MusicPlayerUIController : MonoBehaviour
         // Wait until audio files are loaded
         yield return new WaitUntil(() => MultipleAudioLoader.Instance.clipFileNames.Count > 0);
 
+        // Initialize the waveform visualizer
+        waveform.GetComponent<WaveformVisualizer>().CreateWave();
+
         // Play the first track if available
         PlayTrack();
     }

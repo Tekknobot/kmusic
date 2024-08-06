@@ -18,7 +18,7 @@ public class MultipleAudioLoader : MonoBehaviour
     public List<string> clipFileNames = new List<string>();
     private string[] allFilePaths;
     public AudioClip currentClip;
-
+    public GameObject waveform;
     public int currentIndex = -1; // To keep track of the current clip index
 
     private void Awake()
