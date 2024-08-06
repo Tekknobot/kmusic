@@ -13,7 +13,7 @@ public class Chop : MonoBehaviour
 
     private AudioSource audioSource; // Reference to the AudioSource
 
-    private void Start()
+    private void Awake()
     {
         // Ensure the button is assigned and add a listener
         if (chopButton != null)
@@ -31,11 +31,19 @@ public class Chop : MonoBehaviour
             Debug.LogError("Feedback TextMeshProUGUI is not assigned.");
         }
 
-        // Get the AudioSource component from the same GameObject
-        audioSource = GameObject.Find("MusicPlayer").GetComponent<AudioSource>();
-        if (audioSource == null)
+        // Get the AudioSource component from the MusicPlayer GameObject
+        GameObject musicPlayer = GameObject.Find("MusicPlayer");
+        if (musicPlayer != null)
         {
-            Debug.LogError("AudioSource component is not assigned or found.");
+            audioSource = musicPlayer.GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                Debug.LogError("AudioSource component is not found on MusicPlayer.");
+            }
+        }
+        else
+        {
+            Debug.LogError("MusicPlayer GameObject is not found.");
         }
     }
 
@@ -47,14 +55,18 @@ public class Chop : MonoBehaviour
             return;
         }
 
-        if (audioSource != null)
+        if (audioSource != null && audioSource.isPlaying)
         {
             // Record the current timestamp of the audio source
             float timestamp = audioSource.time;
             timestamps.Add(timestamp);
 
-            // Update feedback with the added timestamp
-            UpdateFeedbackText($"Added chop: Timestamp={timestamp}");
+            // Update feedback with the added timestamp and current chop count
+            UpdateFeedbackText($"Added chop: Timestamp = {timestamp}. Total Chops = {timestamps.Count}");
+        }
+        else
+        {
+            UpdateFeedbackText("AudioSource is not playing or not assigned.");
         }
     }
 
@@ -64,9 +76,12 @@ public class Chop : MonoBehaviour
         {
             feedbackText.text = message;
         }
-        else
-        {
-            Debug.LogError("Feedback TextMeshProUGUI is not assigned.");
-        }
+    }
+
+    // Optional: Method to clear the chops
+    public void ClearChops()
+    {
+        timestamps.Clear();
+        UpdateFeedbackText("Chops cleared.");
     }
 }
