@@ -6,6 +6,33 @@ using UnityEngine;
 
 public class DataManager : MonoBehaviour
 {
+    private static string filePath = "sampleData.dat";
+
+    public static Dictionary<string, List<int>> LoadSampleDataFromFile()
+    {
+        if (File.Exists(filePath))
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (FileStream stream = new FileStream(filePath, FileMode.Open))
+            {
+                return formatter.Deserialize(stream) as Dictionary<string, List<int>>;
+            }
+        }
+        else
+        {
+            return new Dictionary<string, List<int>>();
+        }
+    }
+
+    public static void SaveSampleDataToFile(Dictionary<string, List<int>> data)
+    {
+        BinaryFormatter formatter = new BinaryFormatter();
+        using (FileStream stream = new FileStream(filePath, FileMode.Create))
+        {
+            formatter.Serialize(stream, data);
+        }
+    }
+
     // Save tile data to a file
     public static void SaveTileDataToFile(Dictionary<string, List<TileData>> tileDataGroups)
     {
