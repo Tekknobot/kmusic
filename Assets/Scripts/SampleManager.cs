@@ -30,6 +30,9 @@ public class SampleManager : MonoBehaviour
     public int midiNote;
     private Cell[,] boardCells; // 2D array to store references to all board cells
 
+    private Dictionary<int, Sprite> midiNoteToSpriteMap = new Dictionary<int, Sprite>();
+    private bool isPlayingSample = false;    // Flag to check if a sample is currently being played
+
     private void Awake()
     {
         // Singleton pattern
@@ -77,7 +80,65 @@ public class SampleManager : MonoBehaviour
 
         // Generate samples
         GenerateSamples();
+
+        // Initialize MIDI Note to Sprite mapping (adjust as needed)
+        InitializeMidiNoteMappings();        
     }
+
+    private void InitializeMidiNoteMappings()
+    {
+        // Example mapping - adjust according to your needs
+        for (int i = 0; i < samples.Length; i++)
+        {
+            midiNoteToSpriteMap[60 + i] = samples[i]; // Assuming MIDI notes start from 60
+        }
+    }
+
+    public void OnNoteOn()
+    {
+        bool foundAnySample = false; // To track if any sample was found and played
+
+        for (int i = 0; i < 16; i++)
+        {
+            for (int j = 0; j < 16; j++)
+            {
+                if (GameObject.Find("SampleSequencer").GetComponent<AudioHelm.SampleSequencer>().NoteExistsInRange(75 - i, j, j + 1) &&
+                    GameObject.Find("SampleSequencer").GetComponent<AudioHelm.SampleSequencer>().currentIndex == j)
+                {
+                    int midiNote = 75 - i;
+
+                    if (midiNoteToSpriteMap.TryGetValue(midiNote, out Sprite sampleSprite))
+                    {
+                        // Find the sample GameObject based on the sprite
+                        foreach (GameObject sample in originalScales.Keys)
+                        {
+                            if (sample.GetComponent<SpriteRenderer>().sprite == sampleSprite)
+                            {
+                                // Trigger the click event to play the sample
+                                OnSampleClicked(sample);
+                                foundAnySample = true; // Set flag indicating a sample was found
+                            }
+                        }
+
+                        if (!foundAnySample)
+                        {
+                            Debug.LogWarning($"No sample found for MIDI note {midiNote}");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"No sprite mapped for MIDI note {midiNote}");
+                    }
+                }
+            }
+        }
+
+        if (!foundAnySample)
+        {
+            Debug.LogWarning("No samples were found or played for the current NoteOn event.");
+        }
+    }
+
 
     private bool ValidateInitialSettings()
     {
@@ -252,18 +313,30 @@ public class SampleManager : MonoBehaviour
 
             Debug.Log($"Playing sample: {sampleName} from time: {playbackTime} for {durationToNextTimestamp} seconds.");
 
-            // Schedule the next sample playback
+            // Schedule stopping of the audio after the duration to the next timestamp
             timeToPlayNextSample = Time.time + durationToNextTimestamp;
-            playbackStartTime = Time.time;
+            isPlayingSample = true;
         }
         else
         {
-            Debug.LogError($"Sample {sampleName} not found in samples array.");
+            // Log an error if the sample name is not found or index is out of bounds
+            Debug.LogError($"Sample name '{sampleName}' not found or index is out of bounds.");
         }
     }
 
     public Sprite GetCurrentSprite()
     {
         return currentSample;
+    }    
+
+    private void Update()
+    {
+        // Check if we need to stop playing the sample
+        if (isPlayingSample && Time.time >= timeToPlayNextSample)
+        {
+            audioSource.Stop();
+            isPlayingSample = false;
+            Debug.Log("Stopped sample playback.");
+        }
     }    
 }

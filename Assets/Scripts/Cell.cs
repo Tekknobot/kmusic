@@ -58,18 +58,6 @@ public class Cell : MonoBehaviour
         sampleManager = manager;
     }
 
-    public void PlaySample()
-    {
-        if (sampleManager != null)
-        {
-            sampleManager.PlaySampleAudio(CurrentSprite.name);
-        }
-        else
-        {
-            Debug.LogError("SampleManager not assigned to Cell.");
-        }
-    }    
-
     public void SetSprite(Sprite sprite)
     {
         if (spriteRenderer != null)
