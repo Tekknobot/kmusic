@@ -130,7 +130,7 @@ public class DataManager : MonoBehaviour
         }
     }
 
-    // Save sample tile data to a file
+    // Save sample sample tile data to a file
     public static void SaveSampleTileDataToFile(Dictionary<string, List<int>> keyTileData)
     {
         string path = Path.Combine(Application.persistentDataPath, "sampleTileData.dat");

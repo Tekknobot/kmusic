@@ -9,16 +9,58 @@ public class MusicPlayerToggle : MonoBehaviour
     public GameObject mixerGroupObject; // Reference to the MixerGroup GameObject
     public Toggle toggle; // Reference to the Toggle UI element
 
-    public Toggle samplerToggle;
+    private Vector3 initialPositionMusicPlayer; // Stores the initial position for MusicPlayer
+    private Vector3 initialPositionKeyManager; // Stores the initial position for KeyManager
+    private Vector3 initialPositionSampleManager; // Stores the initial position for SampleManager
+    private Vector3 initialPositionMixerGroup; // Stores the initial position for MixerGroup
+
+    private Vector3 offscreenPosition = new Vector3(-1000, 0, 0); // Define an offscreen position
 
     private void Start()
     {
+        // Store the initial positions of all GameObjects
+        if (musicPlayerObject != null)
+        {
+            initialPositionMusicPlayer = musicPlayerObject.transform.position;
+        }
+        else
+        {
+            Debug.LogError("MusicPlayerObject is not assigned in MusicPlayerToggle.");
+        }
+
+        if (keyManagerObject != null)
+        {
+            initialPositionKeyManager = keyManagerObject.transform.position;
+        }
+        else
+        {
+            Debug.LogError("KeyManagerObject is not assigned in MusicPlayerToggle.");
+        }
+
+        if (sampleManagerObject != null)
+        {
+            initialPositionSampleManager = sampleManagerObject.transform.position;
+        }
+        else
+        {
+            Debug.LogError("SampleManagerObject is not assigned in MusicPlayerToggle.");
+        }
+
+        if (mixerGroupObject != null)
+        {
+            initialPositionMixerGroup = mixerGroupObject.transform.position;
+        }
+        else
+        {
+            Debug.LogError("MixerGroupObject is not assigned in MusicPlayerToggle.");
+        }
+
         // Initialize the toggle and set up the listener
         if (toggle != null)
         {
             toggle.onValueChanged.AddListener(OnToggleChanged);
             // Set initial visibility based on toggle state
-            OnToggleChanged(toggle.isOn);
+            OnToggleChanged(!toggle.isOn);
         }
         else
         {
@@ -30,85 +72,59 @@ public class MusicPlayerToggle : MonoBehaviour
     {
         if (isOn)
         {
-            // Toggle is on: Show MusicPlayer, hide KeyManager, SampleManager, and MixerGroup
-            if (musicPlayerObject != null)
-            {
-                musicPlayerObject.SetActive(true);
-            }
-            else
-            {
-                Debug.LogError("MusicPlayerObject is not assigned in MusicPlayerToggle.");
-            }
-
-            if (keyManagerObject != null)
-            {
-                keyManagerObject.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("KeyManagerObject is not assigned in MusicPlayerToggle.");
-            }
-
-            if (sampleManagerObject != null)
-            {
-                sampleManagerObject.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("SampleManagerObject is not assigned in MusicPlayerToggle.");
-            }
-
-            if (mixerGroupObject != null)
-            {
-                mixerGroupObject.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("MixerGroupObject is not assigned in MusicPlayerToggle.");
-            }
-
-            samplerToggle.enabled = false;
+            // Toggle is on: Move objects to their initial positions
+            MoveObjectsToInitialPositions();
         }
         else
         {
-            // Toggle is off: Hide MusicPlayer, show KeyManager, SampleManager, and MixerGroup
-            if (musicPlayerObject != null)
-            {
-                musicPlayerObject.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("MusicPlayerObject is not assigned in MusicPlayerToggle.");
-            }
+            // Toggle is off: Move objects offscreen
+            MoveObjectsToOffscreenPositions();
+        }
+    }
 
-            if (keyManagerObject != null)
-            {
-                keyManagerObject.SetActive(true);
-            }
-            else
-            {
-                Debug.LogError("KeyManagerObject is not assigned in MusicPlayerToggle.");
-            }
+    private void MoveObjectsToInitialPositions()
+    {
+        if (sampleManagerObject != null)
+        {
+            sampleManagerObject.transform.position = offscreenPosition;
+        }
 
-            if (sampleManagerObject != null)
-            {
-                sampleManagerObject.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("SampleManagerObject is not assigned in MusicPlayerToggle.");
-            }
+        if (mixerGroupObject != null)
+        {
+            mixerGroupObject.transform.position = offscreenPosition;
+        }
 
-            if (mixerGroupObject != null)
-            {
-                mixerGroupObject.SetActive(false);
-            }
-            else
-            {
-                Debug.LogError("MixerGroupObject is not assigned in MusicPlayerToggle.");
-            }
+        if (musicPlayerObject != null)
+        {
+            musicPlayerObject.transform.position = offscreenPosition;
+        }
 
-            samplerToggle.enabled = true;
+        if (keyManagerObject != null)
+        {
+            keyManagerObject.transform.position = offscreenPosition;
+        }
+    }
+
+    private void MoveObjectsToOffscreenPositions()
+    {
+        if (sampleManagerObject != null)
+        {
+            sampleManagerObject.transform.position = offscreenPosition;
+        }
+
+        if (mixerGroupObject != null)
+        {
+            mixerGroupObject.transform.position = offscreenPosition;
+        }
+
+        if (sampleManagerObject != null)
+        {
+            sampleManagerObject.transform.position = offscreenPosition;
+        }
+
+        if (keyManagerObject != null)
+        {
+            keyManagerObject.transform.position = offscreenPosition;
         }
     }
 }
