@@ -25,6 +25,7 @@ public class ComponentButton : MonoBehaviour
         // Store the initial positions of all GameObjects
         if (musicPlayerObject != null)
         {
+            musicPlayerObject.SetActive(false);
             initialPositionMusicPlayer = musicPlayerObject.transform.position;
         }
         else
@@ -52,6 +53,7 @@ public class ComponentButton : MonoBehaviour
 
         if (mixerGroupObject != null)
         {
+            mixerGroupObject.SetActive(false);
             initialPositionMixerGroup = mixerGroupObject.transform.position;
         }
         else
@@ -98,6 +100,7 @@ public class ComponentButton : MonoBehaviour
             case 0:
                 if (musicPlayerObject != null)
                 {
+                    musicPlayerObject.SetActive(true);
                     musicPlayerObject.transform.position = initialPositionMusicPlayer;
                 }
                 break;
@@ -116,6 +119,7 @@ public class ComponentButton : MonoBehaviour
             case 3:
                 if (mixerGroupObject != null)
                 {
+                    mixerGroupObject.SetActive(true);
                     mixerGroupObject.transform.position = initialPositionMixerGroup;
                 }
                 break;
