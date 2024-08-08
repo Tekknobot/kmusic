@@ -107,11 +107,13 @@ public class SampleManager : MonoBehaviour
         sampleTileData = DataManager.LoadSampleTileDataFromFile();
 
         // Log the loaded tile data
+        Debug.Log("Loaded sampleTileData from file:");
         foreach (var entry in sampleTileData)
         {
-            Debug.Log($"Loaded tile data: Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
+            Debug.Log($"Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
         }
     }
+
 
     private void InitializeMidiNoteMappings()
     {
@@ -427,10 +429,10 @@ public class SampleManager : MonoBehaviour
                             Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}. Current sprite in cell: {cell.CurrentSprite.name}");
 
                             // Apply note to HelmSequencer
-                            int midiNote = GetMidiNoteForSprite(spriteName);
-                            HelmSequencer helmSequencer = SampleManager.Instance.GetComponent<HelmSequencer>();
-                            helmSequencer.AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
-                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
+                            //int midiNote = GetMidiNoteForSprite(spriteName);
+                            //HelmSequencer helmSequencer = SampleManager.Instance.GetComponent<HelmSequencer>();
+                            //helmSequencer.AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
+                            //Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
                         }
                         else if (cell != null)
                         {
@@ -500,12 +502,20 @@ public class SampleManager : MonoBehaviour
             }
 
             Debug.Log($"Saved Key Tile Data: Sprite = {sprite.name}, Step = {step}");
+
+            // Log the entire dictionary after saving
+            Debug.Log("Current sampleTileData contents:");
+            foreach (var entry in sampleTileData)
+            {
+                Debug.Log($"Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
+            }
         }
         else
         {
             Debug.LogError("Sprite is null. Cannot save tile data.");
         }
     }
+
 
     public void RemoveSampleTileData(Sprite sprite, int step)
     {
