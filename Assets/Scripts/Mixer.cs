@@ -15,6 +15,8 @@ public class Mixer : MonoBehaviour
 
     public Slider helmSlider; // Additional slider for Helm mixer group
 
+    public Slider sampleSlider; // Additional slider for Helm mixer group
+
     private string[] groupNames = new string[8]; // To store the names of the audio mixer groups
     private Dictionary<string, float> originalVolumes = new Dictionary<string, float>(); // To store original volumes
     private Dictionary<string, float> currentVolumes = new Dictionary<string, float>(); // To store current volumes
@@ -77,6 +79,20 @@ public class Mixer : MonoBehaviour
         {
             Debug.LogError("Helm slider is not assigned.");
         }
+
+        if (sampleSlider != null)
+        {
+            sampleSlider.onValueChanged.AddListener(OnSampleSliderValueChanged);
+            string helmGroupName = "Sampler";
+            groupNames = AddGroupName(groupNames, helmGroupName); // Add helm group name to the groupNames array
+
+            // Load the saved Helm slider value
+            LoadSampleSliderValue();
+        }
+        else
+        {
+            Debug.LogError("Sample slider is not assigned.");
+        }        
 
         // Load saved values
         LoadSliderValues();
@@ -156,6 +172,35 @@ public class Mixer : MonoBehaviour
         }
     }
 
+    void OnSampleSliderValueChanged(float value)
+    {
+        Debug.Log("Sample slider value changed: " + value);
+
+        // Assuming the helmSlider's name matches the exposed parameter name in the AudioMixer
+        string parameterName = "Sampler";
+
+        if (mixer != null)
+        {
+            // Set the value directly as the volume
+            bool result = mixer.SetFloat(parameterName, value);
+            if (!result)
+            {
+                Debug.LogError($"Failed to set AudioMixer parameter '{parameterName}'. Ensure the parameter is exposed and the name matches.");
+            }
+
+            // Save the current volume
+            currentVolumes[parameterName] = value;
+
+            // Save the slider value
+            SaveSliderValue(parameterName, value);
+            SaveSampleSliderValue(value); // Save Helm slider value to PlayerPrefs
+        }
+        else
+        {
+            Debug.LogError("AudioMixer is not assigned.");
+        }
+    }
+
     void OnMuteButtonValueChanged(Toggle changedToggle, int index)
     {
         // Get the group name corresponding to the button
@@ -203,6 +248,13 @@ public class Mixer : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    void SaveSampleSliderValue(float value)
+    {
+        string helmGroupName = sampleSlider.name;
+        PlayerPrefs.SetFloat(PLAYER_PREFS_PREFIX + helmGroupName, value);
+        PlayerPrefs.Save();
+    }
+
     void LoadSliderValues()
     {
         foreach (string groupName in groupNames)
@@ -224,6 +276,18 @@ public class Mixer : MonoBehaviour
         }
     }
 
+    void LoadSampleSliderValue()
+    {
+        string helmGroupName = sampleSlider.name;
+        string key = PLAYER_PREFS_PREFIX + helmGroupName;
+        if (PlayerPrefs.HasKey(key))
+        {
+            float savedValue = PlayerPrefs.GetFloat(key);
+            sampleSlider.value = savedValue;
+            OnSampleSliderValueChanged(savedValue); // Update AudioMixer
+        }
+    }
+
     void LoadHelmSliderValue()
     {
         string helmGroupName = helmSlider.name;
@@ -234,7 +298,7 @@ public class Mixer : MonoBehaviour
             helmSlider.value = savedValue;
             OnHelmSliderValueChanged(savedValue); // Update AudioMixer
         }
-    }
+    }    
 
     private string[] AddGroupName(string[] groupNames, string newGroupName)
     {
