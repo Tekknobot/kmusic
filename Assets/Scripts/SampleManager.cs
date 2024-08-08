@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
+using AudioHelm;
 
 public class SampleManager : MonoBehaviour
 {
-    public static SampleManager Instance;   // Singleton instance
+    public static SampleManager Instance  { get; private set; }   // Singleton instance
 
     public GameObject samplePrefab;         // Reference to the sample prefab
     public Sprite[] samples;                // Array of sprites to assign to each sample
@@ -12,8 +13,8 @@ public class SampleManager : MonoBehaviour
     public Sprite currentSample;            // Current sample tracked by SampleManager
     private Sprite lastClickedSample;       // Last clicked sample
 
-    public Sprite currentPadSprite;        // Current pad sprite tracked by SampleManager
-    public Sprite lastClickedPadSprite;    // Last clicked pad sprite
+    public Sprite currentPadSprite;         // Current pad sprite tracked by SampleManager
+    public Sprite lastClickedPadSprite;     // Last clicked pad sprite
 
     private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of samples
     private Dictionary<GameObject, Vector3> padOriginalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of pads
@@ -32,6 +33,10 @@ public class SampleManager : MonoBehaviour
 
     private Dictionary<int, Sprite> midiNoteToSpriteMap = new Dictionary<int, Sprite>();
     private bool isPlayingSample = false;    // Flag to check if a sample is currently being played
+
+    public Dictionary<string, List<int>> sampleTileData = new Dictionary<string, List<int>>(); // Changed to use string keys
+
+    public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
 
     private void Awake()
     {
@@ -78,11 +83,34 @@ public class SampleManager : MonoBehaviour
             Debug.LogError("AudioSource component is not assigned.");
         }
 
+        // Initialize default sprite
+        if (samples.Length > 0)
+        {
+            DefaultSprite = samples[0]; // Set the first sprite in the array as default
+        }
+
         // Generate samples
         GenerateSamples();
 
         // Initialize MIDI Note to Sprite mapping (adjust as needed)
-        InitializeMidiNoteMappings();        
+        InitializeMidiNoteMappings(); 
+
+        StartCoroutine(LoadSampleTileDataAfterDelay(0.2f));       
+    }
+
+    private IEnumerator LoadSampleTileDataAfterDelay(float delaySeconds)
+    {
+        // Wait for the specified delay
+        yield return new WaitForSeconds(delaySeconds);
+
+        // Load the tile data from file
+        sampleTileData = DataManager.LoadSampleTileDataFromFile();
+
+        // Log the loaded tile data
+        foreach (var entry in sampleTileData)
+        {
+            Debug.Log($"Loaded tile data: Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
+        }
     }
 
     private void InitializeMidiNoteMappings()
@@ -98,12 +126,21 @@ public class SampleManager : MonoBehaviour
     {
         bool foundAnySample = false; // To track if any sample was found and played
 
+        // Use SampleSequencer instance directly
+        SampleSequencer sequencer = GameObject.Find("SampleSequencer").GetComponent<SampleSequencer>();
+
+        if (sequencer == null)
+        {
+            Debug.LogError("SampleSequencer not found.");
+            return;
+        }
+
         for (int i = 0; i < 16; i++)
         {
             for (int j = 0; j < 16; j++)
             {
-                if (GameObject.Find("SampleSequencer").GetComponent<AudioHelm.SampleSequencer>().NoteExistsInRange(75 - i, j, j + 1) &&
-                    GameObject.Find("SampleSequencer").GetComponent<AudioHelm.SampleSequencer>().currentIndex == j)
+                if (sequencer.NoteExistsInRange(75 - i, j, j + 1) &&
+                    sequencer.currentIndex == j)
                 {
                     int midiNote = 75 - i;
 
@@ -138,7 +175,6 @@ public class SampleManager : MonoBehaviour
             Debug.LogWarning("No samples were found or played for the current NoteOn event.");
         }
     }
-
 
     private bool ValidateInitialSettings()
     {
@@ -225,11 +261,17 @@ public class SampleManager : MonoBehaviour
         // Set SampleManager as the last clicked manager
         ManagerHandler.Instance.SetLastClickedManager(false, false, true);
 
+        // Reset the board to display default configuration first
+        BoardManager.Instance.ResetBoard();
+
         // Scale the clicked sample temporarily
         StartCoroutine(ScaleObject(clickedSample, originalScales[clickedSample], 0.1f, 1.2f, 0.1f));
 
         // Play the corresponding audio clip
         PlaySampleAudio(currentSample.name);
+
+        // Display the sprite on cells with matching step data
+        DisplaySpriteOnMatchingSteps();
 
         Debug.Log($"Clicked Sample: {clickedSample.name}");
     }
@@ -338,5 +380,208 @@ public class SampleManager : MonoBehaviour
             isPlayingSample = false;
             Debug.Log("Stopped sample playback.");
         }
+    }    
+
+    // Method to display sprites on cells with matching step data
+    public void DisplaySpriteOnMatchingSteps()
+    {
+        Debug.Log("Displaying all saved tiles for SampleManager.");
+
+        Debug.Log("Printing all sampleTileData entries:");
+        foreach (var entry in sampleTileData)
+        {
+            Debug.Log($"Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
+        }
+
+        // Iterate through all sprite and step pairs in sampleTileData
+        foreach (var entry in sampleTileData)
+        {
+            string spriteName = entry.Key;
+            List<int> steps = entry.Value;
+            Debug.Log($"Processing sprite: {spriteName} for steps: {string.Join(", ", steps)}");
+
+            Sprite sprite = GetSpriteByName(spriteName);
+
+            if (sprite != null)
+            {
+                Debug.Log($"Found sprite {sprite.name}");
+
+                // Iterate through boardCells to find cells with matching steps
+                for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
+                {
+                    for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
+                    {
+                        Cell cell = BoardManager.Instance.boardCells[x, y];
+
+                        if (cell != null && steps.Contains((int)cell.step))
+                        {
+                            Debug.Log($"Attempting to display sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}.");
+                            
+                            // Check if the cell already has a sprite
+                            if (cell.CurrentSprite != null)
+                            {
+                                Debug.LogWarning($"Cell at ({x}, {y}) already has sprite {cell.CurrentSprite.name}, will be replaced by {sprite.name}");
+                            }
+
+                            cell.SetSprite(sprite);
+                            Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}. Current sprite in cell: {cell.CurrentSprite.name}");
+
+                            // Apply note to HelmSequencer
+                            int midiNote = GetMidiNoteForSprite(spriteName);
+                            HelmSequencer helmSequencer = SampleManager.Instance.GetComponent<HelmSequencer>();
+                            helmSequencer.AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
+                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
+                        }
+                        else if (cell != null)
+                        {
+                            Debug.Log($"Cell at position ({x}, {y}) with step {cell.step} does not match the steps for sprite {sprite.name}");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError($"Sprite with name {spriteName} not found.");
+            }
+        }
+    }
+
+    // Helper method to get a sprite by its name
+    public Sprite GetSpriteByName(string spriteName)
+    {
+        if (samples == null || samples.Length == 0)
+        {
+            Debug.LogError("The sprites array is null or empty.");
+            return null;
+        }
+
+        Debug.Log($"Looking for sprite with name: {spriteName}");
+
+        foreach (Sprite sprite in samples)
+        {
+            Debug.Log($"Checking sprite: {sprite.name}");
+            if (sprite.name == spriteName)
+            {
+                Debug.Log($"Found sprite: {sprite.name}");
+                return sprite;
+            }
+        }
+
+        Debug.LogError($"Sprite with name {spriteName} not found.");
+        return null;
+    }
+
+    private int GetMidiNoteForSprite(string spriteName)
+    {
+        // Try to extract the number from the sprite name and use it to calculate the MIDI note
+        if (int.TryParse(spriteName.Replace("sample_", ""), out int keyNumber) && keyNumber >= 1 && keyNumber <= 16)
+        {
+            return 60 + keyNumber; // MIDI note calculation: 33 (A0) + (keyNumber - 1)
+        }
+        return 60;
+    }   
+
+    public void SaveSampleTileData(Sprite sprite, int step)
+    {
+        if (sprite != null)
+        {
+            string spriteName = sprite.name;
+
+            if (sampleTileData.ContainsKey(spriteName))
+            {
+                if (!sampleTileData[spriteName].Contains(step))
+                {
+                    sampleTileData[spriteName].Add(step); // Add the new step if it doesn't already exist
+                }
+            }
+            else
+            {
+                sampleTileData.Add(spriteName, new List<int> { step }); // Create a new entry with the step
+            }
+
+            Debug.Log($"Saved Key Tile Data: Sprite = {sprite.name}, Step = {step}");
+        }
+        else
+        {
+            Debug.LogError("Sprite is null. Cannot save tile data.");
+        }
+    }
+
+    public void RemoveSampleTileData(Sprite sprite, int step)
+    {
+        if (sprite == null)
+        {
+            Debug.LogError("Sprite is null. Cannot remove tile data.");
+            return;
+        }
+
+        string spriteName = sprite.name;
+
+        // Check if the sprite to be removed is in the tileData
+        if (!sampleTileData.ContainsKey(spriteName))
+        {
+            Debug.LogWarning($"Sprite = {spriteName} not found in tile data.");
+            return;
+        }
+
+        List<int> steps = sampleTileData[spriteName];
+
+        // Check if the step exists in the list for the sprite
+        if (!steps.Contains(step))
+        {
+            Debug.LogWarning($"Step {step} not found for Sprite = {spriteName}.");
+            return;
+        }
+
+        // Remove the step from the list
+        steps.Remove(step);
+
+        // Remove the sprite from tileData if it has no remaining steps
+        if (steps.Count == 0)
+        {
+            sampleTileData.Remove(spriteName);
+
+            // If the sprite being removed is not the default sprite
+            if (sprite != DefaultSprite)
+            {
+                // Update tileData to add the step to the default sprite
+                if (DefaultSprite != null)
+                {
+                    string defaultSpriteName = DefaultSprite.name;
+                    
+                    if (!sampleTileData.ContainsKey(defaultSpriteName))
+                    {
+                        sampleTileData[defaultSpriteName] = new List<int>();
+                    }
+
+                    // Add the step to default sprite if not already present
+                    if (!sampleTileData[defaultSpriteName].Contains(step))
+                    {
+                        sampleTileData[defaultSpriteName].Add(step);
+                    }
+                }
+            }
+
+            Debug.Log($"Removed Key Tile Data: Sprite = {sprite.name}, Step = {step}");
+        }
+        else
+        {
+            Debug.Log($"Removed Step = {step} from Sprite = {sprite.name}");
+        }
+    }
+}
+
+
+
+[System.Serializable]
+public class SampleTileData
+{
+    public string SpriteName; // Store sprite name instead of sprite object
+    public float Step;
+
+    public SampleTileData(string spriteName, float step)
+    {
+        SpriteName = spriteName;
+        Step = step;
     }    
 }

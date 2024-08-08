@@ -7,7 +7,7 @@ using AudioHelm;
 
 public class KeyManager : MonoBehaviour
 {
-    public static KeyManager Instance;   // Singleton instance
+    public static KeyManager Instance  { get; private set; }   // Singleton instance
 
     public GameObject keyPrefab;         // Reference to the key prefab
     public Sprite[] sprites;             // Array of sprites to assign to each key
@@ -196,6 +196,11 @@ public class KeyManager : MonoBehaviour
             int midiNote = keyClickHandler.midiNote;
             BoardManager.Instance.helm.GetComponent<HelmSequencer>().NoteOn(midiNote, 1.0f);
 
+            // Reset the board to display default configuration first
+            BoardManager.Instance.ResetBoard();
+
+            DisplaySpriteOnMatchingSteps();
+
             // Additional debug information
             Debug.Log($"Key Pressed Down: {clickedKey.name}, MIDI Note: {midiNote}");
         }
@@ -287,13 +292,6 @@ public class KeyManager : MonoBehaviour
     public void DisplaySpriteOnMatchingSteps()
     {
         Debug.Log("Displaying all saved tiles for KeyManager.");
-
-        // Ensure we have the boardCells populated
-        if (boardCells == null)
-        {
-            Debug.LogError("Board cells are not initialized.");
-            return;
-        }
 
         // Iterate through all sprite and step pairs in tileData
         foreach (var entry in tileData)

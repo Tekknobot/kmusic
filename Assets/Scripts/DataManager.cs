@@ -130,6 +130,74 @@ public class DataManager : MonoBehaviour
         }
     }
 
+    // Save sample tile data to a file
+    public static void SaveSampleTileDataToFile(Dictionary<string, List<int>> keyTileData)
+    {
+        string path = Path.Combine(Application.persistentDataPath, "sampleTileData.dat");
+        Debug.Log("Persistent Data Path: " + Application.persistentDataPath);
+
+        try
+        {
+            using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(fileStream, keyTileData);
+            }
+        }
+        catch (IOException ex)
+        {
+            Debug.LogError($"IOException while saving key tile data: {ex.Message}");
+        }
+    }
+
+    // Load sample tile data from a file
+    public static Dictionary<string, List<int>> LoadSampleTileDataFromFile()
+    {
+        Dictionary<string, List<int>> tileData = new Dictionary<string, List<int>>();
+        string filePath = Path.Combine(Application.persistentDataPath, "sampleTileData.dat");
+
+        if (!File.Exists(filePath))
+        {
+            Debug.LogWarning("Key tile data file not found.");
+            return tileData;
+        }
+
+        try
+        {
+            using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            {
+                if (fileStream.Length == 0)
+                {
+                    Debug.LogWarning("Key tile data file is empty.");
+                    return tileData;
+                }
+
+                // Log the file content before deserialization
+                StreamReader reader = new StreamReader(fileStream);
+                string fileContent = reader.ReadToEnd();
+                Debug.Log($"File content: {fileContent}");
+
+                // Reset the stream position to the beginning before deserializing
+                fileStream.Position = 0;
+
+                BinaryFormatter formatter = new BinaryFormatter();
+                tileData = (Dictionary<string, List<int>>)formatter.Deserialize(fileStream);
+
+                // Debug log to check loaded data
+                foreach (var entry in tileData)
+                {
+                    Debug.Log($"Loaded Key Tile Data: Sprite = {entry.Key}, Steps = {string.Join(", ", entry.Value)}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load key tile data: {ex.Message}");
+        }
+
+        return tileData;
+    }
+
     // Load key tile data from a file
     public static Dictionary<string, List<int>> LoadKeyTileDataFromFile()
     {
@@ -232,6 +300,61 @@ public class DataManager : MonoBehaviour
             Debug.LogWarning("Key tile data file does not exist.");
         }
     }
+
+    public static void EraseSampleTileDataToFile(string spriteName, int step)
+    {
+        string path = Path.Combine(Application.persistentDataPath, "sampleTileData.dat");
+
+        if (File.Exists(path))
+        {
+            try
+            {
+                Dictionary<string, List<int>> keyTileData;
+                using (FileStream fileStream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    BinaryFormatter formatter = new BinaryFormatter();
+                    keyTileData = (Dictionary<string, List<int>>)formatter.Deserialize(fileStream);
+                }
+
+                if (keyTileData.ContainsKey(spriteName))
+                {
+                    int initialCount = keyTileData[spriteName].Count;
+                    keyTileData[spriteName].Remove(step);
+                    if (keyTileData[spriteName].Count < initialCount)
+                    {
+                        Debug.Log($"Removed step {step} from sprite {spriteName}");
+                    }
+
+                    if (keyTileData[spriteName].Count == 0)
+                    {
+                        keyTileData.Remove(spriteName);
+                        Debug.Log($"Removed sprite {spriteName} as it became empty.");
+                    }
+
+                    using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        BinaryFormatter formatter = new BinaryFormatter();
+                        formatter.Serialize(fileStream, keyTileData);
+                    }
+
+                    Debug.Log("Specified key tile data erased successfully.");
+                }
+                else
+                {
+                    Debug.LogWarning($"Sprite {spriteName} does not exist in key tile data.");
+                }
+            }
+            catch (IOException ex)
+            {
+                Debug.LogError($"IOException while erasing specific key tile data: {ex.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Key tile data file does not exist.");
+        }
+    }
+
 
     // Save patterns to a file
     public static void SavePatternsToFile(List<PatternData> patterns)

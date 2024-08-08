@@ -5,7 +5,7 @@ using AudioHelm;
 
 public class PadManager : MonoBehaviour
 {
-    public static PadManager Instance;   // Singleton instance
+    public static PadManager Instance  { get; private set; }   // Singleton instance
 
     public GameObject padPrefab;         // Reference to the pad prefab
     public Sprite[] sprites;             // Array of sprites to assign to each pad

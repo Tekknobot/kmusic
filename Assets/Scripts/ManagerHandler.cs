@@ -26,16 +26,6 @@ public class ManagerHandler : MonoBehaviour
             return;
         }
 
-        // Ensure KeyManager and PadManager instances are assigned
-        if (keyManager == null)
-        {
-            keyManager = KeyManager.Instance;
-            if (keyManager == null)
-            {
-                Debug.LogError("KeyManager instance is not assigned or found.");
-            }
-        }
-
         if (padManager == null)
         {
             padManager = PadManager.Instance;
@@ -52,7 +42,17 @@ public class ManagerHandler : MonoBehaviour
             {
                 Debug.LogError("SampleManager instance is not assigned or found.");
             }
-        }        
+        }   
+
+        // Ensure KeyManager and PadManager instances are assigned
+        if (keyManager == null)
+        {
+            keyManager = KeyManager.Instance;
+            if (keyManager == null)
+            {
+                Debug.LogError("KeyManager instance is not assigned or found.");
+            }
+        }             
     }
 
     public void SetLastClickedManager(bool isKeyManager, bool isPadManager, bool isSampleManager)
@@ -89,10 +89,11 @@ public class ManagerHandler : MonoBehaviour
         {
             return sampleManager != null ? sampleManager.midiNote : 0;
         }
-        else
+        else if (isPadManagerLastClicked)
         {
             return padManager != null ? padManager.midiNote : 0;
         }
+        return -1;
     }
     public bool IsKeyManagerLastClicked()
     {

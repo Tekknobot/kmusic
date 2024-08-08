@@ -165,7 +165,8 @@ public class Cell : MonoBehaviour
                 if (_mySampleSequencer != null)
                 {
                     _mySampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
-                    DataManager.EraseTileDataToFile(SampleManager.Instance.currentSample.name, SampleManager.Instance.currentSample.name, (int)step);
+                    SampleManager.Instance.RemoveSampleTileData(oldSprite, (int)step);
+                    DataManager.EraseSampleTileDataToFile(SampleManager.Instance.currentSample.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
                 else
@@ -227,6 +228,7 @@ public class Cell : MonoBehaviour
                 if (_mySampleSequencer != null)
                 {
                     _mySampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    SampleManager.Instance.SaveSampleTileData(newSprite, (int)step);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
                 else
@@ -237,6 +239,7 @@ public class Cell : MonoBehaviour
 
             DataManager.SaveTileDataToFile(PadManager.Instance.tileDataGroups);
             DataManager.SaveKeyTileDataToFile(KeyManager.Instance.tileData);
+            DataManager.SaveSampleTileDataToFile(SampleManager.Instance.sampleTileData);
             PatternManager.Instance.SavePatterns();
         }
     }
