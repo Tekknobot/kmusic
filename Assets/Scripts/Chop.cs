@@ -6,6 +6,7 @@ using TMPro; // Import the TextMeshPro namespace
 public class Chop : MonoBehaviour
 {
     public Button chopButton; // Reference to the button that will trigger the chop action
+    public Button clearChopsButton; // Reference to the button that will clear the chops
     public TextMeshProUGUI feedbackText; // Reference to the TextMeshProUGUI component for feedback
 
     private const int MaxChops = 16; // Maximum number of chops
@@ -15,7 +16,7 @@ public class Chop : MonoBehaviour
 
     private void Awake()
     {
-        // Ensure the button is assigned and add a listener
+        // Ensure the chop button is assigned and add a listener
         if (chopButton != null)
         {
             chopButton.onClick.AddListener(OnChopButtonClick);
@@ -23,6 +24,16 @@ public class Chop : MonoBehaviour
         else
         {
             Debug.LogError("Chop button is not assigned.");
+        }
+
+        // Ensure the clear chops button is assigned and add a listener
+        if (clearChopsButton != null)
+        {
+            clearChopsButton.onClick.AddListener(OnClearChopsButtonClick);
+        }
+        else
+        {
+            Debug.LogError("Clear Chops button is not assigned.");
         }
 
         // Ensure the TextMeshProUGUI component is assigned
@@ -70,6 +81,11 @@ public class Chop : MonoBehaviour
         }
     }
 
+    private void OnClearChopsButtonClick()
+    {
+        ClearChops();
+    }
+
     private void UpdateFeedbackText(string message)
     {
         if (feedbackText != null)
@@ -78,7 +94,7 @@ public class Chop : MonoBehaviour
         }
     }
 
-    // Optional: Method to clear the chops
+    // Method to clear the chops
     public void ClearChops()
     {
         timestamps.Clear();
