@@ -18,6 +18,6 @@ public class PadClickHandler : MonoBehaviour
     private void OnMouseDown()
     {
         padManager.OnPadClicked(padObject);
-        ManagerHandler.Instance.SetLastClickedManager(false);
+        ManagerHandler.Instance.SetLastClickedManager(false, true, false); 
     }
 }

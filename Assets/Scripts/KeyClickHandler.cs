@@ -22,7 +22,7 @@ public class KeyClickHandler : MonoBehaviour
     {
         keyManager.OnKeyClicked(keyObject);
         keyManager.OnKeyPressDown(keyObject);
-        ManagerHandler.Instance.SetLastClickedManager(true); // Set KeyManager as the last clicked manager
+        ManagerHandler.Instance.SetLastClickedManager(true, false, false); // Set KeyManager as the last clicked manager
     }
 
     private void OnMouseUp()

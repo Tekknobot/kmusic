@@ -6,8 +6,11 @@ public class ManagerHandler : MonoBehaviour
 
     public KeyManager keyManager;
     public PadManager padManager;
+    public SampleManager sampleManager;
 
     private bool isKeyManagerLastClicked;
+    private bool isPadManagerLastClicked;
+    private bool isSampleManagerLastClicked; // Track if SampleManager was last clicked
 
     private void Start()
     {
@@ -41,11 +44,22 @@ public class ManagerHandler : MonoBehaviour
                 Debug.LogError("PadManager instance is not assigned or found.");
             }
         }
+
+        if (sampleManager == null)
+        {
+            sampleManager = SampleManager.Instance;
+            if (sampleManager == null)
+            {
+                Debug.LogError("SampleManager instance is not assigned or found.");
+            }
+        }        
     }
 
-    public void SetLastClickedManager(bool isKeyManager)
+    public void SetLastClickedManager(bool isKeyManager, bool isPadManager, bool isSampleManager)
     {
         isKeyManagerLastClicked = isKeyManager;
+        isPadManagerLastClicked = isPadManager;
+        isSampleManagerLastClicked = isSampleManager;
     }
 
     public Sprite GetLastClickedSprite()
@@ -54,10 +68,15 @@ public class ManagerHandler : MonoBehaviour
         {
             return keyManager != null ? keyManager.GetCurrentSprite() : null;
         }
-        else
+        else if (isPadManagerLastClicked)
         {
             return padManager != null ? padManager.GetCurrentSprite() : null;
         }
+        else if (isSampleManagerLastClicked)
+        {
+            return sampleManager != null ? sampleManager.GetCurrentSprite() : null;
+        }
+        return null;
     }
 
     public int GetLastClickedMidiNote()
@@ -65,6 +84,10 @@ public class ManagerHandler : MonoBehaviour
         if (isKeyManagerLastClicked)
         {
             return keyManager != null ? keyManager.midiNote : 0;
+        }
+        else if (isSampleManagerLastClicked)
+        {
+            return sampleManager != null ? sampleManager.midiNote : 0;
         }
         else
         {
@@ -74,5 +97,15 @@ public class ManagerHandler : MonoBehaviour
     public bool IsKeyManagerLastClicked()
     {
         return isKeyManagerLastClicked;
-    }  
+    }
+
+    public bool IsSampleManagerLastClicked()
+    {
+        return isSampleManagerLastClicked;
+    }
+
+    public bool IsPadManagerLastClicked()
+    {
+        return isPadManagerLastClicked;
+    }
 }

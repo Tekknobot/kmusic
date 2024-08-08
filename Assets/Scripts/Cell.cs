@@ -11,11 +11,14 @@ public class Cell : MonoBehaviour
 
     public Sprite defaultSprite;
     public GameObject sequencer;
+    public GameObject mySampleSequencer;
     public HelmSequencer activeSequencer;
     public float step;
 
     public Sprite CurrentSprite { get; private set; }
     public int CurrentStep { get; private set; }
+
+    private SampleManager sampleManager;
 
     private void Awake()
     {
@@ -37,9 +40,35 @@ public class Cell : MonoBehaviour
             }
         }
 
+        if (mySampleSequencer == null)
+        {
+            mySampleSequencer = GameObject.Find("SampleSequencer");
+            if (mySampleSequencer == null)
+            {
+                Debug.LogError("SampleSequencer GameObject not found in scene.");
+                return;
+            }
+        }        
+
         InitializeCell();
     }
 
+    public void SetSampleManager(SampleManager manager)
+    {
+        sampleManager = manager;
+    }
+
+    public void PlaySample()
+    {
+        if (sampleManager != null)
+        {
+            sampleManager.PlaySampleAudio(CurrentSprite.name);
+        }
+        else
+        {
+            Debug.LogError("SampleManager not assigned to Cell.");
+        }
+    }    
 
     public void SetSprite(Sprite sprite)
     {
@@ -69,10 +98,30 @@ public class Cell : MonoBehaviour
             return;
         }
 
-        if (lastClickedSprite != null)
+        // Check if the last clicked manager is SampleManager
+        if (ManagerHandler.Instance.IsSampleManagerLastClicked())
         {
-            newSprite = lastClickedSprite;
-            Debug.Log($"ReplaceSprite using last clicked sprite: {newSprite.name}");
+            // Use SampleManager's current sprite if it exists
+            if (lastClickedSprite != null)
+            {
+                newSprite = lastClickedSprite;
+                Debug.Log($"ReplaceSprite using last clicked sprite from SampleManager: {newSprite.name}");
+            }
+        }
+        else
+        {
+            // Handle the case where the last clicked manager is not SampleManager
+            if (lastClickedSprite != BoardManager.Instance.GetSpriteByStep(step) && BoardManager.Instance.GetSpriteByStep(step) != defaultSprite)
+            {
+                Debug.Log("Returning early due to sprite mismatch.");
+                return;
+            }
+
+            if (lastClickedSprite != null)
+            {
+                newSprite = lastClickedSprite;
+                Debug.Log($"ReplaceSprite using last clicked sprite: {newSprite.name}");
+            }
         }
 
         // Handle removal and replacement logic
@@ -87,12 +136,15 @@ public class Cell : MonoBehaviour
 
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                if (PatternManager.Instance.patterns.Count > 0) {
+                if (PatternManager.Instance.patterns.Count > 0)
+                {
                     activeSequencer = PatternManager.Instance.GetActiveSequencer(); // Retrieve the current sequencer
                 }
-                else {
-                    activeSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>(); 
-                }                
+                else
+                {
+                    activeSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
+                }
+
                 if (activeSequencer != null)
                 {
                     activeSequencer.RemoveNotesInRange(midiNote, this.step, this.step + 1);
@@ -105,13 +157,27 @@ public class Cell : MonoBehaviour
                     Debug.LogError("HelmSequencer component not found on Helm.");
                 }
             }
-            else
+            else if (ManagerHandler.Instance.IsPadManagerLastClicked())
             {
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
                 {
                     sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
                     DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, (int)step);
+                    Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
+                }
+                else
+                {
+                    Debug.LogError("SampleSequencer component not found on Sequencer.");
+                }
+            }
+            else if (ManagerHandler.Instance.IsSampleManagerLastClicked())
+            {
+                var _mySampleSequencer = mySampleSequencer.GetComponent<AudioHelm.SampleSequencer>();
+                if (_mySampleSequencer != null)
+                {
+                    _mySampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
+                    DataManager.EraseTileDataToFile(SampleManager.Instance.currentSample.name, SampleManager.Instance.currentSample.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
                 else
@@ -134,12 +200,15 @@ public class Cell : MonoBehaviour
 
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                if (PatternManager.Instance.patterns.Count > 0) {
+                if (PatternManager.Instance.patterns.Count > 0)
+                {
                     activeSequencer = PatternManager.Instance.GetActiveSequencer(); // Retrieve the current sequencer
                 }
-                else {
-                    activeSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>(); 
-                }      
+                else
+                {
+                    activeSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
+                }
+
                 if (activeSequencer != null)
                 {
                     activeSequencer.AddNote(midiNote, step, step + 1, 1.0f);
@@ -151,7 +220,7 @@ public class Cell : MonoBehaviour
                     Debug.LogError("HelmSequencer component not found on Helm.");
                 }
             }
-            else
+            else if (ManagerHandler.Instance.IsPadManagerLastClicked())
             {
                 var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
                 if (sampleSequencer != null)
@@ -162,6 +231,19 @@ public class Cell : MonoBehaviour
                 else
                 {
                     Debug.LogError("SampleSequencer component not found on Sequencer.");
+                }
+            }
+            else if (ManagerHandler.Instance.IsSampleManagerLastClicked())
+            {
+                var _mySampleSequencer = mySampleSequencer.GetComponent<AudioHelm.SampleSequencer>();
+                if (_mySampleSequencer != null)
+                {
+                    _mySampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    Debug.Log($"Added MIDI {midiNote} at Step = {step}");
+                }
+                else
+                {
+                    Debug.LogError("MySampleSequencer component not found on Sequencer.");
                 }
             }
 

@@ -123,7 +123,7 @@ public class PadManager : MonoBehaviour
         midiNote = clickedPad.GetComponent<PadClickHandler>().midiNote;
 
         // Set PadManager as the last clicked manager
-        ManagerHandler.Instance.SetLastClickedManager(false);
+        ManagerHandler.Instance.SetLastClickedManager(true, false, false); 
 
         // Reset the board to display default configuration first
         BoardManager.Instance.ResetBoard();

@@ -167,7 +167,7 @@ public class KeyManager : MonoBehaviour
         midiNote = clickedKey.GetComponent<KeyClickHandler>().midiNote;
 
         // Set KeyManager as the last clicked manager
-        ManagerHandler.Instance.SetLastClickedManager(true);
+        ManagerHandler.Instance.SetLastClickedManager(true, false, false);
 
         // Update the current sprite tracked by KeyManager
         SpriteRenderer spriteRenderer = clickedKey.GetComponent<SpriteRenderer>();
@@ -280,7 +280,7 @@ public class KeyManager : MonoBehaviour
 
     public void OnManagerClicked()
     {
-        ManagerHandler.Instance.SetLastClickedManager(true);
+        ManagerHandler.Instance.SetLastClickedManager(true, false, false);
     }
 
     // Method to display sprites on cells with matching step data
@@ -528,7 +528,6 @@ public class KeyManager : MonoBehaviour
         else
         {
             Debug.LogError($"No sprite found for step {step}.");
-            return null;
         }
 
         // Ensure we have tile data populated

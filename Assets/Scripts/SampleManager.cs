@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class SampleManager : MonoBehaviour
 {
@@ -12,7 +12,11 @@ public class SampleManager : MonoBehaviour
     public Sprite currentSample;            // Current sample tracked by SampleManager
     private Sprite lastClickedSample;       // Last clicked sample
 
+    public Sprite currentPadSprite;        // Current pad sprite tracked by SampleManager
+    public Sprite lastClickedPadSprite;    // Last clicked pad sprite
+
     private Dictionary<GameObject, Vector3> originalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of samples
+    private Dictionary<GameObject, Vector3> padOriginalScales = new Dictionary<GameObject, Vector3>(); // Dictionary to store original scales of pads
 
     private AudioSource audioSource;        // AudioSource to play audio clips
     public Chop chopScript;                 // Reference to the Chop script
@@ -20,9 +24,11 @@ public class SampleManager : MonoBehaviour
     public float bpm = 120f;                // Beats per minute, adjust as needed
 
     private float timeToPlayNextSample = -1f; // Time to play the next sample
-    private bool isPlayingSample = false;    // Flag to check if a sample is currently being played
+
     private AudioClip currentClip;           // Currently playing audio clip
     private float playbackStartTime;         // Time when the playback starts
+    public int midiNote;
+    private Cell[,] boardCells; // 2D array to store references to all board cells
 
     private void Awake()
     {
@@ -98,6 +104,9 @@ public class SampleManager : MonoBehaviour
         // Ensure we have enough samples to fill the grid
         int numSamplesToCreate = Mathf.Min(numRows * numSamplesPerRow, samples.Length);
 
+        // Initialize the boardCells 2D array
+        boardCells = new Cell[8, 8];
+
         // Loop to create samples
         for (int i = 0; i < numSamplesToCreate; i++)
         {
@@ -112,6 +121,8 @@ public class SampleManager : MonoBehaviour
             // Optionally, parent the new sample under the SampleManager GameObject for organization
             newSample.transform.parent = transform;
 
+            int midiNote = i + 60;
+
             // Set the sprite for the sample using the samples array
             if (!SetSampleSprite(newSample, i)) continue;
 
@@ -120,7 +131,7 @@ public class SampleManager : MonoBehaviour
 
             // Attach click handler to the sample
             SampleClickHandler sampleClickHandler = newSample.AddComponent<SampleClickHandler>();
-            sampleClickHandler.Initialize(this, newSample, samples[i]);
+            sampleClickHandler.Initialize(this, newSample, samples[i], midiNote);
 
             // Change name of sample
             newSample.name = samples[i].name;
@@ -145,14 +156,16 @@ public class SampleManager : MonoBehaviour
 
     public void OnSampleClicked(GameObject clickedSample)
     {
+        midiNote = clickedSample.GetComponent<SampleClickHandler>().midiNote;
+
         lastClickedSample = clickedSample.GetComponent<SpriteRenderer>().sprite;
         currentSample = lastClickedSample;
 
         // Set SampleManager as the last clicked manager
-        ManagerHandler.Instance.SetLastClickedManager(true);
+        ManagerHandler.Instance.SetLastClickedManager(false, false, true);
 
         // Scale the clicked sample temporarily
-        ScaleSample(clickedSample);
+        StartCoroutine(ScaleObject(clickedSample, originalScales[clickedSample], 0.1f, 1.2f, 0.1f));
 
         // Play the corresponding audio clip
         PlaySampleAudio(currentSample.name);
@@ -160,52 +173,33 @@ public class SampleManager : MonoBehaviour
         Debug.Log($"Clicked Sample: {clickedSample.name}");
     }
 
-    // Method to scale the clicked sample
-    private void ScaleSample(GameObject sampleObject)
-    {
-        Vector3 originalScale = originalScales[sampleObject];
-        float scaleUpTime = 0.1f;
-        float scaleUpSpeed = 1.2f;
-        float scaleDownTime = 0.1f;
-
-        // Start scaling up
-        StartCoroutine(ScaleSampleCoroutine(sampleObject, originalScale, scaleUpTime, scaleUpSpeed, true));
-    }
-
-    private IEnumerator ScaleSampleCoroutine(GameObject sampleObject, Vector3 originalScale, float duration, float scaleMultiplier, bool scaleUp)
+    private IEnumerator ScaleObject(GameObject obj, Vector3 originalScale, float scaleUpTime, float scaleUpSpeed, float scaleDownTime)
     {
         float elapsedTime = 0f;
-        Vector3 targetScale = scaleUp ? originalScale * scaleMultiplier : originalScale;
+        Vector3 targetScale = originalScale * scaleUpSpeed;
 
-        while (elapsedTime < duration)
+        // Scale up
+        while (elapsedTime < scaleUpTime)
         {
-            float t = elapsedTime / duration;
-            sampleObject.transform.localScale = Vector3.Lerp(originalScale, targetScale, t);
+            obj.transform.localScale = Vector3.Lerp(originalScale, targetScale, elapsedTime / scaleUpTime);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-
-        sampleObject.transform.localScale = targetScale;
-
-        // Pause before scaling down
+        obj.transform.localScale = targetScale;
         yield return new WaitForSeconds(0.2f);
 
-        // Start scaling down
+        // Scale down
         elapsedTime = 0f;
-        targetScale = originalScale;
-
-        while (elapsedTime < duration)
+        while (elapsedTime < scaleDownTime)
         {
-            float t = elapsedTime / duration;
-            sampleObject.transform.localScale = Vector3.Lerp(sampleObject.transform.localScale, targetScale, t);
+            obj.transform.localScale = Vector3.Lerp(targetScale, originalScale, elapsedTime / scaleDownTime);
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-
-        sampleObject.transform.localScale = originalScale;
+        obj.transform.localScale = originalScale;
     }
 
-    private void PlaySampleAudio(string sampleName)
+    public void PlaySampleAudio(string sampleName)
     {
         // Find the index of the sprite
         int index = System.Array.FindIndex(samples, sprite => sprite.name == sampleName);
@@ -258,25 +252,18 @@ public class SampleManager : MonoBehaviour
 
             Debug.Log($"Playing sample: {sampleName} from time: {playbackTime} for {durationToNextTimestamp} seconds.");
 
-            // Schedule stopping of the audio after the duration to the next timestamp
+            // Schedule the next sample playback
             timeToPlayNextSample = Time.time + durationToNextTimestamp;
-            isPlayingSample = true;
+            playbackStartTime = Time.time;
         }
         else
         {
-            // Log an error if the sample name is not found or index is out of bounds
-            Debug.LogError($"Sample name '{sampleName}' not found or index is out of bounds.");
+            Debug.LogError($"Sample {sampleName} not found in samples array.");
         }
     }
 
-    private void Update()
+    public Sprite GetCurrentSprite()
     {
-        // Check if we need to stop playing the sample
-        if (isPlayingSample && Time.time >= timeToPlayNextSample)
-        {
-            audioSource.Stop();
-            isPlayingSample = false;
-            Debug.Log("Stopped sample playback.");
-        }
-    }
+        return currentSample;
+    }    
 }

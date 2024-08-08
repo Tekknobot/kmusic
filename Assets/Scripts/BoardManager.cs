@@ -9,7 +9,7 @@ public class BoardManager : MonoBehaviour
     public AudioHelm.SampleSequencer sequencer;
     public AudioHelm.HelmSequencer helm;
     public GameObject sampler;
-
+    public SampleManager sampleManagerPrefab; // Assign in Inspector
     public Cell[,] boardCells; // 2D array to store references to all board cells
     private Dictionary<Vector2Int, Sprite> cellSprites; // Dictionary to keep track of sprites on each cell
     public Dictionary<float, Sprite> stepToSpriteMap = new Dictionary<float, Sprite>(); // Dictionary to store sprite by step
