@@ -197,9 +197,9 @@ public class KeyManager : MonoBehaviour
             BoardManager.Instance.helm.GetComponent<HelmSequencer>().NoteOn(midiNote, 1.0f);
 
             // Reset the board to display default configuration first
-            BoardManager.Instance.ResetBoard();
+            //BoardManager.Instance.ResetBoard();
 
-            DisplaySpriteOnMatchingSteps();
+           //DisplaySpriteOnMatchingSteps();
 
             // Additional debug information
             Debug.Log($"Key Pressed Down: {clickedKey.name}, MIDI Note: {midiNote}");

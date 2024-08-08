@@ -148,7 +148,7 @@ public class SampleManager : MonoBehaviour
                             if (sample.GetComponent<SpriteRenderer>().sprite == sampleSprite)
                             {
                                 // Trigger the click event to play the sample
-                                OnSampleClicked(sample);
+                                OnSampleEvent(sample);
                                 foundAnySample = true; // Set flag indicating a sample was found
                             }
                         }
@@ -265,6 +265,31 @@ public class SampleManager : MonoBehaviour
 
         // Play the corresponding audio clip
         PlaySampleAudio(currentSample.name);
+
+        // Display the sprite on cells with matching step data
+        DisplaySpriteOnMatchingSteps();
+
+        Debug.Log($"Clicked Sample: {clickedSample.name}");
+    }
+
+    public void OnSampleEvent(GameObject clickedSample)
+    {
+        //midiNote = clickedSample.GetComponent<SampleClickHandler>().midiNote;
+
+        //lastClickedSample = clickedSample.GetComponent<SpriteRenderer>().sprite;
+        //currentSample = lastClickedSample;
+
+        // Set SampleManager as the last clicked manager
+        ManagerHandler.Instance.SetLastClickedManager(false, false, true);
+
+        // Reset the board to display default configuration first
+        BoardManager.Instance.ResetBoard();
+
+        // Scale the clicked sample temporarily
+        StartCoroutine(ScaleObject(clickedSample, originalScales[clickedSample], 0.1f, 1.2f, 0.1f));
+
+        // Play the corresponding audio clip
+        PlaySampleAudio(clickedSample.name);
 
         // Display the sprite on cells with matching step data
         DisplaySpriteOnMatchingSteps();
