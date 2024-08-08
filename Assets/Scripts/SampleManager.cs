@@ -36,7 +36,7 @@ public class SampleManager : MonoBehaviour
 
     public Dictionary<string, List<int>> sampleTileData = new Dictionary<string, List<int>>(); // Changed to use string keys
 
-    public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
+    public Sprite defaultSprite;
 
     private void Awake()
     {
@@ -81,12 +81,6 @@ public class SampleManager : MonoBehaviour
         if (audioSource == null)
         {
             Debug.LogError("AudioSource component is not assigned.");
-        }
-
-        // Initialize default sprite
-        if (samples.Length > 0)
-        {
-            DefaultSprite = samples[0]; // Set the first sprite in the array as default
         }
 
         // Generate samples
@@ -552,12 +546,12 @@ public class SampleManager : MonoBehaviour
             sampleTileData.Remove(spriteName);
 
             // If the sprite being removed is not the default sprite
-            if (sprite != DefaultSprite)
+            if (sprite != defaultSprite)
             {
                 // Update tileData to add the step to the default sprite
-                if (DefaultSprite != null)
+                if (defaultSprite != null)
                 {
-                    string defaultSpriteName = DefaultSprite.name;
+                    string defaultSpriteName = defaultSprite.name;
                     
                     if (!sampleTileData.ContainsKey(defaultSpriteName))
                     {

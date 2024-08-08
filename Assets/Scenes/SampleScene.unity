@@ -22446,6 +22446,34 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2022366740158421849, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
+      propertyPath: noteOnEvent.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2022366740158421849, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
+      propertyPath: noteOnEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2022366740158421849, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
+      propertyPath: noteOnEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1490057405}
+    - target: {fileID: 2022366740158421849, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
+      propertyPath: noteOnEvent.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 2022366740158421849, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
+      propertyPath: noteOnEvent.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: OnNoteOn
+      objectReference: {fileID: 0}
+    - target: {fileID: 2022366740158421849, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
+      propertyPath: noteOnEvent.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: SampleManager, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 2022366740158421849, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
+      propertyPath: noteOnEvent.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
     - target: {fileID: 2127506879516550983, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
       propertyPath: m_Name
       value: SampleSequencer
@@ -27410,34 +27438,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1225998791}
   m_CullTransparentMesh: 1
---- !u!83 &1229125867
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &1231293342
 GameObject:
   m_ObjectHideFlags: 0
@@ -32025,7 +32025,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1468947127
 Transform:
   m_ObjectHideFlags: 0
@@ -32691,6 +32691,7 @@ MonoBehaviour:
   chopScript: {fileID: 84825294}
   bpm: 120
   midiNote: 0
+  defaultSprite: {fileID: 21300000, guid: 78b8217c21f460c43acdb671fc45e794, type: 3}
 --- !u!4 &1490057406
 Transform:
   m_ObjectHideFlags: 0
