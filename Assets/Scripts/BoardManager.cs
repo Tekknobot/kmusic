@@ -329,6 +329,61 @@ public class BoardManager : MonoBehaviour
         }
     }
 
+    public void UpdateBoardWithSampleNotes(List<AudioHelm.Note> notes)
+    {
+        foreach (var note in notes)
+        {
+            var step = note.start;
+            var sprite = SampleManager.Instance.GetSpriteByStep((int)step);
+
+            if (sprite == null)
+            {
+                Debug.LogError($"No sprite found for step {step}.");
+                continue;
+            }
+
+            var cell = GetCellByStep(note.start);
+            if (cell != null)
+            {
+                cell.SetSprite(sprite);
+            }
+            else
+            {
+                Debug.LogError($"Cell not found for position {note.start}.");
+            }
+        }
+
+        // Iterate through each note and update the corresponding cell's sprite
+        foreach (var note in notes)
+        {
+            if (stepToSpriteMap.TryGetValue(note.start, out Sprite sprite))
+            {
+                Debug.Log($"Updating step {note.start} with sprite {sprite.name}");
+
+                // Iterate through all cells on the board
+                for (int x = 0; x < boardCells.GetLength(0); x++)
+                {
+                    for (int y = 0; y < boardCells.GetLength(1); y++)
+                    {
+                        Cell cell = boardCells[x, y];
+                        if (cell != null && cell.step == note.start)
+                        {
+                            sprite = SampleManager.Instance.GetSpriteFromNote(note.note);
+                            Debug.Log($"Setting sprite for cell at position ({x}, {y})");
+                            cell.SetSprite(sprite);
+                            break; // Exit the inner loop since we found the matching cell
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"No sprite found for step {note.start} in stepToSpriteMap.");
+            }
+        }
+    }
+
+
     public Cell GetCellByStep(float step)
     {
         foreach (Cell cell in boardCells)

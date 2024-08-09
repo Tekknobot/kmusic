@@ -125,7 +125,7 @@ public class SampleManager : MonoBehaviour
         bool foundAnySample = false; // To track if any sample was found and played
 
         // Use SampleSequencer instance directly
-        SampleSequencer sequencer = GameObject.Find("SampleSequencer").GetComponent<SampleSequencer>();
+        SampleSequencer sequencer = PatternManager.Instance.GetActiveSampleSequencer();
 
         if (sequencer == null)
         {
@@ -259,7 +259,7 @@ public class SampleManager : MonoBehaviour
         ManagerHandler.Instance.SetLastClickedManager(false, false, true);
 
         // Reset the board to display default configuration first
-        BoardManager.Instance.ResetBoard();
+        //BoardManager.Instance.ResetBoard();
 
         // Scale the clicked sample temporarily
         StartCoroutine(ScaleObject(clickedSample, originalScales[clickedSample], 0.1f, 1.2f, 0.1f));
@@ -268,7 +268,7 @@ public class SampleManager : MonoBehaviour
         PlaySampleAudio(currentSample.name);
 
         // Display the sprite on cells with matching step data
-        DisplaySpriteOnMatchingSteps();
+        //DisplaySpriteOnMatchingSteps();
 
         Debug.Log($"Clicked Sample: {clickedSample.name}");
     }
@@ -284,16 +284,16 @@ public class SampleManager : MonoBehaviour
         ManagerHandler.Instance.SetLastClickedManager(false, false, true);
 
         // Reset the board to display default configuration first
-        BoardManager.Instance.ResetBoard();
+        //BoardManager.Instance.ResetBoard();
 
         // Scale the clicked sample temporarily
-        StartCoroutine(ScaleObject(clickedSample, originalScales[clickedSample], 0.1f, 1.2f, 0.1f));
+        //StartCoroutine(ScaleObject(clickedSample, originalScales[clickedSample], 0.1f, 1.2f, 0.1f));
 
         // Play the corresponding audio clip
         PlaySampleAudio(clickedSample.name);
 
         // Display the sprite on cells with matching step data
-        DisplaySpriteOnMatchingSteps();
+        //DisplaySpriteOnMatchingSteps();
 
         Debug.Log($"Clicked Sample: {clickedSample.name}");
     }
@@ -436,9 +436,9 @@ public class SampleManager : MonoBehaviour
                             Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}. Current sprite in cell: {cell.CurrentSprite.name}");
 
                             // Apply note to HelmSequencer
-                            int midiNote = GetMidiNoteForSprite(sprite.name);
-                            sampleSequencer.GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
-                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
+                            //int midiNote = GetMidiNoteForSprite(sprite.name);
+                            //sampleSequencer.GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
+                            //Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
                         }
                         else if (cell != null)
                         {
@@ -583,6 +583,64 @@ public class SampleManager : MonoBehaviour
         else
         {
             Debug.Log($"Removed Step = {step} from Sprite = {sprite.name}");
+        }
+    }
+
+    public Sprite GetSpriteByStep(int step)
+    {
+        if (BoardManager.Instance.stepToSpriteMap.ContainsKey(step))
+        {
+            return BoardManager.Instance.stepToSpriteMap[step];
+        }
+        else
+        {
+            Debug.LogError($"No sprite found for step {step}.");
+        }
+
+        // Ensure we have tile data populated
+        if (sampleTileData == null || sampleTileData.Count == 0)
+        {
+            Debug.LogError("Tile data is not initialized or empty.");
+            return null;
+        }
+
+        // Iterate through all sprite and step pairs in tileData
+        foreach (var entry in sampleTileData)
+        {
+            string spriteName = entry.Key;
+            List<int> steps = entry.Value;
+
+            // Check if the step is present in the list of steps for the current sprite
+            if (steps.Contains(step))
+            {
+                // Get the sprite by name
+                Sprite sprite = GetSpriteByName(spriteName);
+                if (sprite != null)
+                {
+                    return sprite;
+                }
+                else
+                {
+                    Debug.LogError($"Sprite with name {spriteName} not found.");
+                }
+            }
+        }
+
+        Debug.LogError($"No sprite found for step {step}.");
+        return null;
+    }
+
+    public Sprite GetSpriteFromNote(int midiNote)
+    {
+        // Check if the dictionary has a mapping for the given MIDI note
+        if (midiNoteToSpriteMap != null && midiNoteToSpriteMap.ContainsKey(midiNote))
+        {
+            return midiNoteToSpriteMap[midiNote];
+        }
+        else
+        {
+            Debug.LogError($"No sprite found for MIDI note {midiNote}.");
+            return null;
         }
     }
 }

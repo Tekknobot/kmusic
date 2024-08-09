@@ -232,10 +232,7 @@ public class PatternManager : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsSampleManagerLastClicked()) {
                 UpdateBoardManageForSamples(currentSamplePattern);
-            }
-            else if (ManagerHandler.Instance.IsPadManagerLastClicked()) {
-                UpdateBoardManageForSamples(currentDrumPattern);
-            }            
+            }          
             
             UpdatePatternDisplay(); // Update UI
 
@@ -329,7 +326,7 @@ public class PatternManager : MonoBehaviour
             {
                 List<AudioHelm.Note> notes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
                 boardManager.ResetBoard();
-                boardManager.UpdateBoardWithNotes(notes);
+                boardManager.UpdateBoardWithSampleNotes(notes);
                 boardManager.HighlightCellOnStep(currentStepIndex);
             }
             else
@@ -341,7 +338,7 @@ public class PatternManager : MonoBehaviour
         {
             Debug.LogError("BoardManager not assigned.");
         }
-    }    
+    }
 
     private void UpdatePatternDisplay()
     {
