@@ -8,9 +8,9 @@ public class ManagerHandler : MonoBehaviour
     public PadManager padManager;
     public SampleManager sampleManager;
 
-    private bool isKeyManagerLastClicked;
-    private bool isPadManagerLastClicked;
-    private bool isSampleManagerLastClicked; // Track if SampleManager was last clicked
+    public bool isKeyManagerLastClicked;
+    public bool isPadManagerLastClicked;
+    public bool isSampleManagerLastClicked; // Track if SampleManager was last clicked
 
     private void Start()
     {

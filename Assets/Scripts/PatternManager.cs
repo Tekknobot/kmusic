@@ -227,7 +227,16 @@ public class PatternManager : MonoBehaviour
             currentPattern.enabled = true;
             currentSamplePattern.enabled = true;
             currentDrumPattern.enabled = true;
-            //UpdateBoardManager(currentPattern);
+            if (ManagerHandler.Instance.IsKeyManagerLastClicked()) {
+                UpdateBoardManager(currentPattern);
+            }
+            else if (ManagerHandler.Instance.IsSampleManagerLastClicked()) {
+                UpdateBoardManageForSamples(currentSamplePattern);
+            }
+            else if (ManagerHandler.Instance.IsPadManagerLastClicked()) {
+                UpdateBoardManageForSamples(currentDrumPattern);
+            }            
+            
             UpdatePatternDisplay(); // Update UI
 
             // Wait for board manager to reach the desired cell index (or other condition)
@@ -311,6 +320,28 @@ public class PatternManager : MonoBehaviour
             Debug.LogError("BoardManager not assigned.");
         }
     }
+
+    private void UpdateBoardManageForSamples(SampleSequencer currentPattern = null)
+    {
+        if (boardManager != null)
+        {
+            if (currentPattern != null)
+            {
+                List<AudioHelm.Note> notes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
+                boardManager.ResetBoard();
+                boardManager.UpdateBoardWithNotes(notes);
+                boardManager.HighlightCellOnStep(currentStepIndex);
+            }
+            else
+            {
+                boardManager.ResetBoard();
+            }
+        }
+        else
+        {
+            Debug.LogError("BoardManager not assigned.");
+        }
+    }    
 
     private void UpdatePatternDisplay()
     {
