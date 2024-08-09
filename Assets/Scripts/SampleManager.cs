@@ -137,8 +137,7 @@ public class SampleManager : MonoBehaviour
         {
             for (int j = 0; j < 16; j++)
             {
-                if (sequencer.NoteExistsInRange(75 - i, j, j + 1) &&
-                    sequencer.currentIndex == j)
+                if (sequencer.NoteExistsInRange(75 - i, j, j + 1) && sequencer.currentIndex == j)
                 {
                     int midiNote = 75 - i;
 
@@ -327,64 +326,51 @@ public class SampleManager : MonoBehaviour
 
     public void PlaySampleAudio(string sampleName)
     {
-        // Find the index of the sprite
+        Debug.Log($"PlaySampleAudio called with sampleName: {sampleName}");
+
         int index = System.Array.FindIndex(samples, sprite => sprite.name == sampleName);
+        Debug.Log($"Sample '{sampleName}' found at index: {index}");
 
         if (index != -1 && index < chopScript.timestamps.Count)
         {
-            // Get the timestamp for the sample
             float timestamp = chopScript.timestamps[index];
-            Debug.Log($"Playing sample: {sampleName} with timestamp: {timestamp}");
+            Debug.Log($"Sample '{sampleName}' has a timestamp of {timestamp}");
 
-            // Ensure the audio clip is assigned to the AudioSource
             AudioClip clip = MultipleAudioLoader.Instance.audioSource.clip;
-
             if (clip == null)
             {
-                Debug.LogError("AudioSource does not have a clip assigned.");
+                Debug.LogError("No AudioClip found in MultipleAudioLoader.Instance.audioSource.");
                 return;
-            }
-
-            // Log clip length for reference
-            Debug.Log($"Audio clip length: {clip.length}");
-
-            // Ensure audioSource is stopped before scheduling
-            audioSource.Stop();
-            audioSource.clip = clip;
-
-            // Calculate the time to play the clip based on the timestamp
-            double playbackTime = timestamp;
-
-            if (playbackTime < 0 || playbackTime > clip.length)
-            {
-                Debug.LogError($"Timestamp {timestamp} is out of bounds for audio clip length {clip.length}.");
-                return;
-            }
-
-            // Calculate the duration until the next timestamp
-            float durationToNextTimestamp = 0f;
-            if (index + 1 < chopScript.timestamps.Count)
-            {
-                durationToNextTimestamp = chopScript.timestamps[index + 1] - timestamp;
             }
             else
             {
-                durationToNextTimestamp = clip.length - (float)playbackTime;
+                Debug.Log($"AudioClip '{clip.name}' successfully assigned.");
             }
 
-            // Play the clip from the calculated time
-            audioSource.time = (float)playbackTime;
+            audioSource.Stop();
+            audioSource.clip = clip;
+
+            if (timestamp < 0 || timestamp > clip.length)
+            {
+                Debug.LogError($"Timestamp {timestamp} is out of bounds for the audio clip length {clip.length}.");
+                return;
+            }
+            Debug.Log($"Timestamp {timestamp} is within bounds.");
+
+            float durationToNextTimestamp = (index + 1 < chopScript.timestamps.Count) ? 
+                                            chopScript.timestamps[index + 1] - timestamp : 
+                                            clip.length - (float)timestamp;
+
+            Debug.Log($"audioSource.time set to {timestamp}, calling Play().");
+            audioSource.time = timestamp;
             audioSource.Play();
 
-            Debug.Log($"Playing sample: {sampleName} from time: {playbackTime} for {durationToNextTimestamp} seconds.");
-
-            // Schedule stopping of the audio after the duration to the next timestamp
+            Debug.Log($"Playing sample: {sampleName} from time: {timestamp} for {durationToNextTimestamp} seconds.");
             timeToPlayNextSample = Time.time + durationToNextTimestamp;
             isPlayingSample = true;
         }
         else
         {
-            // Log an error if the sample name is not found or index is out of bounds
             Debug.LogError($"Sample name '{sampleName}' not found or index is out of bounds.");
         }
     }
@@ -450,9 +436,9 @@ public class SampleManager : MonoBehaviour
                             Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}. Current sprite in cell: {cell.CurrentSprite.name}");
 
                             // Apply note to HelmSequencer
-                            //int midiNote = GetMidiNoteForSprite(spriteName);
-                            //sampleSequencer.GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
-                            //Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
+                            int midiNote = GetMidiNoteForSprite(sprite.name);
+                            sampleSequencer.GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
+                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
                         }
                         else if (cell != null)
                         {
@@ -496,9 +482,8 @@ public class SampleManager : MonoBehaviour
     private int GetMidiNoteForSprite(string spriteName)
     {
         // Try to extract the number from the sprite name and use it to calculate the MIDI note
-        if (int.TryParse(spriteName.Replace("sample_", ""), out int keyNumber) && keyNumber >= 1 && keyNumber <= 16)
+        if (int.TryParse(spriteName.Replace("sample_", ""), out int keyNumber) && keyNumber >= 0 && keyNumber <= 15)
         {
-            Debug.Log(keyNumber);
             return 60 + keyNumber; // MIDI note calculation: 33 (A0) + (keyNumber - 1)
         }
         return 60;

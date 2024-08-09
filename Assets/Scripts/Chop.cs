@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // Import the TextMeshPro namespace
+using TMPro;
 
 public class Chop : MonoBehaviour
 {
@@ -13,6 +13,8 @@ public class Chop : MonoBehaviour
     public List<float> timestamps = new List<float>(); // List to store timestamps
 
     private AudioSource audioSource; // Reference to the AudioSource
+
+    private const string TimestampsKey = "ChopTimestamps"; // Key for saving/loading timestamps
 
     private void Awake()
     {
@@ -56,6 +58,9 @@ public class Chop : MonoBehaviour
         {
             Debug.LogError("MusicPlayer GameObject is not found.");
         }
+
+        // Load the saved timestamps
+        LoadTimestamps();
     }
 
     private void OnChopButtonClick()
@@ -71,6 +76,9 @@ public class Chop : MonoBehaviour
             // Record the current timestamp of the audio source
             float timestamp = audioSource.time;
             timestamps.Add(timestamp);
+
+            // Save the updated timestamps
+            SaveTimestamps();
 
             // Update feedback with the added timestamp and current chop count
             UpdateFeedbackText($"Added chop: Timestamp = {timestamp}. Total Chops = {timestamps.Count}");
@@ -98,6 +106,42 @@ public class Chop : MonoBehaviour
     public void ClearChops()
     {
         timestamps.Clear();
+        SaveTimestamps(); // Clear saved chops
         UpdateFeedbackText("Chops cleared.");
+    }
+
+    // Method to save the timestamps to PlayerPrefs
+    private void SaveTimestamps()
+    {
+        string timestampsString = string.Join(",", timestamps); // Convert timestamps to a comma-separated string
+        PlayerPrefs.SetString(TimestampsKey, timestampsString); // Save the string in PlayerPrefs
+        PlayerPrefs.Save(); // Force save
+    }
+
+    // Method to load the timestamps from PlayerPrefs
+    private void LoadTimestamps()
+    {
+        timestamps.Clear(); // Clear any existing timestamps
+        if (PlayerPrefs.HasKey(TimestampsKey))
+        {
+            string timestampsString = PlayerPrefs.GetString(TimestampsKey); // Load the saved string
+            if (!string.IsNullOrEmpty(timestampsString))
+            {
+                string[] timestampArray = timestampsString.Split(','); // Split the string into an array
+                foreach (string timestamp in timestampArray)
+                {
+                    if (float.TryParse(timestamp, out float result))
+                    {
+                        timestamps.Add(result); // Convert each string to a float and add to the list
+                    }
+                }
+            }
+
+            UpdateFeedbackText($"Loaded {timestamps.Count} chops.");
+        }
+        else
+        {
+            UpdateFeedbackText("No saved chops found.");
+        }
     }
 }
