@@ -229,19 +229,6 @@ public class PatternManager : MonoBehaviour
             currentDrumPattern.enabled = true;
             //UpdateBoardManager(currentPattern);
             UpdatePatternDisplay(); // Update UI
-            Debug.Log($"Started pattern: {currentPattern.name}");
-
-            // Start sample sequencer if it exists
-            if (sampleSequencer != null)
-            {
-                sampleSequencer.enabled = true;
-            }
-
-            // Start drum sequencer if it exists
-            if (drumSequencer != null)
-            {
-                drumSequencer.enabled = true;
-            }
 
             // Wait for board manager to reach the desired cell index (or other condition)
             yield return new WaitUntil(() => boardManager.GetHighlightedCellIndex() == 15);
@@ -249,17 +236,9 @@ public class PatternManager : MonoBehaviour
             // Wait for the duration of one step
             yield return new WaitForSeconds(stepDuration);
 
-            // Stop the sample sequencer
-            if (sampleSequencer != null)
-            {
-                sampleSequencer.enabled = false;
-            }
-
-            // Stop the drum sequencer
-            if (drumSequencer != null)
-            {
-                drumSequencer.enabled = false;
-            }
+            currentPattern.enabled = false;
+            currentSamplePattern.enabled = false;
+            currentDrumPattern.enabled = false;
         }
     }
 
@@ -286,13 +265,19 @@ public class PatternManager : MonoBehaviour
 
     public void RemovePattern(int index)
     {
-        if (index >= 0 && index < patterns.Count)
+        if (index >= 0 && index < patterns.Count && index < samplePatterns.Count && index < drumPatterns.Count)
         {
             HelmSequencer patternToRemove = patterns[index];
+            SampleSequencer samplePatternToRemove = samplePatterns[index];
+            SampleSequencer  drumPatternToRemove = drumPatterns[index];
             Destroy(patternToRemove.gameObject);
+            Destroy(samplePatternToRemove.gameObject);
+            Destroy(drumPatternToRemove.gameObject);
             patterns.RemoveAt(index);
+            samplePatterns.RemoveAt(index);
+            drumPatterns.RemoveAt(index);
 
-            Debug.Log($"Removed pattern at index: {index}");
+            Debug.Log($"Removed patterns at index: {index}");
 
             UpdateBoardManager();
             UpdatePatternDisplay(); // Update UI
