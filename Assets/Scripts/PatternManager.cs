@@ -42,6 +42,8 @@ public class PatternManager : MonoBehaviour
     private static string lastAccessedFile = null;
     public TextMeshProUGUI projectFileText; // Reference to the TextMeshPro component
 
+    public GameObject componentButton;
+
     private void Awake()
     {
         // Ensure this is the only instance
@@ -227,12 +229,12 @@ public class PatternManager : MonoBehaviour
             currentPattern.enabled = true;
             currentSamplePattern.enabled = true;
             currentDrumPattern.enabled = true;
-            if (ManagerHandler.Instance.IsKeyManagerLastClicked()) {
+            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 1) {
                 UpdateBoardManager(currentPattern);
             }
-            else if (ManagerHandler.Instance.IsSampleManagerLastClicked()) {
+            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 2) {
                 UpdateBoardManageForSamples(currentSamplePattern);
-            }          
+            } 
             
             UpdatePatternDisplay(); // Update UI
 

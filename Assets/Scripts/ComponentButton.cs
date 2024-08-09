@@ -17,7 +17,9 @@ public class ComponentButton : MonoBehaviour
     private Vector3 initialPositionMixerGroup; // Stores the initial position for MixerGroup
 
     private Vector3 offscreenPosition = new Vector3(-1000, 0, 0); // Define an offscreen position
-    private int currentObjectIndex = 1; // Index to keep track of which object to move on-screen
+    public int currentObjectIndex = 1; // Index to keep track of which object to move on-screen
+
+    public int currentPatternGroup = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -108,12 +110,14 @@ public class ComponentButton : MonoBehaviour
                 if (keyManagerObject != null)
                 {
                     keyManagerObject.transform.position = initialPositionKeyManager;
+                    currentPatternGroup = 1;
                 }
                 break;
             case 2:
                 if (sampleManagerObject != null)
                 {
                     sampleManagerObject.transform.position = initialPositionSampleManager;
+                    currentPatternGroup = 2;
                 }
                 break;
             case 3:
