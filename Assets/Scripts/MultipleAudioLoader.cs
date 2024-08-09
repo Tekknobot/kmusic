@@ -21,6 +21,8 @@ public class MultipleAudioLoader : MonoBehaviour
     public GameObject waveform;
     public int currentIndex = -1; // To keep track of the current clip index
 
+    private const string LastLoadedClipKey = "LastLoadedClip"; // Key for saving the last loaded clip name
+
     private void Awake()
     {
         if (Instance == null)
@@ -47,6 +49,13 @@ public class MultipleAudioLoader : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         LoadAllAudioFiles();
+
+        // Load the last played clip if it exists
+        string lastLoadedClip = PlayerPrefs.GetString(LastLoadedClipKey, null);
+        if (!string.IsNullOrEmpty(lastLoadedClip))
+        {
+            StartCoroutine(LoadClip(lastLoadedClip));
+        }
     }
 
     private void LoadAllAudioFiles()
@@ -76,6 +85,7 @@ public class MultipleAudioLoader : MonoBehaviour
             audioSource.clip = loadedClip;
             audioSource.Play();
             UpdateStatusText("Playing: " + fileName);
+            SaveCurrentClip(fileName); // Save the currently loaded clip
             yield break;
         }
 
@@ -103,6 +113,7 @@ public class MultipleAudioLoader : MonoBehaviour
                 audioSource.clip = newClip;
                 audioSource.Play();
                 UpdateStatusText("Playing: " + fileName);
+                SaveCurrentClip(fileName); // Save the currently loaded clip
             }
             else
             {
@@ -140,6 +151,7 @@ public class MultipleAudioLoader : MonoBehaviour
         {
             audioSource.clip = loadedClip;
             UpdateStatusText("Loaded: " + fileName);
+            SaveCurrentClip(fileName); // Save the currently loaded clip
             yield break;
         }
 
@@ -157,6 +169,7 @@ public class MultipleAudioLoader : MonoBehaviour
                 clipDictionary[fileName] = newClip;
                 audioSource.clip = newClip;
                 UpdateStatusText("Loaded: " + fileName);
+                SaveCurrentClip(fileName); // Save the currently loaded clip
             }
             else
             {
@@ -166,4 +179,9 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
+    private void SaveCurrentClip(string fileName)
+    {
+        PlayerPrefs.SetString(LastLoadedClipKey, fileName);
+        PlayerPrefs.Save();
+    }
 }
