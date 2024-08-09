@@ -26,11 +26,18 @@ public class PatternManager : MonoBehaviour
     public List<SampleSequencer> drumPatterns = new List<SampleSequencer>();
 
     public int currentPatternIndex = -1;
+    public int currentSamplePatternIndex = -1;
+    public int currentDrumPatternIndex = -1;
+
     public bool isPlaying = false;
     private int currentStepIndex = 0; // Track the current step index
 
     public int PatternsCount => patterns.Count;
+    public int SamplePatternsCount => samplePatterns.Count;
+    public int DrumPatternsCount => drumPatterns.Count;
     public int CurrentPatternIndex => currentPatternIndex;
+    public int CurrentSamplePatternIndex => currentSamplePatternIndex;
+    public int CurrentDrumPatternIndex => currentDrumPatternIndex;        
     public static string LastProjectFilename { get; private set; }
     private static string lastAccessedFile = null;
     public TextMeshProUGUI projectFileText; // Reference to the TextMeshPro component
@@ -199,8 +206,14 @@ public class PatternManager : MonoBehaviour
             float secondsPerBeat = 60f / clock.bpm;
             float stepDuration = secondsPerBeat / 4; // Duration of one step
 
+            // Update the current pattern index
             currentPatternIndex = (currentPatternIndex + 1) % patterns.Count;
+            currentSamplePatternIndex = (currentSamplePatternIndex + 1) % samplePatterns.Count;
+            currentDrumPatternIndex = (currentDrumPatternIndex + 1) % drumPatterns.Count;
+
             HelmSequencer currentPattern = patterns[currentPatternIndex];
+            SampleSequencer currentSamplePattern = samplePatterns[currentSamplePatternIndex];
+            SampleSequencer currentDrumPattern = drumPatterns[currentDrumPatternIndex];
 
             Debug.Log($"Playing pattern index: {currentPatternIndex}");
 
@@ -210,31 +223,39 @@ public class PatternManager : MonoBehaviour
                 StopPattern(pattern);
             }
 
-            // Start the new patterns
+            // Start the new pattern
             currentPattern.enabled = true;
-            UpdateBoardManager(currentPattern);
+            currentSamplePattern.enabled = true;
+            currentDrumPattern.enabled = true;
+            //UpdateBoardManager(currentPattern);
             UpdatePatternDisplay(); // Update UI
             Debug.Log($"Started pattern: {currentPattern.name}");
 
-            // Start sample and drum sequencers
+            // Start sample sequencer if it exists
             if (sampleSequencer != null)
             {
                 sampleSequencer.enabled = true;
             }
+
+            // Start drum sequencer if it exists
             if (drumSequencer != null)
             {
                 drumSequencer.enabled = true;
             }
 
+            // Wait for board manager to reach the desired cell index (or other condition)
             yield return new WaitUntil(() => boardManager.GetHighlightedCellIndex() == 15);
 
-            yield return new WaitForSeconds(stepDuration); // Adjust if needed
+            // Wait for the duration of one step
+            yield return new WaitForSeconds(stepDuration);
 
-            // Stop the sample and drum sequencers
+            // Stop the sample sequencer
             if (sampleSequencer != null)
             {
                 sampleSequencer.enabled = false;
             }
+
+            // Stop the drum sequencer
             if (drumSequencer != null)
             {
                 drumSequencer.enabled = false;
@@ -532,10 +553,36 @@ public class PatternManager : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("No active pattern.");
+            Debug.LogWarning("No active helm pattern.");
             return null;
         }
     }    
+
+    public SampleSequencer GetActiveSampleSequencer()
+    {
+        if (currentPatternIndex >= 0 && currentPatternIndex < samplePatterns.Count)
+        {
+            return samplePatterns[currentPatternIndex];
+        }
+        else
+        {
+            Debug.LogWarning("No active sample pattern.");
+            return null;
+        }
+    }    
+
+    public SampleSequencer GetActiveDrumSequencer()
+    {
+        if (currentPatternIndex >= 0 && currentPatternIndex < drumPatterns.Count)
+        {
+            return drumPatterns[currentPatternIndex];
+        }
+        else
+        {
+            Debug.LogWarning("No active drum pattern.");
+            return null;
+        }
+    }            
 
     public void SaveProject(string filename)
     {
@@ -590,14 +637,20 @@ public class PatternManager : MonoBehaviour
                 // Load HelmSequencer patterns
                 if (projectData != null && projectData.Patterns != null)
                 {
+                    Debug.Log("Loading HelmSequencer patterns...");
                     foreach (var patternData in projectData.Patterns)
                     {
-                        HelmSequencer newSequencer = Instantiate(sequencerPrefab).GetComponent<HelmSequencer>();
+                        HelmSequencer newSequencer = Instantiate(sequencerPrefab)?.GetComponent<HelmSequencer>();
                         if (newSequencer != null)
                         {
                             newSequencer.enabled = false;
                             PopulateSequencerFromPatternData(newSequencer, patternData);
                             patterns.Add(newSequencer);
+                            Debug.Log($"Added HelmSequencer pattern: {patternData.Name}");
+                        }
+                        else
+                        {
+                            Debug.LogError("Failed to instantiate HelmSequencer prefab.");
                         }
                     }
                 }
@@ -609,14 +662,20 @@ public class PatternManager : MonoBehaviour
                 // Load SampleSequencer patterns
                 if (projectData.SamplePatterns != null)
                 {
+                    Debug.Log("Loading SampleSequencer patterns...");
                     foreach (var patternData in projectData.SamplePatterns)
                     {
-                        SampleSequencer newSequencer = Instantiate(sampleSequencerPrefab).GetComponent<SampleSequencer>();
+                        SampleSequencer newSequencer = Instantiate(sampleSequencerPrefab)?.GetComponent<SampleSequencer>();
                         if (newSequencer != null)
                         {
                             newSequencer.enabled = false;
                             PopulateSampleSequencerFromPatternData(newSequencer, patternData);
                             samplePatterns.Add(newSequencer);
+                            Debug.Log($"Added SampleSequencer pattern: {patternData.Name}");
+                        }
+                        else
+                        {
+                            Debug.LogError("Failed to instantiate SampleSequencer prefab.");
                         }
                     }
                 }
@@ -628,14 +687,20 @@ public class PatternManager : MonoBehaviour
                 // Load DrumSequencer patterns
                 if (projectData.DrumPatterns != null)
                 {
+                    Debug.Log("Loading DrumSequencer patterns...");
                     foreach (var patternData in projectData.DrumPatterns)
                     {
-                        SampleSequencer newSequencer = Instantiate(drumSequencerPrefab).GetComponent<SampleSequencer>();
+                        SampleSequencer newSequencer = Instantiate(drumSequencerPrefab)?.GetComponent<SampleSequencer>();
                         if (newSequencer != null)
                         {
                             newSequencer.enabled = false;
                             PopulateDrumSequencerFromPatternData(newSequencer, patternData);
                             drumPatterns.Add(newSequencer);
+                            Debug.Log($"Added DrumSequencer pattern: {patternData.Name}");
+                        }
+                        else
+                        {
+                            Debug.LogError("Failed to instantiate DrumSequencer prefab.");
                         }
                     }
                 }

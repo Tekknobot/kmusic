@@ -12,7 +12,11 @@ public class Cell : MonoBehaviour
     public Sprite defaultSprite;
     public GameObject sequencer;
     public GameObject mySampleSequencer;
+    public GameObject drumSequencer;    
     public HelmSequencer activeSequencer;
+    public SampleSequencer activeSampleSequencer;
+    public SampleSequencer activeDrumSequencer;
+
     public float step;
 
     public Sprite CurrentSprite { get; private set; }
@@ -89,7 +93,6 @@ public class Cell : MonoBehaviour
         // Check if the last clicked manager is SampleManager
         if (ManagerHandler.Instance.IsSampleManagerLastClicked())
         {
-            // Use SampleManager's current sprite if it exists
             if (lastClickedSprite != null)
             {
                 newSprite = lastClickedSprite;
@@ -98,7 +101,6 @@ public class Cell : MonoBehaviour
         }
         else
         {
-            // Handle the case where the last clicked manager is not SampleManager
             if (lastClickedSprite != BoardManager.Instance.GetSpriteByStep(step) && BoardManager.Instance.GetSpriteByStep(step) != defaultSprite)
             {
                 Debug.Log("Returning early due to sprite mismatch.");
@@ -112,7 +114,6 @@ public class Cell : MonoBehaviour
             }
         }
 
-        // Handle removal and replacement logic
         if (spriteRenderer.sprite != defaultSprite)
         {
             var oldSprite = spriteRenderer.sprite;
@@ -126,7 +127,7 @@ public class Cell : MonoBehaviour
             {
                 if (PatternManager.Instance.patterns.Count > 0)
                 {
-                    activeSequencer = PatternManager.Instance.GetActiveSequencer(); // Retrieve the current sequencer
+                    activeSequencer = PatternManager.Instance.GetActiveSequencer();
                 }
                 else
                 {
@@ -147,10 +148,18 @@ public class Cell : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsPadManagerLastClicked())
             {
-                var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
-                if (sampleSequencer != null)
+                if (PatternManager.Instance.drumPatterns.Count > 0)
                 {
-                    sampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
+                    activeDrumSequencer = PatternManager.Instance.GetActiveDrumSequencer();
+                }
+                else
+                {
+                    activeDrumSequencer = drumSequencer.GetComponent<SampleSequencer>();
+                }
+
+                if (activeDrumSequencer != null)
+                {
+                    activeDrumSequencer.RemoveNotesInRange(midiNote, step, step + 1);
                     DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
@@ -161,10 +170,18 @@ public class Cell : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsSampleManagerLastClicked())
             {
-                var _mySampleSequencer = mySampleSequencer.GetComponent<AudioHelm.SampleSequencer>();
-                if (_mySampleSequencer != null)
+                if (PatternManager.Instance.samplePatterns.Count > 0)
                 {
-                    _mySampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
+                    activeSampleSequencer = PatternManager.Instance.GetActiveSampleSequencer();
+                }
+                else
+                {
+                    activeSampleSequencer = mySampleSequencer.GetComponent<AudioHelm.SampleSequencer>();
+                }
+
+                if (activeSampleSequencer != null)
+                {
+                    activeSampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
                     SampleManager.Instance.RemoveSampleTileData(oldSprite, (int)step);
                     DataManager.EraseSampleTileDataToFile(SampleManager.Instance.currentSample.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
@@ -191,7 +208,7 @@ public class Cell : MonoBehaviour
             {
                 if (PatternManager.Instance.patterns.Count > 0)
                 {
-                    activeSequencer = PatternManager.Instance.GetActiveSequencer(); // Retrieve the current sequencer
+                    activeSequencer = PatternManager.Instance.GetActiveSequencer();
                 }
                 else
                 {
@@ -211,10 +228,18 @@ public class Cell : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsPadManagerLastClicked())
             {
-                var sampleSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
-                if (sampleSequencer != null)
+                if (PatternManager.Instance.drumPatterns.Count > 0)
                 {
-                    sampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    activeDrumSequencer = PatternManager.Instance.GetActiveDrumSequencer();
+                }
+                else
+                {
+                    activeDrumSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
+                }
+
+                if (activeDrumSequencer != null)
+                {
+                    activeDrumSequencer.AddNote(midiNote, step, step + 1, 1.0f);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
                 else
@@ -224,10 +249,17 @@ public class Cell : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsSampleManagerLastClicked())
             {
-                var _mySampleSequencer = mySampleSequencer.GetComponent<AudioHelm.SampleSequencer>();
-                if (_mySampleSequencer != null)
+                if (PatternManager.Instance.samplePatterns.Count > 0)
                 {
-                    _mySampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    activeSampleSequencer = PatternManager.Instance.GetActiveSampleSequencer();
+                }
+                else
+                {
+                    activeSampleSequencer = mySampleSequencer.GetComponent<AudioHelm.SampleSequencer>();
+                }
+                if (activeSampleSequencer != null)
+                {
+                    activeSampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
                     SampleManager.Instance.SaveSampleTileData(newSprite, (int)step);
                     Debug.Log($"Added MIDI {midiNote} at Step = {step}");
                 }
