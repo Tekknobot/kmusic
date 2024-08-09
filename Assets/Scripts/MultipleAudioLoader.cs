@@ -112,34 +112,6 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
-    public void PlayAudioClip(string fileName)
-    {
-        currentIndex = clipFileNames.IndexOf(fileName);
-        StartCoroutine(LoadAndPlayClip(fileName));
-    }
-
-    public void PlayNextClip()
-    {
-        if (clipFileNames.Count > 0 && currentIndex >= 0)
-        {
-            currentIndex = (currentIndex + 1) % clipFileNames.Count;
-            string nextClipFileName = clipFileNames[currentIndex];
-            Debug.Log("Next clip filename: " + nextClipFileName);
-            PlayAudioClip(nextClipFileName);
-        }
-    }
-
-    public void PlayPreviousClip()
-    {
-        if (clipFileNames.Count > 0 && currentIndex >= 0)
-        {
-            currentIndex = (currentIndex - 1 + clipFileNames.Count) % clipFileNames.Count;
-            string prevClipFileName = clipFileNames[currentIndex];
-            Debug.Log("Previous clip filename: " + prevClipFileName);
-            PlayAudioClip(prevClipFileName);
-        }
-    }
-
     private AudioType GetAudioType(string extension)
     {
         switch (extension)

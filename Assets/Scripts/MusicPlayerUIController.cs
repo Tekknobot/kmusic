@@ -12,14 +12,14 @@ public class MusicPlayerUIController : MonoBehaviour
     public Button previousButton;   // Button to play the previous track
     public TMP_Text trackNameText;  // TextMesh Pro text to display the current track name
 
-    public GameObject waveform;
+    public GameObject waveform;     // Reference to the waveform visualizer GameObject
 
     private void Start()
     {
-        // Ensure the MultipleAudioLoader instance is available
-        if (MultipleAudioLoader.Instance == null)
+        // Ensure the KMusicPlayer instance is available
+        if (KMusicPlayer.Instance == null)
         {
-            Debug.LogError("MultipleAudioLoader instance is missing.");
+            Debug.LogError("KMusicPlayer instance is missing.");
             return;
         }
 
@@ -37,26 +37,26 @@ public class MusicPlayerUIController : MonoBehaviour
     private IEnumerator InitializeUI()
     {
         // Wait until audio files are loaded
-        yield return new WaitUntil(() => MultipleAudioLoader.Instance.clipFileNames.Count > 0);
+        yield return new WaitUntil(() => KMusicPlayer.Instance.clipFileNames.Count > 0);
 
         // Initialize the waveform visualizer
         waveform.GetComponent<WaveformVisualizer>().CreateWave();
 
         // Play the first track if available
-        PlayTrack();
+        //PlayTrack();
     }
 
     private void PlayTrack()
     {
         // Play the current track if one is loaded
-        if (MultipleAudioLoader.Instance.currentClip != null)
+        if (KMusicPlayer.Instance.currentIndex >= 0)
         {
-            MultipleAudioLoader.Instance.audioSource.Play();
+            KMusicPlayer.Instance.audioSource.Play();
         }
-        else if (MultipleAudioLoader.Instance.clipFileNames.Count > 0)
+        else if (KMusicPlayer.Instance.clipFileNames.Count > 0)
         {
             // Load and play the first track if no track is currently loaded
-            MultipleAudioLoader.Instance.PlayAudioClip(MultipleAudioLoader.Instance.clipFileNames[0]);
+            KMusicPlayer.Instance.PlayTrack(KMusicPlayer.Instance.clipFileNames[0]);
         }
         waveform.GetComponent<WaveformVisualizer>().StartWave();
         UpdateTrackName();
@@ -65,9 +65,9 @@ public class MusicPlayerUIController : MonoBehaviour
     private void PauseTrack()
     {
         // Pause the current track if it is playing
-        if (MultipleAudioLoader.Instance.audioSource.isPlaying)
+        if (KMusicPlayer.Instance.audioSource.isPlaying)
         {
-            MultipleAudioLoader.Instance.audioSource.Pause();
+            KMusicPlayer.Instance.audioSource.Pause();
             waveform.GetComponent<WaveformVisualizer>().StopWave();
         }
         else
@@ -79,9 +79,9 @@ public class MusicPlayerUIController : MonoBehaviour
     private void StopTrack()
     {
         // Stop the current track and reset the AudioSource
-        if (MultipleAudioLoader.Instance.audioSource.isPlaying)
+        if (KMusicPlayer.Instance.audioSource.isPlaying)
         {
-            MultipleAudioLoader.Instance.audioSource.Stop();
+            KMusicPlayer.Instance.audioSource.Stop();
             waveform.GetComponent<WaveformVisualizer>().StopWave();
             UpdateTrackName();
         }
@@ -90,7 +90,7 @@ public class MusicPlayerUIController : MonoBehaviour
     private void PlayNextTrack()
     {
         // Play the next track and update the UI
-        MultipleAudioLoader.Instance.PlayNextClip();
+        KMusicPlayer.Instance.PlayNextTrack();
         waveform.GetComponent<WaveformVisualizer>().StartWave();
         UpdateTrackName();
     }
@@ -98,7 +98,7 @@ public class MusicPlayerUIController : MonoBehaviour
     private void PlayPreviousTrack()
     {
         // Play the previous track and update the UI
-        MultipleAudioLoader.Instance.PlayPreviousClip();
+        KMusicPlayer.Instance.PlayPreviousTrack();
         waveform.GetComponent<WaveformVisualizer>().StartWave();
         UpdateTrackName();
     }
@@ -106,9 +106,9 @@ public class MusicPlayerUIController : MonoBehaviour
     private void UpdateTrackName()
     {
         // Update the UI text to show the current track name
-        if (MultipleAudioLoader.Instance.currentClip != null)
+        if (KMusicPlayer.Instance.currentIndex >= 0 && KMusicPlayer.Instance.currentIndex < KMusicPlayer.Instance.clipFileNames.Count)
         {
-            trackNameText.text = "Now Playing: " + MultipleAudioLoader.Instance.clipFileNames[MultipleAudioLoader.Instance.currentIndex];
+            trackNameText.text = "Now Playing: " + KMusicPlayer.Instance.clipFileNames[KMusicPlayer.Instance.currentIndex];
         }
         else
         {

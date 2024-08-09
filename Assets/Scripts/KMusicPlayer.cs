@@ -12,8 +12,8 @@ public class KMusicPlayer : MonoBehaviour
     public AudioSource audioSource; // AudioSource to play audio clips
     public TMP_Text trackNameText;  // TextMesh Pro text to display the current track name
 
-    private List<string> clipFileNames = new List<string>(); // List to store filenames
-    private int currentIndex = -1; // Index of the currently playing track
+    public List<string> clipFileNames = new List<string>(); // List to store filenames
+    public int currentIndex = -1; // Index of the currently playing track
 
     private void Awake()
     {
