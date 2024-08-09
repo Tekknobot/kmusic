@@ -450,9 +450,9 @@ public class SampleManager : MonoBehaviour
                             Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}. Current sprite in cell: {cell.CurrentSprite.name}");
 
                             // Apply note to HelmSequencer
-                            int midiNote = GetMidiNoteForSprite(spriteName);
-                            sampleSequencer.GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
-                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
+                            //int midiNote = GetMidiNoteForSprite(spriteName);
+                            //sampleSequencer.GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
+                            //Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
                         }
                         else if (cell != null)
                         {
@@ -498,6 +498,7 @@ public class SampleManager : MonoBehaviour
         // Try to extract the number from the sprite name and use it to calculate the MIDI note
         if (int.TryParse(spriteName.Replace("sample_", ""), out int keyNumber) && keyNumber >= 1 && keyNumber <= 16)
         {
+            Debug.Log(keyNumber);
             return 60 + keyNumber; // MIDI note calculation: 33 (A0) + (keyNumber - 1)
         }
         return 60;

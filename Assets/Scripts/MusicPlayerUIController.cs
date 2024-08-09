@@ -27,7 +27,6 @@ public class MusicPlayerUIController : MonoBehaviour
 
         // Add listeners to buttons
         playButton.onClick.AddListener(PlayTrack);
-
         stopButton.onClick.AddListener(StopTrack);
         nextButton.onClick.AddListener(PlayNextTrack);
         previousButton.onClick.AddListener(PlayPreviousTrack);
@@ -46,19 +45,30 @@ public class MusicPlayerUIController : MonoBehaviour
 
         // Optionally play the first track
         // PlayTrack();
-
-        currentTrackIndex = MultipleAudioLoader.Instance.currentIndex;
     }
 
     private void PlayTrack()
     {
+        currentTrackIndex = MultipleAudioLoader.Instance.currentIndex;
+
         // Play the current track if one is loaded
         if (currentTrackIndex >= 0 && currentTrackIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
         {
-            StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
-            waveform.GetComponent<WaveformVisualizer>().StartWave();
+            StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         }
         UpdateTrackName();
+    }
+
+    private IEnumerator PlayTrackCoroutine(string clipFileName)
+    {
+        // Load and play the clip
+        yield return StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(clipFileName));
+
+        // Delay slightly to ensure the clip has started playing
+        yield return new WaitForSeconds(0.1f);
+
+        // Start the waveform visualization
+        waveform.GetComponent<WaveformVisualizer>().StartWave();
     }
 
     private void StopTrack()
@@ -78,8 +88,7 @@ public class MusicPlayerUIController : MonoBehaviour
         currentTrackIndex = (currentTrackIndex + 1) % MultipleAudioLoader.Instance.clipFileNames.Count;
 
         // Play the next track and update the UI
-        StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
-        waveform.GetComponent<WaveformVisualizer>().StartWave();
+        StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         UpdateTrackName();
     }
 
@@ -93,8 +102,7 @@ public class MusicPlayerUIController : MonoBehaviour
         }
 
         // Play the previous track and update the UI
-        StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
-        waveform.GetComponent<WaveformVisualizer>().StartWave();
+        StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         UpdateTrackName();
     }
 
