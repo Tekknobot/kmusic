@@ -12,12 +12,19 @@ public class PatternManager : MonoBehaviour
     public static PatternManager Instance { get; private set; }
 
     public HelmSequencer sourceSequencer;
+    public SampleSequencer sampleSequencer; // New sequencer for samples
+    public SampleSequencer drumSequencer;   // New sequencer for drums
     public GameObject sequencerPrefab;
+    public GameObject sampleSequencerPrefab;
+    public GameObject drumSequencerPrefab;
     public AudioHelmClock clock;
     public BoardManager boardManager;
     public PatternUIManager patternUIManager; // Reference to the UI manager
 
     public List<HelmSequencer> patterns = new List<HelmSequencer>();
+    public List<SampleSequencer> samplePatterns = new List<SampleSequencer>();
+    public List<SampleSequencer> drumPatterns = new List<SampleSequencer>();
+
     public int currentPatternIndex = -1;
     public bool isPlaying = false;
     private int currentStepIndex = 0; // Track the current step index
@@ -27,6 +34,7 @@ public class PatternManager : MonoBehaviour
     public static string LastProjectFilename { get; private set; }
     private static string lastAccessedFile = null;
     public TextMeshProUGUI projectFileText; // Reference to the TextMeshPro component
+
     private void Awake()
     {
         // Ensure this is the only instance
@@ -60,40 +68,85 @@ public class PatternManager : MonoBehaviour
             return;
         }
 
-        GameObject newSequencerObj = Instantiate(sequencerPrefab, transform);
-        HelmSequencer newSequencer = newSequencerObj.GetComponent<HelmSequencer>();
-
-        if (newSequencer == null)
+        // Create HelmSequencer
+        GameObject helmSequencerObj = Instantiate(sequencerPrefab, transform);
+        HelmSequencer newHelmSequencer = helmSequencerObj.GetComponent<HelmSequencer>();
+        if (newHelmSequencer == null)
         {
             Debug.LogError("New sequencer prefab does not have a HelmSequencer component.");
             return;
         }
+        newHelmSequencer.enabled = false;
+        newHelmSequencer.name = $"{sequencerPrefab.name}_{patterns.Count + 1}"; // Name the HelmSequencer
 
-        newSequencer.enabled = false;
+        // Create SampleSequencer for samples
+        GameObject sampleSequencerObj = Instantiate(sampleSequencerPrefab, transform);
+        SampleSequencer newSampleSequencer = sampleSequencerObj.GetComponent<SampleSequencer>();
+        if (newSampleSequencer == null)
+        {
+            Debug.LogError("New sequencer prefab does not have a SampleSequencer component.");
+            return;
+        }
+        newSampleSequencer.enabled = false;
+        newSampleSequencer.name = $"{sequencerPrefab.name}_Sample_{samplePatterns.Count + 1}"; // Name the SampleSequencer
 
+        // Create SampleSequencer for drums
+        GameObject drumSequencerObj = Instantiate(drumSequencerPrefab, transform);
+        SampleSequencer newDrumSequencer = drumSequencerObj.GetComponent<SampleSequencer>();
+        if (newDrumSequencer == null)
+        {
+            Debug.LogError("New sequencer prefab does not have a SampleSequencer component.");
+            return;
+        }
+        newDrumSequencer.enabled = false;
+        newDrumSequencer.name = $"{sequencerPrefab.name}_Drum_{drumPatterns.Count + 1}"; // Name the DrumSequencer
+
+        // Transfer notes from existing HelmSequencer to the new HelmSequencer
         if (patterns.Count > 0)
         {
-            HelmSequencer lastSequencer = patterns[patterns.Count - 1];
-            TransferNotes(lastSequencer, newSequencer);
+            HelmSequencer lastHelmSequencer = patterns[patterns.Count - 1];
+            TransferNotes(lastHelmSequencer, newHelmSequencer);
         }
         else if (sourceSequencer != null)
         {
-            TransferNotes(sourceSequencer, newSequencer);
+            TransferNotes(sourceSequencer, newHelmSequencer);
         }
-        else
+
+        // Transfer notes from existing SampleSequencer to the new SampleSequencer
+        if (samplePatterns.Count > 0)
         {
-            Debug.LogWarning("No existing sequencer to copy notes from.");
+            SampleSequencer lastSampleSequencer = samplePatterns[samplePatterns.Count - 1];
+            TransferSamplerNotes(lastSampleSequencer, newSampleSequencer);
+        }
+        else if (sampleSequencer != null)
+        {
+            TransferSamplerNotes(sampleSequencer, newSampleSequencer);
         }
 
-        patterns.Add(newSequencer);
+        // Transfer notes from existing DrumSequencer to the new DrumSequencer
+        if (drumPatterns.Count > 0)
+        {
+            SampleSequencer lastDrumSequencer = drumPatterns[drumPatterns.Count - 1];
+            TransferSamplerNotes(lastDrumSequencer, newDrumSequencer);
+        }
+        else if (drumSequencer != null)
+        {
+            TransferSamplerNotes(drumSequencer, newDrumSequencer);
+        }
 
-        Debug.Log($"Pattern created and added to the list. Total patterns: {patterns.Count}");
+        // Add new sequencers to the lists
+        patterns.Add(newHelmSequencer);
+        samplePatterns.Add(newSampleSequencer);
+        drumPatterns.Add(newDrumSequencer);
+
+        Debug.Log($"Three patterns created and added to the list. Total patterns: {patterns.Count}");
 
         UpdateBoardManager();
         UpdatePatternDisplay(); // Update UI
 
         SavePatterns();
     }
+
 
     private void TransferNotes(HelmSequencer source, HelmSequencer target)
     {
@@ -105,9 +158,19 @@ public class PatternManager : MonoBehaviour
         Debug.Log("Notes transferred from source to target sequencer.");
     }
 
+    private void TransferSamplerNotes(SampleSequencer source, SampleSequencer target)
+    {
+        target.Clear();
+        foreach (AudioHelm.Note note in source.GetAllNotes())
+        {
+            target.AddNote(note.note, note.start, note.end, note.velocity);
+        }
+        Debug.Log("Notes transferred from source to target sequencer.");
+    }    
+
     public void StartPatterns()
     {
-        if (patterns.Count == 0)
+        if (patterns.Count == 0 && samplePatterns.Count == 0 && drumPatterns.Count == 0)
         {
             Debug.LogError("No patterns created to play.");
             return;
@@ -122,11 +185,6 @@ public class PatternManager : MonoBehaviour
         isPlaying = true;
         clock.Reset();
         clock.pause = false;
-
-        if (sourceSequencer != null)
-        {
-            sourceSequencer.GetComponent<HelmSequencer>().enabled = false;
-        }
 
         StopAllCoroutines(); // Stop any previous coroutines to avoid conflicts
         StartCoroutine(PlayPatternsCoroutine());
@@ -146,21 +204,44 @@ public class PatternManager : MonoBehaviour
 
             Debug.Log($"Playing pattern index: {currentPatternIndex}");
 
+            // Stop all patterns
             foreach (var pattern in patterns)
             {
                 StopPattern(pattern);
             }
 
+            // Start the new patterns
             currentPattern.enabled = true;
             UpdateBoardManager(currentPattern);
             UpdatePatternDisplay(); // Update UI
             Debug.Log($"Started pattern: {currentPattern.name}");
 
+            // Start sample and drum sequencers
+            if (sampleSequencer != null)
+            {
+                sampleSequencer.enabled = true;
+            }
+            if (drumSequencer != null)
+            {
+                drumSequencer.enabled = true;
+            }
+
             yield return new WaitUntil(() => boardManager.GetHighlightedCellIndex() == 15);
 
             yield return new WaitForSeconds(stepDuration); // Adjust if needed
+
+            // Stop the sample and drum sequencers
+            if (sampleSequencer != null)
+            {
+                sampleSequencer.enabled = false;
+            }
+            if (drumSequencer != null)
+            {
+                drumSequencer.enabled = false;
+            }
         }
     }
+
 
     private void StopPattern(HelmSequencer pattern)
     {
@@ -176,11 +257,6 @@ public class PatternManager : MonoBehaviour
         foreach (var pattern in patterns)
         {
             StopPattern(pattern);
-        }
-
-        if (sourceSequencer != null)
-        {
-            sourceSequencer.GetComponent<HelmSequencer>().enabled = true;
         }
 
         UpdatePatternDisplay(); // Update UI
@@ -244,18 +320,82 @@ public class PatternManager : MonoBehaviour
 
     public void SavePatterns()
     {
-        List<PatternData> patternDataList = new List<PatternData>();
+        // Create a new ProjectData instance to hold all pattern data
+        ProjectData projectData = new ProjectData
+        {
+            Patterns = new List<PatternData>(),
+            SamplePatterns = new List<PatternData>(),
+            DrumPatterns = new List<PatternData>()
+        };
+
+        // Convert and add HelmSequencer patterns
         foreach (var pattern in patterns)
         {
             PatternData patternData = ConvertSequencerToPatternData(pattern);
-            patternDataList.Add(patternData);
+            projectData.Patterns.Add(patternData);
         }
 
-        DataManager.SavePatternsToFile(patternDataList);
+        // Convert and add SampleSequencer patterns
+        foreach (var samplePattern in samplePatterns)
+        {
+            PatternData patternData = ConvertSamplerSequencerToPatternData(samplePattern);
+            projectData.SamplePatterns.Add(patternData);
+        }
+
+        // Convert and add DrumSequencer patterns
+        foreach (var drumPattern in drumPatterns)
+        {
+            PatternData patternData = ConvertDrumSequencerToPatternData(drumPattern);
+            projectData.DrumPatterns.Add(patternData);
+        }
+
+        // Save all pattern data to file
+        DataManager.SaveProjectToFile(projectData);
         Debug.Log("Patterns saved to file.");
     }
 
+
     private PatternData ConvertSequencerToPatternData(HelmSequencer sequencer)
+    {
+        PatternData patternData = new PatternData
+        {
+            Name = sequencer.name // Or another identifier if needed
+        };
+
+        foreach (AudioHelm.Note note in sequencer.GetAllNotes())
+        {
+            TileData tileData = new TileData
+            {
+                SpriteName = note.note.ToString(),
+                Step = note.start
+            };
+            patternData.Tiles.Add(tileData);
+        }
+
+        return patternData;
+    }
+
+    private PatternData ConvertSamplerSequencerToPatternData(SampleSequencer sequencer)
+    {
+        PatternData patternData = new PatternData
+        {
+            Name = sequencer.name // Or another identifier if needed
+        };
+
+        foreach (AudioHelm.Note note in sequencer.GetAllNotes())
+        {
+            TileData tileData = new TileData
+            {
+                SpriteName = note.note.ToString(),
+                Step = note.start
+            };
+            patternData.Tiles.Add(tileData);
+        }
+
+        return patternData;
+    }
+
+    private PatternData ConvertDrumSequencerToPatternData(SampleSequencer sequencer)
     {
         PatternData patternData = new PatternData
         {
@@ -318,6 +458,53 @@ public class PatternManager : MonoBehaviour
         }
     }
 
+    private void PopulateSampleSequencerFromPatternData(SampleSequencer sequencer, PatternData patternData)
+    {
+        foreach (var tile in patternData.Tiles)
+        {
+            int noteValue;
+            if (int.TryParse(tile.SpriteName, out noteValue))
+            {
+                AudioHelm.Note note = new AudioHelm.Note
+                {
+                    note = noteValue,
+                    start = tile.Step,
+                    end = tile.Step + 1,
+                    velocity = 1.0f
+                };
+                sequencer.AddNote(note.note, note.start, note.end, note.velocity);
+            }
+            else
+            {
+                Debug.LogError($"Failed to parse note value from {tile.SpriteName}");
+            }
+        }
+    }
+
+    private void PopulateDrumSequencerFromPatternData(SampleSequencer sequencer, PatternData patternData)
+    {
+        foreach (var tile in patternData.Tiles)
+        {
+            int noteValue;
+            if (int.TryParse(tile.SpriteName, out noteValue))
+            {
+                AudioHelm.Note note = new AudioHelm.Note
+                {
+                    note = noteValue,
+                    start = tile.Step,
+                    end = tile.Step + 1,
+                    velocity = 1.0f
+                };
+                sequencer.AddNote(note.note, note.start, note.end, note.velocity);
+            }
+            else
+            {
+                Debug.LogError($"Failed to parse note value from {tile.SpriteName}");
+            }
+        }
+    }
+
+
     public void RemoveLastPattern()
     {
         if (patterns.Count > 0)
@@ -355,12 +542,29 @@ public class PatternManager : MonoBehaviour
         ProjectData projectData = new ProjectData
         {
             Patterns = new List<PatternData>(),
+            SamplePatterns = new List<PatternData>(),
+            DrumPatterns = new List<PatternData>()
         };
 
+        // Collect HelmSequencer patterns
         foreach (var pattern in patterns)
         {
             PatternData patternData = ConvertSequencerToPatternData(pattern);
             projectData.Patterns.Add(patternData);
+        }
+
+        // Collect SampleSequencer patterns
+        foreach (var pattern in samplePatterns)
+        {
+            PatternData patternData = ConvertSamplerSequencerToPatternData(pattern);
+            projectData.SamplePatterns.Add(patternData);
+        }
+
+        // Collect DrumSequencer patterns
+        foreach (var pattern in drumPatterns)
+        {
+            PatternData patternData = ConvertSamplerSequencerToPatternData(pattern);
+            projectData.DrumPatterns.Add(patternData);
         }
 
         string json = JsonUtility.ToJson(projectData, true);
@@ -383,7 +587,7 @@ public class PatternManager : MonoBehaviour
                 // Clear current patterns
                 RemoveAllPatterns();
 
-                // Load patterns from project data
+                // Load HelmSequencer patterns
                 if (projectData != null && projectData.Patterns != null)
                 {
                     foreach (var patternData in projectData.Patterns)
@@ -396,14 +600,51 @@ public class PatternManager : MonoBehaviour
                             patterns.Add(newSequencer);
                         }
                     }
-
-                    Debug.Log($"Project loaded from file: {filename}");
                 }
                 else
                 {
-                    Debug.LogError("Project data is null or empty.");
+                    Debug.LogWarning("No HelmSequencer patterns found in project data.");
                 }
 
+                // Load SampleSequencer patterns
+                if (projectData.SamplePatterns != null)
+                {
+                    foreach (var patternData in projectData.SamplePatterns)
+                    {
+                        SampleSequencer newSequencer = Instantiate(sampleSequencerPrefab).GetComponent<SampleSequencer>();
+                        if (newSequencer != null)
+                        {
+                            newSequencer.enabled = false;
+                            PopulateSampleSequencerFromPatternData(newSequencer, patternData);
+                            samplePatterns.Add(newSequencer);
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("No SampleSequencer patterns found in project data.");
+                }
+
+                // Load DrumSequencer patterns
+                if (projectData.DrumPatterns != null)
+                {
+                    foreach (var patternData in projectData.DrumPatterns)
+                    {
+                        SampleSequencer newSequencer = Instantiate(drumSequencerPrefab).GetComponent<SampleSequencer>();
+                        if (newSequencer != null)
+                        {
+                            newSequencer.enabled = false;
+                            PopulateDrumSequencerFromPatternData(newSequencer, patternData);
+                            drumPatterns.Add(newSequencer);
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("No DrumSequencer patterns found in project data.");
+                }
+
+                Debug.Log($"Project loaded from file: {filename}");
                 UpdatePatternDisplay(); // Update UI to reflect loaded patterns
             }
             catch (Exception ex)
@@ -417,6 +658,7 @@ public class PatternManager : MonoBehaviour
         }
     }
 
+
     private void RemoveAllPatterns()
     {
         foreach (var pattern in patterns)
@@ -427,7 +669,6 @@ public class PatternManager : MonoBehaviour
 
         Debug.Log("All patterns removed.");
     }
-
 
     public string GenerateUniqueFilename()
     {
@@ -458,7 +699,6 @@ public class PatternManager : MonoBehaviour
         int newNumber = highestNumber + 1;
         return $"Project_{newNumber}.json";
     }
-
 
     public string GetNextProjectFile()
     {
@@ -570,11 +810,13 @@ public class PatternManager : MonoBehaviour
             Debug.LogWarning("No project filename specified. Patterns will not be saved.");
         }
     }    
-   
 }
 
-[System.Serializable]
+
+[Serializable]
 public class ProjectData
 {
     public List<PatternData> Patterns = new List<PatternData>();
+    public List<PatternData> SamplePatterns = new List<PatternData>();
+    public List<PatternData> DrumPatterns = new List<PatternData>();
 }

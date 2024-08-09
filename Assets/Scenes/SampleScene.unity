@@ -5087,7 +5087,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4274001074342082389, guid: 6d4b0d6761277964bb15b93ac7884230, type: 3}
   m_PrefabInstance: {fileID: 1805243213462269946}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 782551268}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c4f696041e04f42af802cd73d107c6bc, type: 3}
@@ -6523,6 +6523,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 327165766}
   m_CullTransparentMesh: 1
+--- !u!1 &330158175 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2127506879516550983, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
+  m_PrefabInstance: {fileID: 1037683743}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &338041917
 GameObject:
   m_ObjectHideFlags: 0
@@ -17192,6 +17197,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 782359618}
   m_CullTransparentMesh: 1
+--- !u!1 &782551268 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5085402438987919277, guid: 6d4b0d6761277964bb15b93ac7884230, type: 3}
+  m_PrefabInstance: {fileID: 1805243213462269946}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &792680413
 GameObject:
   m_ObjectHideFlags: 0
@@ -35741,34 +35751,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1601599125}
   m_CullTransparentMesh: 1
---- !u!83 &1603438954
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &1605116415
 GameObject:
   m_ObjectHideFlags: 0
@@ -36711,7 +36693,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2022366740158421849, guid: 31e798b4a2b0c1e45b110c5883c3ab9a, type: 3}
   m_PrefabInstance: {fileID: 1037683743}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 330158175}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1f6faed88bb01468fb8fd49178ba50fa, type: 3}
@@ -38349,11 +38331,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sourceSequencer: {fileID: 994914757}
+  sampleSequencer: {fileID: 1647588475}
+  drumSequencer: {fileID: 1983356395}
   sequencerPrefab: {fileID: 2019158421}
+  sampleSequencerPrefab: {fileID: 330158175}
+  drumSequencerPrefab: {fileID: 782551268}
   clock: {fileID: 2020880539}
   boardManager: {fileID: 1307356742}
   patternUIManager: {fileID: 1172895990}
   patterns: []
+  samplePatterns: []
+  drumPatterns: []
   currentPatternIndex: -1
   isPlaying: 0
   projectFileText: {fileID: 2093890595}

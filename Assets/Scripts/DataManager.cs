@@ -404,16 +404,46 @@ public class DataManager : MonoBehaviour
 
         return patterns;
     }
+
+    // Save project data to a file
+    public static void SaveProjectToFile(ProjectData projectData)
+    {
+        string path = Path.Combine(Application.persistentDataPath, "project.dat");
+        Debug.Log("Persistent Data Path: " + Application.persistentDataPath);
+
+        try
+        {
+            using (FileStream fileStream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                BinaryFormatter formatter = new BinaryFormatter();
+                formatter.Serialize(fileStream, projectData);
+            }
+        }
+        catch (IOException ex)
+        {
+            Debug.LogError($"IOException while saving project data: {ex.Message}");
+        }
+    }
+
 }
 
 [Serializable]
 public class PatternData
 {
-    public string Name;                // Example property
+    public string Name;                // Name of the pattern
+    public SequencerType Type;         // Type of sequencer (Helm or Sample)
     public List<TileData> Tiles;       // List of TileData objects
 
     public PatternData()
     {
         Tiles = new List<TileData>();  // Initialize list to avoid null reference
+    }
+
+    // Enumeration to differentiate between Helm and Sample sequencers
+    public enum SequencerType
+    {
+        Helm,
+        Sample,
+        Drum
     }
 }
