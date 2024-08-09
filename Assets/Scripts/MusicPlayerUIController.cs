@@ -14,18 +14,20 @@ public class MusicPlayerUIController : MonoBehaviour
 
     public GameObject waveform;     // Reference to the waveform visualizer GameObject
 
+    private int currentTrackIndex = 0; // Index of the currently selected track
+
     private void Start()
     {
-        // Ensure the KMusicPlayer instance is available
-        if (KMusicPlayer.Instance == null)
+        // Ensure the MultipleAudioLoader instance is available
+        if (MultipleAudioLoader.Instance == null)
         {
-            Debug.LogError("KMusicPlayer instance is missing.");
+            Debug.LogError("MultipleAudioLoader instance is missing.");
             return;
         }
 
         // Add listeners to buttons
         playButton.onClick.AddListener(PlayTrack);
-        pauseButton.onClick.AddListener(PauseTrack);
+
         stopButton.onClick.AddListener(StopTrack);
         nextButton.onClick.AddListener(PlayNextTrack);
         previousButton.onClick.AddListener(PlayPreviousTrack);
@@ -37,51 +39,34 @@ public class MusicPlayerUIController : MonoBehaviour
     private IEnumerator InitializeUI()
     {
         // Wait until audio files are loaded
-        yield return new WaitUntil(() => KMusicPlayer.Instance.clipFileNames.Count > 0);
+        yield return new WaitUntil(() => MultipleAudioLoader.Instance.clipFileNames.Count > 0);
 
         // Initialize the waveform visualizer
         waveform.GetComponent<WaveformVisualizer>().CreateWave();
 
-        // Play the first track if available
-        //PlayTrack();
+        // Optionally play the first track
+        // PlayTrack();
+
+        currentTrackIndex = MultipleAudioLoader.Instance.currentIndex;
     }
 
     private void PlayTrack()
     {
         // Play the current track if one is loaded
-        if (KMusicPlayer.Instance.currentIndex >= 0)
+        if (currentTrackIndex >= 0 && currentTrackIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
         {
-            KMusicPlayer.Instance.audioSource.Play();
+            StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
+            waveform.GetComponent<WaveformVisualizer>().StartWave();
         }
-        else if (KMusicPlayer.Instance.clipFileNames.Count > 0)
-        {
-            // Load and play the first track if no track is currently loaded
-            KMusicPlayer.Instance.PlayTrack(KMusicPlayer.Instance.clipFileNames[0]);
-        }
-        waveform.GetComponent<WaveformVisualizer>().StartWave();
         UpdateTrackName();
-    }
-
-    private void PauseTrack()
-    {
-        // Pause the current track if it is playing
-        if (KMusicPlayer.Instance.audioSource.isPlaying)
-        {
-            KMusicPlayer.Instance.audioSource.Pause();
-            waveform.GetComponent<WaveformVisualizer>().StopWave();
-        }
-        else
-        {
-            Debug.LogWarning("No track is playing to pause.");
-        }
     }
 
     private void StopTrack()
     {
         // Stop the current track and reset the AudioSource
-        if (KMusicPlayer.Instance.audioSource.isPlaying)
+        if (MultipleAudioLoader.Instance.audioSource.isPlaying)
         {
-            KMusicPlayer.Instance.audioSource.Stop();
+            MultipleAudioLoader.Instance.audioSource.Stop();
             waveform.GetComponent<WaveformVisualizer>().StopWave();
             UpdateTrackName();
         }
@@ -89,16 +74,26 @@ public class MusicPlayerUIController : MonoBehaviour
 
     private void PlayNextTrack()
     {
+        // Increment the current track index and wrap around if necessary
+        currentTrackIndex = (currentTrackIndex + 1) % MultipleAudioLoader.Instance.clipFileNames.Count;
+
         // Play the next track and update the UI
-        KMusicPlayer.Instance.PlayNextTrack();
+        StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         waveform.GetComponent<WaveformVisualizer>().StartWave();
         UpdateTrackName();
     }
 
     private void PlayPreviousTrack()
     {
+        // Decrement the current track index and wrap around if necessary
+        currentTrackIndex--;
+        if (currentTrackIndex < 0)
+        {
+            currentTrackIndex = MultipleAudioLoader.Instance.clipFileNames.Count - 1;
+        }
+
         // Play the previous track and update the UI
-        KMusicPlayer.Instance.PlayPreviousTrack();
+        StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         waveform.GetComponent<WaveformVisualizer>().StartWave();
         UpdateTrackName();
     }
@@ -106,9 +101,9 @@ public class MusicPlayerUIController : MonoBehaviour
     private void UpdateTrackName()
     {
         // Update the UI text to show the current track name
-        if (KMusicPlayer.Instance.currentIndex >= 0 && KMusicPlayer.Instance.currentIndex < KMusicPlayer.Instance.clipFileNames.Count)
+        if (currentTrackIndex >= 0 && currentTrackIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
         {
-            trackNameText.text = "Now Playing: " + KMusicPlayer.Instance.clipFileNames[KMusicPlayer.Instance.currentIndex];
+            trackNameText.text = "Now Playing: " + MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex];
         }
         else
         {

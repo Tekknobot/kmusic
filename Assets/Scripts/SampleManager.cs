@@ -38,6 +38,8 @@ public class SampleManager : MonoBehaviour
 
     public Sprite defaultSprite;
 
+    public SampleSequencer sampleSequencer;
+
     private void Awake()
     {
         // Singleton pattern
@@ -335,7 +337,7 @@ public class SampleManager : MonoBehaviour
             Debug.Log($"Playing sample: {sampleName} with timestamp: {timestamp}");
 
             // Ensure the audio clip is assigned to the AudioSource
-            AudioClip clip = KMusicPlayer.Instance.audioSource.clip;
+            AudioClip clip = MultipleAudioLoader.Instance.audioSource.clip;
 
             if (clip == null)
             {
@@ -448,10 +450,9 @@ public class SampleManager : MonoBehaviour
                             Debug.Log($"Displayed sprite {sprite.name} on cell at position ({x}, {y}) with step {cell.step}. Current sprite in cell: {cell.CurrentSprite.name}");
 
                             // Apply note to HelmSequencer
-                            //int midiNote = GetMidiNoteForSprite(spriteName);
-                            //HelmSequencer helmSequencer = SampleManager.Instance.GetComponent<HelmSequencer>();
-                            //helmSequencer.AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
-                            //Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
+                            int midiNote = GetMidiNoteForSprite(spriteName);
+                            sampleSequencer.GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
+                            Debug.Log($"Added MIDI {midiNote} at Step = {cell.step}");
                         }
                         else if (cell != null)
                         {

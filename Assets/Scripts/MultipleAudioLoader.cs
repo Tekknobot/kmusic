@@ -101,7 +101,7 @@ public class MultipleAudioLoader : MonoBehaviour
                 clipDictionary[fileName] = newClip;
                 currentClip = newClip;
                 audioSource.clip = newClip;
-                //audioSource.Play();
+                audioSource.Play();
                 UpdateStatusText("Playing: " + fileName);
             }
             else
@@ -133,4 +133,37 @@ public class MultipleAudioLoader : MonoBehaviour
             statusText.text = text;
         }
     }
+
+    public IEnumerator LoadClip(string fileName)
+    {
+        if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
+        {
+            audioSource.clip = loadedClip;
+            UpdateStatusText("Loaded: " + fileName);
+            yield break;
+        }
+
+        string filePath = Path.Combine(fullPath, fileName);
+        string fileUrl = "file://" + filePath;
+        string extension = Path.GetExtension(fileName).ToLower();
+
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(fileUrl, GetAudioType(extension)))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
+                clipDictionary[fileName] = newClip;
+                audioSource.clip = newClip;
+                UpdateStatusText("Loaded: " + fileName);
+            }
+            else
+            {
+                Debug.LogError("Failed to load audio file: " + www.error);
+                UpdateStatusText("Failed to load: " + fileName);
+            }
+        }
+    }
+
 }
