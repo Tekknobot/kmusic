@@ -209,38 +209,35 @@ public class PadManager : MonoBehaviour
     {
         Debug.Log($"Displaying all saved tiles for sprite: {sprite.name}");
 
-        // Find the group that matches the current sprite
-        if (!tileDataGroups.ContainsKey(sprite.name))
+        // Get the current drum pattern sequencer
+        SampleSequencer currentDrumSequencer = PatternManager.Instance.GetActiveDrumSequencer();
+
+        if (currentDrumSequencer == null)
         {
-            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
+            Debug.LogError("No active drum sequencer found.");
             return;
         }
 
-        List<TileData> tileDataList = tileDataGroups[sprite.name];
-        Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
-
-        // Iterate through boardCells to find cells with matching step
-        for (int x = 0; x < BoardManager.Instance.boardCells.GetLength(0); x++)
+        // Iterate through the notes in the current drum pattern
+        foreach (var note in currentDrumSequencer.GetAllNotes())
         {
-            for (int y = 0; y < BoardManager.Instance.boardCells.GetLength(1); y++)
-            {
-                Cell cell = BoardManager.Instance.boardCells[x, y];
-                if (cell == null)
-                {
-                    continue; // Skip null cells
-                }
+            int step = (int)note.start; // Assuming that 'start' represents the step position
 
-                // Check each TileData entry for matching steps
-                foreach (TileData tileData in tileDataList)
-                {
-                    if (cell.step == tileData.Step)
-                    {
-                        cell.SetSprite(sprite);
-                        GameObject.Find("Sequencer").GetComponent<SampleSequencer>().AddNote(midiNote, cell.step, cell.step + 1, 1.0f);
-                    }
-                }
+            // Find the cell on the board that corresponds to this step
+            Cell cell = BoardManager.Instance.GetCellByStep(step);
+            if (cell != null)
+            {
+                // Set the sprite on the cell
+                cell.SetSprite(sprite);
+                Debug.Log($"Set sprite '{sprite.name}' on cell at step {step}.");
+            }
+            else
+            {
+                Debug.LogWarning($"No cell found for step {step}. Unable to set sprite.");
             }
         }
+
+        Debug.Log($"Displayed sprite '{sprite.name}' on board based on the current drum pattern.");
     }
-    
+
 }
