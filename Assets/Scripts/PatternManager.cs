@@ -273,30 +273,65 @@ public class PatternManager : MonoBehaviour
 
     public void RemovePattern(int index)
     {
-        if (index >= 0 && index < patterns.Count && index < samplePatterns.Count && index < drumPatterns.Count)
+        bool removedAny = false; // Flag to track if any pattern was removed
+
+        // Log the counts of all lists
+        Debug.Log($"Patterns count: {patterns.Count}, SamplePatterns count: {samplePatterns.Count}, DrumPatterns count: {drumPatterns.Count}");
+
+        // Remove HelmSequencer pattern if index is valid
+        if (index >= 0 && index < patterns.Count)
         {
             HelmSequencer patternToRemove = patterns[index];
-            SampleSequencer samplePatternToRemove = samplePatterns[index];
-            SampleSequencer  drumPatternToRemove = drumPatterns[index];
             Destroy(patternToRemove.gameObject);
-            Destroy(samplePatternToRemove.gameObject);
-            Destroy(drumPatternToRemove.gameObject);
             patterns.RemoveAt(index);
+            removedAny = true;
+            Debug.Log($"Removed HelmSequencer pattern at index: {index}");
+        }
+        else
+        {
+            Debug.LogWarning($"Invalid HelmSequencer index: {index}. No HelmSequencer pattern was removed.");
+        }
+
+        // Remove SampleSequencer pattern if index is valid
+        if (index >= 0 && index < samplePatterns.Count)
+        {
+            SampleSequencer samplePatternToRemove = samplePatterns[index];
+            Destroy(samplePatternToRemove.gameObject);
             samplePatterns.RemoveAt(index);
+            removedAny = true;
+            Debug.Log($"Removed SampleSequencer pattern at index: {index}");
+        }
+        else
+        {
+            Debug.LogWarning($"Invalid SampleSequencer index: {index}. No SampleSequencer pattern was removed.");
+        }
+
+        // Remove DrumSequencer pattern if index is valid
+        if (index >= 0 && index < drumPatterns.Count)
+        {
+            SampleSequencer drumPatternToRemove = drumPatterns[index];
+            Destroy(drumPatternToRemove.gameObject);
             drumPatterns.RemoveAt(index);
+            removedAny = true;
+            Debug.Log($"Removed DrumSequencer pattern at index: {index}");
+        }
+        else
+        {
+            Debug.LogWarning($"Invalid DrumSequencer index: {index}. No DrumSequencer pattern was removed.");
+        }
 
-            Debug.Log($"Removed patterns at index: {index}");
-
+        if (removedAny)
+        {
             UpdateBoardManager();
             UpdatePatternDisplay(); // Update UI
-
             SavePatterns(); // Save the updated list of patterns
         }
         else
         {
-            Debug.LogWarning("Invalid index. Cannot remove pattern.");
+            Debug.LogWarning("No patterns were removed.");
         }
     }
+
 
     private void UpdateBoardManager(HelmSequencer currentPattern = null)
     {
@@ -539,26 +574,6 @@ public class PatternManager : MonoBehaviour
             }
         }
     }
-
-
-    public void RemoveLastPattern()
-    {
-        if (patterns.Count > 0)
-        {
-            HelmSequencer lastPattern = patterns[patterns.Count - 1];
-            Destroy(lastPattern.gameObject);
-            patterns.RemoveAt(patterns.Count - 1);
-
-            Debug.Log("Removed last pattern.");
-
-            UpdateBoardManager();
-            UpdatePatternDisplay(); // Update UI
-        }
-        else
-        {
-            Debug.LogWarning("No patterns to remove.");
-        }
-    }    
 
     public HelmSequencer GetActiveSequencer()
     {
@@ -861,8 +876,24 @@ public class PatternManager : MonoBehaviour
                 Debug.Log("Current pattern cleared.");
             }
 
+            SampleSequencer currentSamplePattern = samplePatterns[currentPatternIndex];
+            if (currentSamplePattern != null)
+            {
+                currentSamplePattern.Clear(); // Assuming Clear() method clears all notes and resets the sequencer
+                Debug.Log("Current pattern cleared.");
+            }
+
+            SampleSequencer currentDrumPattern = drumPatterns[currentPatternIndex];
+            if (currentDrumPattern != null)
+            {
+                currentDrumPattern.Clear(); // Assuming Clear() method clears all notes and resets the sequencer
+                Debug.Log("Current pattern cleared.");
+            }
+
             // Update the board
             UpdateBoardManager(currentPattern);
+            UpdateBoardManageForSamples(currentSamplePattern);
+            UpdateBoardManageForSamples(currentDrumPattern);
 
             // Update the UI
             UpdatePatternDisplay();

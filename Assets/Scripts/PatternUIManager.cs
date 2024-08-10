@@ -47,7 +47,7 @@ public class PatternUIManager : MonoBehaviour
 
     void RemoveLastPattern()
     {
-        patternManager.RemoveLastPattern();
+        patternManager.RemovePattern(PatternManager.Instance.patterns.Count - 1);
         UpdatePatternDisplay();
     }
 
