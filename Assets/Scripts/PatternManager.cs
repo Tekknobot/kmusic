@@ -665,11 +665,10 @@ public class PatternManager : MonoBehaviour
         return newFilename;
     }
 
-
     public void CreateAndLoadNewProject()
     {
         UnloadCurrentProject();
-        
+
         // Create a new project file and get the filename
         string newFilename = CreateNewProjectFile();
         LastProjectFilename = newFilename;
@@ -685,7 +684,6 @@ public class PatternManager : MonoBehaviour
         UpdateProjectFileText();
     }
 
-
     public void SaveProject(string filename)
     {
         ProjectData projectData = new ProjectData
@@ -693,7 +691,8 @@ public class PatternManager : MonoBehaviour
             Patterns = new List<PatternData>(),
             SamplePatterns = new List<PatternData>(),
             DrumPatterns = new List<PatternData>(),
-            songIndex = MultipleAudioLoader.Instance.currentIndex // Save the current song index
+            songIndex = MultipleAudioLoader.Instance.currentIndex, // Save the current song index
+            bpm = (int)clock.bpm
         };
 
         // Collect HelmSequencer patterns
@@ -800,6 +799,16 @@ public class PatternManager : MonoBehaviour
                     MultipleAudioLoader.Instance.currentIndex = projectData.songIndex;
                     string songToLoad = MultipleAudioLoader.Instance.clipFileNames[projectData.songIndex];
                     StartCoroutine(MultipleAudioLoader.Instance.LoadClip(songToLoad));
+                }
+
+                // Restore the BPM
+                if (projectData.bpm > 0)
+                {
+                    clock.bpm = projectData.bpm;
+                    if (GameObject.Find("BPM") != null)
+                    {
+                        GameObject.Find("BPM").GetComponent<Slider>().value = clock.bpm;
+                    }
                 }
 
                 Debug.Log($"Project loaded from file: {filename}");
@@ -1091,4 +1100,6 @@ public class ProjectData
     public List<PatternData> DrumPatterns = new List<PatternData>();
 
     public int songIndex; // Store the index or identifier of the song
+
+    public float bpm;
 }
