@@ -764,18 +764,6 @@ public class PatternManager : MonoBehaviour
         }
     }
 
-
-    private void RemoveAllPatterns()
-    {
-        foreach (var pattern in patterns)
-        {
-            Destroy(pattern.gameObject);
-        }
-        patterns.Clear();
-
-        Debug.Log("All patterns removed.");
-    }
-
     public string GenerateUniqueFilename()
     {
         // Define the filename pattern to search for
@@ -845,6 +833,8 @@ public class PatternManager : MonoBehaviour
 
     public void LoadNextProject()
     {
+        UnloadCurrentProject();
+        
         string nextFilename = GetNextProjectFile();
         if (!string.IsNullOrEmpty(nextFilename))
         {
@@ -855,6 +845,8 @@ public class PatternManager : MonoBehaviour
 
     public void LoadNewProject(string filename)
     {
+        UnloadCurrentProject();
+
         if (!string.IsNullOrEmpty(filename))
         {
             LoadProject(filename);
@@ -862,6 +854,57 @@ public class PatternManager : MonoBehaviour
             UpdatePatternDisplay(); // Update UI            
         }
     }     
+
+    // Method to unload all existing project data
+    private void UnloadCurrentProject()
+    {
+        // Clear all existing patterns and sequencers
+        RemoveAllPatterns();
+        RemoveAllSamplePatterns();
+        RemoveAllDrumPatterns();
+
+        Debug.Log("Current project has been unloaded.");
+    }
+
+    // Method to remove all HelmSequencers
+    private void RemoveAllPatterns()
+    {
+        foreach (var pattern in patterns)
+        {
+            if (pattern != null)
+            {
+                Destroy(pattern.gameObject);
+            }
+        }
+        patterns.Clear();
+    }
+
+    // Method to remove all SampleSequencers
+    private void RemoveAllSamplePatterns()
+    {
+        foreach (var samplePattern in samplePatterns)
+        {
+            if (samplePattern != null)
+            {
+                Destroy(samplePattern.gameObject);
+            }
+        }
+        samplePatterns.Clear();
+    }
+
+    // Method to remove all DrumSequencers
+    private void RemoveAllDrumPatterns()
+    {
+        foreach (var drumPattern in drumPatterns)
+        {
+            if (drumPattern != null)
+            {
+                Destroy(drumPattern.gameObject);
+            }
+        }
+        drumPatterns.Clear();
+    }
+
 
     private void UpdateProjectFileText()
     {
