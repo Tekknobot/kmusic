@@ -644,7 +644,8 @@ public class PatternManager : MonoBehaviour
         {
             Patterns = new List<PatternData>(),
             SamplePatterns = new List<PatternData>(),
-            DrumPatterns = new List<PatternData>()
+            DrumPatterns = new List<PatternData>(),
+            songIndex = MultipleAudioLoader.Instance.currentIndex // Save the current song index
         };
 
         // Collect HelmSequencer patterns
@@ -674,7 +675,6 @@ public class PatternManager : MonoBehaviour
         Debug.Log($"Project saved to file: {filename}");
     }
 
-
     public void LoadProject(string filename)
     {
         string path = Path.Combine(Application.persistentDataPath, filename);
@@ -688,10 +688,9 @@ public class PatternManager : MonoBehaviour
                 // Clear current patterns
                 RemoveAllPatterns();
 
-                // Load HelmSequencer patterns
+                // Load patterns as before
                 if (projectData != null && projectData.Patterns != null)
                 {
-                    Debug.Log("Loading HelmSequencer patterns...");
                     foreach (var patternData in projectData.Patterns)
                     {
                         HelmSequencer newSequencer = Instantiate(sequencerPrefab)?.GetComponent<HelmSequencer>();
@@ -708,15 +707,9 @@ public class PatternManager : MonoBehaviour
                         }
                     }
                 }
-                else
-                {
-                    Debug.LogWarning("No HelmSequencer patterns found in project data.");
-                }
 
-                // Load SampleSequencer patterns
                 if (projectData.SamplePatterns != null)
                 {
-                    Debug.Log("Loading SampleSequencer patterns...");
                     foreach (var patternData in projectData.SamplePatterns)
                     {
                         SampleSequencer newSequencer = Instantiate(sampleSequencerPrefab)?.GetComponent<SampleSequencer>();
@@ -733,15 +726,9 @@ public class PatternManager : MonoBehaviour
                         }
                     }
                 }
-                else
-                {
-                    Debug.LogWarning("No SampleSequencer patterns found in project data.");
-                }
 
-                // Load DrumSequencer patterns
                 if (projectData.DrumPatterns != null)
                 {
-                    Debug.Log("Loading DrumSequencer patterns...");
                     foreach (var patternData in projectData.DrumPatterns)
                     {
                         SampleSequencer newSequencer = Instantiate(drumSequencerPrefab)?.GetComponent<SampleSequencer>();
@@ -758,9 +745,13 @@ public class PatternManager : MonoBehaviour
                         }
                     }
                 }
-                else
+
+                // Restore the song index
+                if (projectData.songIndex >= 0 && projectData.songIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
                 {
-                    Debug.LogWarning("No DrumSequencer patterns found in project data.");
+                    MultipleAudioLoader.Instance.currentIndex = projectData.songIndex;
+                    string songToLoad = MultipleAudioLoader.Instance.clipFileNames[projectData.songIndex];
+                    StartCoroutine(MultipleAudioLoader.Instance.LoadClip(songToLoad));
                 }
 
                 Debug.Log($"Project loaded from file: {filename}");
@@ -1033,4 +1024,6 @@ public class ProjectData
     public List<PatternData> Patterns = new List<PatternData>();
     public List<PatternData> SamplePatterns = new List<PatternData>();
     public List<PatternData> DrumPatterns = new List<PatternData>();
+
+    public int songIndex; // Store the index or identifier of the song
 }

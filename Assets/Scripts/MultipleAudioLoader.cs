@@ -86,6 +86,7 @@ public class MultipleAudioLoader : MonoBehaviour
             audioSource.Play();
             UpdateStatusText("Playing: " + fileName);
             SaveCurrentClip(fileName); // Save the currently loaded clip
+            currentIndex = clipFileNames.IndexOf(fileName); // Update the index
             yield break;
         }
 
@@ -114,6 +115,7 @@ public class MultipleAudioLoader : MonoBehaviour
                 audioSource.Play();
                 UpdateStatusText("Playing: " + fileName);
                 SaveCurrentClip(fileName); // Save the currently loaded clip
+                currentIndex = clipFileNames.IndexOf(fileName); // Update the index
             }
             else
             {
@@ -122,6 +124,43 @@ public class MultipleAudioLoader : MonoBehaviour
             }
         }
     }
+
+    public IEnumerator LoadClip(string fileName)
+    {
+        if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
+        {
+            audioSource.clip = loadedClip;
+            UpdateStatusText("Loaded: " + fileName);
+            SaveCurrentClip(fileName); // Save the currently loaded clip
+            currentIndex = clipFileNames.IndexOf(fileName); // Update the index
+            yield break;
+        }
+
+        string filePath = Path.Combine(fullPath, fileName);
+        string fileUrl = "file://" + filePath;
+        string extension = Path.GetExtension(fileName).ToLower();
+
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(fileUrl, GetAudioType(extension)))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
+                clipDictionary[fileName] = newClip;
+                audioSource.clip = newClip;
+                UpdateStatusText("Loaded: " + fileName);
+                SaveCurrentClip(fileName); // Save the currently loaded clip
+                currentIndex = clipFileNames.IndexOf(fileName); // Update the index
+            }
+            else
+            {
+                Debug.LogError("Failed to load audio file: " + www.error);
+                UpdateStatusText("Failed to load: " + fileName);
+            }
+        }
+    }
+
 
     private AudioType GetAudioType(string extension)
     {
@@ -142,40 +181,6 @@ public class MultipleAudioLoader : MonoBehaviour
         if (statusText != null)
         {
             statusText.text = text;
-        }
-    }
-
-    public IEnumerator LoadClip(string fileName)
-    {
-        if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
-        {
-            audioSource.clip = loadedClip;
-            UpdateStatusText("Loaded: " + fileName);
-            SaveCurrentClip(fileName); // Save the currently loaded clip
-            yield break;
-        }
-
-        string filePath = Path.Combine(fullPath, fileName);
-        string fileUrl = "file://" + filePath;
-        string extension = Path.GetExtension(fileName).ToLower();
-
-        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(fileUrl, GetAudioType(extension)))
-        {
-            yield return www.SendWebRequest();
-
-            if (www.result == UnityWebRequest.Result.Success)
-            {
-                AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
-                clipDictionary[fileName] = newClip;
-                audioSource.clip = newClip;
-                UpdateStatusText("Loaded: " + fileName);
-                SaveCurrentClip(fileName); // Save the currently loaded clip
-            }
-            else
-            {
-                Debug.LogError("Failed to load audio file: " + www.error);
-                UpdateStatusText("Failed to load: " + fileName);
-            }
         }
     }
 
