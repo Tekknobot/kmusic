@@ -63,7 +63,7 @@ public class SampleManager : MonoBehaviour
         if (!ValidateInitialSettings()) return;
 
         // Add an AudioSource component to the SampleManager
-        audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource = sampleSequencer.GetComponent<AudioSource>();
 
         // Ensure the Chop script is assigned
         if (chopScript == null)
