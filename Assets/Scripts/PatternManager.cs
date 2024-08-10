@@ -87,6 +87,7 @@ public class PatternManager : MonoBehaviour
 
         // Create HelmSequencer
         GameObject helmSequencerObj = Instantiate(sequencerPrefab, transform);
+        helmSequencerObj.GetComponent<HelmSequencer>().loop = true;
         HelmSequencer newHelmSequencer = helmSequencerObj.GetComponent<HelmSequencer>();
         if (newHelmSequencer == null)
         {
@@ -98,6 +99,7 @@ public class PatternManager : MonoBehaviour
 
         // Create SampleSequencer for samples
         GameObject sampleSequencerObj = Instantiate(sampleSequencerPrefab, transform);
+        sampleSequencerObj.GetComponent<SampleSequencer>().loop = true;
         SampleSequencer newSampleSequencer = sampleSequencerObj.GetComponent<SampleSequencer>();
         if (newSampleSequencer == null)
         {
@@ -109,6 +111,7 @@ public class PatternManager : MonoBehaviour
 
         // Create SampleSequencer for drums
         GameObject drumSequencerObj = Instantiate(drumSequencerPrefab, transform);
+        drumSequencerObj.GetComponent<SampleSequencer>().loop = true;
         SampleSequencer newDrumSequencer = drumSequencerObj.GetComponent<SampleSequencer>();
         if (newDrumSequencer == null)
         {
