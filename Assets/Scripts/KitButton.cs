@@ -7,118 +7,132 @@ public class KitButton : MonoBehaviour
 {
     public AudioHelm.Sampler sampler;
     public DrumSamples drumSamples;
-    private string currentKitName = "None"; // Variable to keep track of the current kit name
+    private string currentKitName = "None";
 
-    // Start is called before the first frame update
     void Start()
     {
         sampler = GameObject.Find("Sequencer").GetComponent<Sampler>();
-        drumSamples = GameObject.Find("DrumSamples").GetComponent<DrumSamples>(); // Get the DrumSamples component
-
-        // Load the saved kit
-        LoadKit();
+        drumSamples = GameObject.Find("DrumSamples").GetComponent<DrumSamples>();
     }
 
-    void Update() {
+    void Update()
+    {
         sampler = PatternManager.Instance.GetActiveDrumSequencer().gameObject.GetComponent<Sampler>();
     }
 
-    // Method to handle button click event
     public void OnButtonClick()
     {
-        switch (gameObject.name)
+        LoadKit(gameObject.name);
+    }
+
+    public void LoadKit(string kitName)
+    {
+        currentKitName = kitName;
+        PlayerPrefs.SetString("CurrentDrumKit", kitName);
+        PlayerPrefs.Save();
+
+        switch (kitName)
         {
             case "707":
                 SwapSamples(drumSamples.Rock);
-                SaveKit("707");
                 break;
             case "808":
                 SwapSamples(drumSamples.Hiphop);
-                SaveKit("808");
                 break;
             case "909":
                 SwapSamples(drumSamples.House);
-                SaveKit("909");
                 break;
             case "Boombap":
                 SwapSamples(drumSamples.Boombap);
-                SaveKit("Boombap");
                 break;
             case "Lofi":
                 SwapSamples(drumSamples.Lofi);
-                SaveKit("Lofi");
                 break;
             case "Techno":
                 SwapSamples(drumSamples.Techno);
-                SaveKit("Techno");
                 break;
             case "Trip":
                 SwapSamples(drumSamples.Trip);
-                SaveKit("Trip");
                 break;
             default:
-                Debug.LogError("Unknown kit name: " + gameObject.name);
+                Debug.LogError("Unknown kit name: " + kitName);
                 break;
         }
     }
 
-    // Generic method to swap the keyzones with the given array
-    private void SwapSamples(AudioHelm.Keyzone[] keyzones)
+    public void LoadKitIntoSampler(Sampler targetSampler)
     {
-        if (sampler == null || drumSamples == null)
+        if (drumSamples == null)
         {
-            Debug.LogError("Sampler or DrumSamples component not found.");
+            Debug.LogError("DrumSamples component not found.");
             return;
         }
 
-        // Clear the current keyzones in the sampler
-        sampler.keyzones.Clear();
-
-        // Add the keyzones from the provided array to the sampler
-        for (int i = 0; i < keyzones.Length; i++)
-        {
-            sampler.keyzones.Add(keyzones[i]);
-        }
-    }
-
-    // Method to save the currently active kit name
-    private void SaveKit(string kitName)
-    {
-        PlayerPrefs.SetString("CurrentDrumKit", kitName);
-        PlayerPrefs.Save();
-        currentKitName = kitName;
-    }
-
-    // Method to load the saved kit name
-    private void LoadKit()
-    {
-        currentKitName = PlayerPrefs.GetString("CurrentDrumKit", "707"); // Default to "707" if no kit is saved
         switch (currentKitName)
         {
             case "707":
-                SwapSamples(drumSamples.Rock);
+                SwapSamplesToTargetSampler(targetSampler, drumSamples.Rock);
                 break;
             case "808":
-                SwapSamples(drumSamples.Hiphop);
+                SwapSamplesToTargetSampler(targetSampler, drumSamples.Hiphop);
                 break;
             case "909":
-                SwapSamples(drumSamples.House);
+                SwapSamplesToTargetSampler(targetSampler, drumSamples.House);
                 break;
             case "Boombap":
-                SwapSamples(drumSamples.Boombap);
+                SwapSamplesToTargetSampler(targetSampler, drumSamples.Boombap);
                 break;
             case "Lofi":
-                SwapSamples(drumSamples.Lofi);
+                SwapSamplesToTargetSampler(targetSampler, drumSamples.Lofi);
                 break;
             case "Techno":
-                SwapSamples(drumSamples.Techno);
+                SwapSamplesToTargetSampler(targetSampler, drumSamples.Techno);
                 break;
             case "Trip":
-                SwapSamples(drumSamples.Trip);
+                SwapSamplesToTargetSampler(targetSampler, drumSamples.Trip);
                 break;
             default:
                 Debug.LogError("Unknown kit name: " + currentKitName);
                 break;
+        }
+    }
+
+    private void SwapSamples(AudioHelm.Keyzone[] keyzones)
+    {
+        if (sampler == null)
+        {
+            Debug.LogError("Sampler component not found.");
+            return;
+        }
+        SwapSamplesToAllDrumSamplers(keyzones);
+    }
+
+    private void SwapSamplesToAllDrumSamplers(AudioHelm.Keyzone[] keyzones)
+    {
+        // Find all drum sequencers in the scene
+        var drumSamplers = FindObjectsOfType<Sampler>();
+
+        foreach (var drumSampler in drumSamplers)
+        {
+            if (drumSampler != null)
+            {
+                drumSampler.keyzones.Clear();
+
+                // Add the keyzones from the provided array to the drum sampler
+                for (int i = 0; i < keyzones.Length; i++)
+                {
+                    drumSampler.keyzones.Add(keyzones[i]);
+                }
+            }
+        }
+    }
+
+    private void SwapSamplesToTargetSampler(Sampler targetSampler, AudioHelm.Keyzone[] keyzones)
+    {
+        targetSampler.keyzones.Clear();
+        for (int i = 0; i < keyzones.Length; i++)
+        {
+            targetSampler.keyzones.Add(keyzones[i]);
         }
     }
 }

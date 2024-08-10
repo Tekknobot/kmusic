@@ -6,6 +6,7 @@ using AudioHelm;
 using System;
 using System.Linq;
 using TMPro;
+using UnityEngine.UI;
 
 public class PatternManager : MonoBehaviour
 {
@@ -41,7 +42,6 @@ public class PatternManager : MonoBehaviour
     public static string LastProjectFilename { get; private set; }
     private static string lastAccessedFile = null;
     public TextMeshProUGUI projectFileText; // Reference to the TextMeshPro component
-
     public GameObject componentButton;
 
     private void Awake()
@@ -121,7 +121,20 @@ public class PatternManager : MonoBehaviour
         newDrumSequencer.enabled = false;
         newDrumSequencer.name = $"{sequencerPrefab.name}_Drum_{drumPatterns.Count + 1}"; // Name the DrumSequencer
 
-        // Transfer notes from existing HelmSequencer to the new HelmSequencer
+        // Load the currently selected drum kit into the new drum sequencer
+        KitButton kitButton = FindObjectOfType<KitButton>();
+        if (kitButton != null)
+        {
+            kitButton.LoadKitIntoSampler(newDrumSequencer.GetComponent<Sampler>());
+        }
+        else
+        {
+            Debug.LogError("KitButton not found. Unable to load kit into new drum sequencer.");
+        }
+
+        // Transfer notes from the last existing sequencers to the new sequencers
+
+        // Transfer HelmSequencer notes
         if (patterns.Count > 0)
         {
             HelmSequencer lastHelmSequencer = patterns[patterns.Count - 1];
@@ -132,7 +145,7 @@ public class PatternManager : MonoBehaviour
             TransferNotes(sourceSequencer, newHelmSequencer);
         }
 
-        // Transfer notes from existing SampleSequencer to the new SampleSequencer
+        // Transfer SampleSequencer notes
         if (samplePatterns.Count > 0)
         {
             SampleSequencer lastSampleSequencer = samplePatterns[samplePatterns.Count - 1];
@@ -143,7 +156,7 @@ public class PatternManager : MonoBehaviour
             TransferSamplerNotes(sampleSequencer, newSampleSequencer);
         }
 
-        // Transfer notes from existing DrumSequencer to the new DrumSequencer
+        // Transfer DrumSequencer notes
         if (drumPatterns.Count > 0)
         {
             SampleSequencer lastDrumSequencer = drumPatterns[drumPatterns.Count - 1];
