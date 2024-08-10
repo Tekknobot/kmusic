@@ -209,6 +209,16 @@ public class PadManager : MonoBehaviour
     {
         Debug.Log($"Displaying all saved tiles for sprite: {sprite.name}");
 
+        // Find the group that matches the current sprite
+        if (!tileDataGroups.ContainsKey(sprite.name))
+        {
+            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
+            return;
+        }
+
+        List<TileData> tileDataList = tileDataGroups[sprite.name];
+        Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
+
         // Get the current drum pattern sequencer
         SampleSequencer currentDrumSequencer = PatternManager.Instance.GetActiveDrumSequencer();
 
@@ -223,21 +233,32 @@ public class PadManager : MonoBehaviour
         {
             int step = (int)note.start; // Assuming that 'start' represents the step position
 
-            // Find the cell on the board that corresponds to this step
-            Cell cell = BoardManager.Instance.GetCellByStep(step);
-            if (cell != null)
+            // Find matching TileData in tileDataList
+            TileData matchingTileData = tileDataList.Find(td => td.Step == step);
+
+            if (matchingTileData != null)
             {
-                // Set the sprite on the cell
-                cell.SetSprite(sprite);
-                Debug.Log($"Set sprite '{sprite.name}' on cell at step {step}.");
+                // Find the cell on the board that corresponds to this step
+                Cell cell = BoardManager.Instance.GetCellByStep(step);
+                if (cell != null)
+                {
+                    // Set the sprite on the cell
+                    cell.SetSprite(sprite);
+                    Debug.Log($"Set sprite '{sprite.name}' on cell at step {step}.");
+                }
+                else
+                {
+                    Debug.LogWarning($"No cell found for step {step}. Unable to set sprite.");
+                }
             }
             else
             {
-                Debug.LogWarning($"No cell found for step {step}. Unable to set sprite.");
+                Debug.LogWarning($"No matching TileData found for step {step}. Unable to set sprite.");
             }
         }
 
-        Debug.Log($"Displayed sprite '{sprite.name}' on board based on the current drum pattern.");
+        Debug.Log($"Displayed sprite '{sprite.name}' on board based on the current drum pattern and tile data.");
     }
+
 
 }
