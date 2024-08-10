@@ -19,6 +19,10 @@ public class KitButton : MonoBehaviour
         LoadKit();
     }
 
+    void Update() {
+        sampler = PatternManager.Instance.GetActiveDrumSequencer().gameObject.GetComponent<Sampler>();
+    }
+
     // Method to handle button click event
     public void OnButtonClick()
     {
@@ -116,11 +120,5 @@ public class KitButton : MonoBehaviour
                 Debug.LogError("Unknown kit name: " + currentKitName);
                 break;
         }
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        // Optionally, implement any logic needed for per-frame updates.
     }
 }
