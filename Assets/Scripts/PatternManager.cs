@@ -668,6 +668,8 @@ public class PatternManager : MonoBehaviour
 
     public void CreateAndLoadNewProject()
     {
+        UnloadCurrentProject();
+        
         // Create a new project file and get the filename
         string newFilename = CreateNewProjectFile();
         LastProjectFilename = newFilename;
@@ -675,7 +677,7 @@ public class PatternManager : MonoBehaviour
         LoadProject(newFilename);
 
         // Optionally, set all sequencers to loop and update the display
-        SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
+        //SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
         UpdatePatternDisplay(); // Update UI to reflect loaded patterns
 
         Debug.Log($"New project created and loaded: {newFilename}");
