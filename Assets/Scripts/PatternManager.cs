@@ -43,6 +43,7 @@ public class PatternManager : MonoBehaviour
     private static string lastAccessedFile = null;
     public TextMeshProUGUI projectFileText; // Reference to the TextMeshPro component
     public GameObject componentButton;
+    public GameObject chopButton;
 
     private void Awake()
     {
@@ -692,7 +693,8 @@ public class PatternManager : MonoBehaviour
             SamplePatterns = new List<PatternData>(),
             DrumPatterns = new List<PatternData>(),
             songIndex = MultipleAudioLoader.Instance.currentIndex, // Save the current song index
-            bpm = (int)clock.bpm
+            bpm = (int)clock.bpm,
+            timestamps = chopButton.GetComponent<Chop>().timestamps
         };
 
         // Collect HelmSequencer patterns
@@ -809,6 +811,17 @@ public class PatternManager : MonoBehaviour
                     {
                         GameObject.Find("BPM").GetComponent<Slider>().value = clock.bpm;
                     }
+                }
+
+                // Restore timestamps
+                var chopComponent = chopButton.GetComponent<Chop>();
+                if (chopComponent != null)
+                {
+                    chopComponent.timestamps = projectData.timestamps;
+                }
+                else
+                {
+                    Debug.LogError("Chop component not found on chopButton.");
                 }
 
                 Debug.Log($"Project loaded from file: {filename}");
@@ -1102,4 +1115,6 @@ public class ProjectData
     public int songIndex; // Store the index or identifier of the song
 
     public float bpm;
+
+    public List<float> timestamps = new List<float>();
 }
