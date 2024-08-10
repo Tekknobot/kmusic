@@ -75,7 +75,12 @@ public class PatternManager : MonoBehaviour
             sequencerPrefab.GetComponent<HelmSequencer>().loop = false;
             sampleSequencerPrefab.GetComponent<SampleSequencer>().loop = false;
             drumSequencerPrefab.GetComponent<SampleSequencer>().loop = false;
-        }           
+        }  
+        else {
+            sequencerPrefab.GetComponent<HelmSequencer>().loop = true;
+            sampleSequencerPrefab.GetComponent<SampleSequencer>().loop = true;
+            drumSequencerPrefab.GetComponent<SampleSequencer>().loop = true;            
+        }         
     }
 
     public void CreatePattern()
@@ -244,23 +249,20 @@ public class PatternManager : MonoBehaviour
 
             Debug.Log($"Playing pattern index: {currentPatternIndex}");
 
-            // Stop all patterns
-            foreach (var pattern in patterns)
-            {
-                StopPattern(pattern);
-            }
-
             // Start the new pattern
             currentPattern.enabled = true;
             currentSamplePattern.enabled = true;
             currentDrumPattern.enabled = true;
-            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 1) {
+
+            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 1)
+            {
                 UpdateBoardManager(currentPattern);
             }
-            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 2) {
+            else if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 2)
+            {
                 UpdateBoardManageForSamples(currentSamplePattern);
-            } 
-            
+            }
+
             UpdatePatternDisplay(); // Update UI
 
             // Wait for board manager to reach the desired cell index (or other condition)
@@ -269,28 +271,17 @@ public class PatternManager : MonoBehaviour
             // Wait for the duration of one step
             yield return new WaitForSeconds(stepDuration);
 
+            // Disable the patterns after the step duration
             currentPattern.enabled = false;
             currentSamplePattern.enabled = false;
             currentDrumPattern.enabled = false;
-        }             
-    }
-
-
-    private void StopPattern(HelmSequencer pattern)
-    {
-        pattern.enabled = false;
-        Debug.Log($"Stopped pattern: {pattern.name}");
+        }
     }
 
     public void StopPatterns()
     {
         isPlaying = false;
         clock.pause = true;
-
-        foreach (var pattern in patterns)
-        {
-            StopPattern(pattern);
-        }
 
         UpdatePatternDisplay(); // Update UI
         Debug.Log("Stopped all patterns.");
@@ -726,6 +717,8 @@ public class PatternManager : MonoBehaviour
 
     public void LoadProject(string filename)
     {
+        UnloadCurrentProject();
+
         string path = Path.Combine(Application.persistentDataPath, filename);
         if (File.Exists(path))
         {
