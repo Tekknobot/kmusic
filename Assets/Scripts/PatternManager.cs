@@ -637,6 +637,52 @@ public class PatternManager : MonoBehaviour
             return null;
         }
     }            
+    private string CreateNewProjectFile()
+    {
+        // Generate a unique filename for the new project
+        string newFilename = GenerateUniqueFilename();
+
+        // Create a new ProjectData object with default values
+        ProjectData newProjectData = new ProjectData
+        {
+            Patterns = new List<PatternData>(),
+            SamplePatterns = new List<PatternData>(),
+            DrumPatterns = new List<PatternData>()
+        };
+
+        // Convert the ProjectData object to JSON
+        string json = JsonUtility.ToJson(newProjectData, true);
+
+        // Define the path to save the new project file
+        string path = Path.Combine(Application.persistentDataPath, newFilename);
+
+        // Write the JSON to the file
+        File.WriteAllText(path, json);
+
+        Debug.Log($"New project file created: {newFilename}");
+
+        // Return the filename for immediate loading
+        return newFilename;
+    }
+
+
+    public void CreateAndLoadNewProject()
+    {
+        // Create a new project file and get the filename
+        string newFilename = CreateNewProjectFile();
+        LastProjectFilename = newFilename;
+        // Load the newly created project
+        LoadProject(newFilename);
+
+        // Optionally, set all sequencers to loop and update the display
+        SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
+        UpdatePatternDisplay(); // Update UI to reflect loaded patterns
+
+        Debug.Log($"New project created and loaded: {newFilename}");
+
+        UpdateProjectFileText();
+    }
+
 
     public void SaveProject(string filename)
     {
@@ -795,6 +841,10 @@ public class PatternManager : MonoBehaviour
 
         // Increment the highest number by 1 for the new filename
         int newNumber = highestNumber + 1;
+
+        // Log the new filename for debugging
+        Debug.Log($"Generated new filename: Project_{newNumber}.json");
+
         return $"Project_{newNumber}.json";
     }
 
@@ -850,17 +900,30 @@ public class PatternManager : MonoBehaviour
 
     public void LoadNewProject(string filename)
     {
+        // Unload the current project if any
         UnloadCurrentProject();
 
+        // Ensure the filename is not empty
         if (!string.IsNullOrEmpty(filename))
         {
+            // Load the new project
             LoadProject(filename);
-            SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
-            GetNextProjectFile();
-            UpdatePatternDisplay(); // Update UI            
-        }
-    }  
 
+            // Ensure all sequencers have looping enabled
+            SetAllSequencersLoop(true);
+
+            // Update UI to reflect new patterns
+            UpdatePatternDisplay();
+
+            // Optionally, update the last accessed file
+            lastAccessedFile = Path.Combine(Application.persistentDataPath, filename);
+            LastProjectFilename = filename;
+        }
+        else
+        {
+            Debug.LogError("Filename is null or empty.");
+        }
+    }
 
     private void SetAllSequencersLoop(bool loopEnabled)
     {
