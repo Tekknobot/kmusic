@@ -69,6 +69,14 @@ public class PatternManager : MonoBehaviour
         LoadPatterns();
     }
 
+    void Update() {
+        if (isPlaying) {
+            sequencerPrefab.GetComponent<HelmSequencer>().loop = false;
+            sampleSequencerPrefab.GetComponent<SampleSequencer>().loop = false;
+            drumSequencerPrefab.GetComponent<SampleSequencer>().loop = false;
+        }           
+    }
+
     public void CreatePattern()
     {
         if (sequencerPrefab == null)
@@ -247,7 +255,7 @@ public class PatternManager : MonoBehaviour
             currentPattern.enabled = false;
             currentSamplePattern.enabled = false;
             currentDrumPattern.enabled = false;
-        }
+        }             
     }
 
 

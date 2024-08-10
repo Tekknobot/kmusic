@@ -50,11 +50,13 @@ public class BoardManager : MonoBehaviour
 
     void Start()
     {
-        sequencer = GameObject.Find("Sequencer").GetComponent<AudioHelm.SampleSequencer>();
+        
     }
 
     void Update()
     {
+        sequencer = PatternManager.Instance.GetActiveDrumSequencer();
+
         foreach (Cell cell in boardCells)
         {
             if (cell != null)
