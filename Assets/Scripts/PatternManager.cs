@@ -834,11 +834,12 @@ public class PatternManager : MonoBehaviour
     public void LoadNextProject()
     {
         UnloadCurrentProject();
-        
+
         string nextFilename = GetNextProjectFile();
         if (!string.IsNullOrEmpty(nextFilename))
         {
             LoadProject(nextFilename);
+            SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
             UpdatePatternDisplay(); // Update UI
         }
     }  
@@ -850,10 +851,45 @@ public class PatternManager : MonoBehaviour
         if (!string.IsNullOrEmpty(filename))
         {
             LoadProject(filename);
+            SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
             GetNextProjectFile();
             UpdatePatternDisplay(); // Update UI            
         }
-    }     
+    }  
+
+
+    private void SetAllSequencersLoop(bool loopEnabled)
+    {
+        // Set loop for all HelmSequencers
+        foreach (var pattern in patterns)
+        {
+            if (pattern != null)
+            {
+                pattern.loop = loopEnabled;
+            }
+        }
+
+        // Set loop for all SampleSequencers
+        foreach (var samplePattern in samplePatterns)
+        {
+            if (samplePattern != null)
+            {
+                samplePattern.loop = loopEnabled;
+            }
+        }
+
+        // Set loop for all DrumSequencers
+        foreach (var drumPattern in drumPatterns)
+        {
+            if (drumPattern != null)
+            {
+                drumPattern.loop = loopEnabled;
+            }
+        }
+
+        Debug.Log($"All sequencers have had their loop set to {loopEnabled}.");
+    }
+
 
     // Method to unload all existing project data
     private void UnloadCurrentProject()
