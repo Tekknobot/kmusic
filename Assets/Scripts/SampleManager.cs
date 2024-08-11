@@ -281,7 +281,7 @@ public class SampleManager : MonoBehaviour
         //currentSample = lastClickedSample;
 
         // Set SampleManager as the last clicked manager
-        ManagerHandler.Instance.SetLastClickedManager(false, false, true);
+        //ManagerHandler.Instance.SetLastClickedManager(false, false, true);
 
         // Reset the board to display default configuration first
         //BoardManager.Instance.ResetBoard();
