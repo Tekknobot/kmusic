@@ -974,6 +974,47 @@ public class PatternManager : MonoBehaviour
         Debug.Log($"All sequencers have had their loop set to {loopEnabled}.");
     }
 
+    public void DeleteCurrentProject()
+    {
+        if (string.IsNullOrEmpty(LastProjectFilename))
+        {
+            Debug.LogError("No project is currently loaded. Cannot delete.");
+            return;
+        }
+
+        // Get the full path of the current project file
+        string path = Path.Combine(Application.persistentDataPath, LastProjectFilename);
+
+        if (File.Exists(path))
+        {
+            try
+            {
+                // Delete the project file
+                File.Delete(path);
+                Debug.Log($"Project file deleted: {LastProjectFilename}");
+
+                // Clear the current project data
+                UnloadCurrentProject();
+                lastAccessedFile = null;
+                LastProjectFilename = null;
+
+                // Update the UI to reflect the deletion
+                UpdatePatternDisplay();
+                UpdateProjectFileText();
+
+                Debug.Log("Current project data cleared and UI updated.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error deleting project file: {ex.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"File not found: {path}. Cannot delete.");
+        }
+    }
+
 
     // Method to unload all existing project data
     private void UnloadCurrentProject()
