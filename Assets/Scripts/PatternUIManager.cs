@@ -59,6 +59,9 @@ public class PatternUIManager : MonoBehaviour
 
     void LoadProject()
     {
+        if (PatternManager.Instance.isPlaying) {
+            return;
+        }
         patternManager.LoadNextProject(); // Call the method to load project
         UpdatePatternDisplay();
     }
