@@ -21,6 +21,8 @@ public class PadManager : MonoBehaviour
 
     public Dictionary<string, List<TileData>> tileDataGroups = new Dictionary<string, List<TileData>>(); // Dictionary to store TileData grouped by sprite
 
+    public SampleSequencer sequencer;
+
     public int midiNote;
 
     private void Awake()

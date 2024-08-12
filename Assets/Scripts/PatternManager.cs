@@ -113,7 +113,7 @@ public class PatternManager : MonoBehaviour
             return;
         }
         newSampleSequencer.enabled = false;
-        newSampleSequencer.name = $"{sequencerPrefab.name}_Sample_{samplePatterns.Count + 1}"; // Name the SampleSequencer
+        newSampleSequencer.name = $"{sampleSequencerPrefab.name}_Sample_{samplePatterns.Count + 1}"; // Name the SampleSequencer
 
         // Create SampleSequencer for drums
         GameObject drumSequencerObj = Instantiate(drumSequencerPrefab, transform);
@@ -125,7 +125,7 @@ public class PatternManager : MonoBehaviour
             return;
         }
         newDrumSequencer.enabled = false;
-        newDrumSequencer.name = $"{sequencerPrefab.name}_Drum_{drumPatterns.Count + 1}"; // Name the DrumSequencer
+        newDrumSequencer.name = $"{drumSequencerPrefab.name}_Drum_{drumPatterns.Count + 1}"; // Name the DrumSequencer
 
         // Load the currently selected drum kit into the new drum sequencer
         KitButton kitButton = FindObjectOfType<KitButton>();
