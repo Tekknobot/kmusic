@@ -109,12 +109,13 @@ public class KitButton : MonoBehaviour
 
     private void SwapSamplesToAllDrumSamplers(AudioHelm.Keyzone[] keyzones)
     {
-        // Find all drum sequencers in the scene
+        // Find all drum samplers in the scene
         var drumSamplers = FindObjectsOfType<Sampler>();
 
         foreach (var drumSampler in drumSamplers)
         {
-            if (drumSampler != null)
+            // Check if the drum sampler's game object name starts with "Sequencer"
+            if (drumSampler != null && drumSampler.gameObject.name.StartsWith("Sequencer"))
             {
                 drumSampler.keyzones.Clear();
 
@@ -126,6 +127,7 @@ public class KitButton : MonoBehaviour
             }
         }
     }
+
 
     private void SwapSamplesToTargetSampler(Sampler targetSampler, AudioHelm.Keyzone[] keyzones)
     {
