@@ -23,6 +23,9 @@ public class PadManager : MonoBehaviour
 
     public SampleSequencer sequencer;
 
+    // Dictionary to map sprites to MIDI notes
+    private Dictionary<Sprite, int> spriteMidiNoteMap = new Dictionary<Sprite, int>();
+
     public int midiNote;
 
     private void Awake()
@@ -61,8 +64,27 @@ public class PadManager : MonoBehaviour
             DefaultSprite = sprites[0]; // Set the first sprite in the array as default
         }
 
+        InitializeSpriteMidiNoteMap(sprites);
+        
         GeneratePads();
         tileDataGroups = DataManager.LoadTileDataFromFile();       
+    }
+
+    // Method to initialize the dictionary with sprites and MIDI notes
+    private void InitializeSpriteMidiNoteMap(IEnumerable<Sprite> sprites)
+    {
+        int startingMidiNote = 60;
+        
+        foreach (var sprite in sprites)
+        {
+            if (!spriteMidiNoteMap.ContainsKey(sprite))
+            {
+                spriteMidiNoteMap[sprite] = startingMidiNote;
+                startingMidiNote++;
+            }
+        }
+        
+        Debug.Log($"Initialized sprite MIDI note map with {spriteMidiNoteMap.Count} entries.");
     }
 
     private void GeneratePads()
@@ -141,7 +163,7 @@ public class PadManager : MonoBehaviour
             StartCoroutine(ScalePad(clickedPad));
 
             // Display the sprite on cells with matching step data
-            DisplaySpriteOnMatchingSteps(currentSprite);
+            DisplaySpriteOnMatchingSteps(currentSprite, spriteMidiNoteMap[currentSprite]);
 
             // Play sample
             BoardManager.Instance.sequencer.GetComponent<SampleSequencer>().NoteOn(midiNote, 1.0f);
@@ -207,19 +229,9 @@ public class PadManager : MonoBehaviour
     }
 
     // Method to display all saved tiles for a specific sprite on matching cells
-    private void DisplaySpriteOnMatchingSteps(Sprite sprite)
+    private void DisplaySpriteOnMatchingSteps(Sprite sprite, int spriteMidiNote)
     {
-        Debug.Log($"Displaying all saved tiles for sprite: {sprite.name}");
-
-        // Find the group that matches the current sprite
-        if (!tileDataGroups.ContainsKey(sprite.name))
-        {
-            Debug.LogWarning($"No tile data group found for sprite: {sprite.name}");
-            return;
-        }
-
-        List<TileData> tileDataList = tileDataGroups[sprite.name];
-        Debug.Log($"Found {tileDataList.Count} tile data entries for sprite: {sprite.name}");
+        Debug.Log($"Displaying sprite '{sprite.name}' on matching steps for MIDI Note {spriteMidiNote}.");
 
         // Get the current drum pattern sequencer
         SampleSequencer currentDrumSequencer = PatternManager.Instance.GetActiveDrumSequencer();
@@ -234,11 +246,10 @@ public class PadManager : MonoBehaviour
         foreach (var note in currentDrumSequencer.GetAllNotes())
         {
             int step = (int)note.start; // Assuming that 'start' represents the step position
+            int midiNote = note.note; // Assuming note contains midiNote property
 
-            // Find matching TileData in tileDataList
-            TileData matchingTileData = tileDataList.Find(td => td.Step == step);
-
-            if (matchingTileData != null)
+            // Check if the MIDI note matches the sprite's associated MIDI note
+            if (midiNote == spriteMidiNote)
             {
                 // Find the cell on the board that corresponds to this step
                 Cell cell = BoardManager.Instance.GetCellByStep(step);
@@ -246,21 +257,16 @@ public class PadManager : MonoBehaviour
                 {
                     // Set the sprite on the cell
                     cell.SetSprite(sprite);
-                    Debug.Log($"Set sprite '{sprite.name}' on cell at step {step}.");
+                    Debug.Log($"Set sprite '{sprite.name}' on cell at step {step} (MIDI Note: {midiNote}).");
                 }
                 else
                 {
                     Debug.LogWarning($"No cell found for step {step}. Unable to set sprite.");
                 }
             }
-            else
-            {
-                Debug.LogWarning($"No matching TileData found for step {step}. Unable to set sprite.");
-            }
         }
 
-        Debug.Log($"Displayed sprite '{sprite.name}' on board based on the current drum pattern and tile data.");
+        Debug.Log($"Displayed sprite '{sprite.name}' on board based on the current drum pattern for MIDI Note {spriteMidiNote}.");
     }
-
 
 }
