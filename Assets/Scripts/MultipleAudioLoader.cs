@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine.Networking;
 using TMPro;
+using UnityEngine.UI;
 
 public class MultipleAudioLoader : MonoBehaviour
 {
@@ -21,7 +22,11 @@ public class MultipleAudioLoader : MonoBehaviour
     public GameObject waveform;
     public int currentIndex = -1; // To keep track of the current clip index
 
+    public Slider songTimeline;
+
     private const string LastLoadedClipKey = "LastLoadedClip"; // Key for saving the last loaded clip name
+
+    private bool isUserDragging = false; // To keep track if the user is dragging the slider
 
     private void Awake()
     {
@@ -42,7 +47,24 @@ public class MultipleAudioLoader : MonoBehaviour
         fullPath = Path.Combine(Application.persistentDataPath, directoryPath);
         Debug.Log("Audio directory path: " + fullPath);
 
+        // Add listener for slider value changes
+        songTimeline.onValueChanged.AddListener(OnTimelineSliderChanged);
+        songTimeline.onValueChanged.AddListener(delegate { isUserDragging = true; });
+
         StartCoroutine(InitializeAudioFiles());
+    }
+
+    private void Update()
+    {
+        if (audioSource.isPlaying && !isUserDragging)
+        {
+            songTimeline.value = audioSource.time; // Update slider to reflect the current playback time
+        }
+
+        if (!audioSource.isPlaying && isUserDragging)
+        {
+            isUserDragging = false;
+        }
     }
 
     private IEnumerator InitializeAudioFiles()
@@ -86,10 +108,7 @@ public class MultipleAudioLoader : MonoBehaviour
         {
             Debug.Log("Clip found in dictionary.");
             audioSource.clip = loadedClip;
-            audioSource.Play();
-            UpdateStatusText("Playing: " + fileName);
-            SaveCurrentClip(fileName);
-            currentIndex = clipFileNames.IndexOf(fileName);
+            PlayAudioClip(loadedClip, fileName);
             yield break;
         }
 
@@ -122,11 +141,7 @@ public class MultipleAudioLoader : MonoBehaviour
 
                 clipDictionary[fileName] = newClip;
                 currentClip = newClip;
-                audioSource.clip = newClip;
-                audioSource.Play();
-                UpdateStatusText("Playing: " + fileName);
-                SaveCurrentClip(fileName);
-                currentIndex = clipFileNames.IndexOf(fileName);
+                PlayAudioClip(newClip, fileName);
             }
             else
             {
@@ -144,6 +159,7 @@ public class MultipleAudioLoader : MonoBehaviour
             UpdateStatusText("Loaded: " + fileName);
             SaveCurrentClip(fileName); // Save the currently loaded clip
             currentIndex = clipFileNames.IndexOf(fileName); // Update the index
+            SetTimelineSliderValues(loadedClip); // Set the slider min/max values
             yield break;
         }
 
@@ -163,6 +179,7 @@ public class MultipleAudioLoader : MonoBehaviour
                 UpdateStatusText("Loaded: " + fileName);
                 SaveCurrentClip(fileName); // Save the currently loaded clip
                 currentIndex = clipFileNames.IndexOf(fileName); // Update the index
+                SetTimelineSliderValues(newClip); // Set the slider min/max values
             }
             else
             {
@@ -172,6 +189,31 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
+    private void PlayAudioClip(AudioClip clip, string fileName)
+    {
+        audioSource.clip = clip;
+        audioSource.Play();
+        UpdateStatusText("Playing: " + fileName);
+        SaveCurrentClip(fileName);
+        currentIndex = clipFileNames.IndexOf(fileName);
+        SetTimelineSliderValues(clip); // Set the slider min/max values
+    }
+
+    private void SetTimelineSliderValues(AudioClip clip)
+    {
+        songTimeline.minValue = 0;
+        songTimeline.maxValue = clip.length;
+        songTimeline.value = 0; // Reset the slider to the start
+    }
+
+    private void OnTimelineSliderChanged(float value)
+    {
+        if (audioSource.clip != null && isUserDragging)
+        {
+            audioSource.time = value;
+            UpdateStatusText($"Seeking to: {value} sec");
+        }
+    }
 
     private AudioType GetAudioType(string extension)
     {
