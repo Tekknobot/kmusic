@@ -80,13 +80,16 @@ public class MultipleAudioLoader : MonoBehaviour
 
     public IEnumerator LoadAndPlayClip(string fileName)
     {
+        Debug.Log("Starting to load and play clip: " + fileName);
+
         if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
         {
+            Debug.Log("Clip found in dictionary.");
             audioSource.clip = loadedClip;
             audioSource.Play();
             UpdateStatusText("Playing: " + fileName);
-            SaveCurrentClip(fileName); // Save the currently loaded clip
-            currentIndex = clipFileNames.IndexOf(fileName); // Update the index
+            SaveCurrentClip(fileName);
+            currentIndex = clipFileNames.IndexOf(fileName);
             yield break;
         }
 
@@ -102,6 +105,7 @@ public class MultipleAudioLoader : MonoBehaviour
 
             if (www.result == UnityWebRequest.Result.Success)
             {
+                Debug.Log("Successfully loaded audio clip.");
                 if (currentClip != null)
                 {
                     Resources.UnloadAsset(currentClip);
@@ -109,13 +113,20 @@ public class MultipleAudioLoader : MonoBehaviour
                 }
 
                 AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
+                if (newClip == null)
+                {
+                    Debug.LogError("AudioClip is null. Failed to load: " + fileName);
+                    UpdateStatusText("Failed to load: " + fileName);
+                    yield break;
+                }
+
                 clipDictionary[fileName] = newClip;
                 currentClip = newClip;
                 audioSource.clip = newClip;
                 audioSource.Play();
                 UpdateStatusText("Playing: " + fileName);
-                SaveCurrentClip(fileName); // Save the currently loaded clip
-                currentIndex = clipFileNames.IndexOf(fileName); // Update the index
+                SaveCurrentClip(fileName);
+                currentIndex = clipFileNames.IndexOf(fileName);
             }
             else
             {
@@ -124,7 +135,7 @@ public class MultipleAudioLoader : MonoBehaviour
             }
         }
     }
-
+    
     public IEnumerator LoadClip(string fileName)
     {
         if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))

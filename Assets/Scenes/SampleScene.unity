@@ -2678,6 +2678,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 101802500}
   m_CullTransparentMesh: 1
+--- !u!83 &102840235
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 44100
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &120114391
 GameObject:
   m_ObjectHideFlags: 0
@@ -31239,34 +31267,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1371472968}
   m_CullTransparentMesh: 1
---- !u!83 &1374865808
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 48000
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &1378533977
 GameObject:
   m_ObjectHideFlags: 0
@@ -33748,7 +33748,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 35c5fe2c16c9ea6488968cfbe1f862e3, type: 3}
   - {fileID: 21300000, guid: e9f2963c6b5d15c4f817dc5f7c881765, type: 3}
   - {fileID: 21300000, guid: 4947f35dfddff594dba79bde7add2a45, type: 3}
-  - {fileID: 21300000, guid: 93d0b188aec415a4f9a3c0de00671583, type: 3}
+  - {fileID: 21300000, guid: a725d7999cfd5954380ed4d8a6500234, type: 3}
   - {fileID: 21300000, guid: b1a7422dbb92ca045abbe9fe01950191, type: 3}
   - {fileID: 21300000, guid: a7c509ad97bd8dd42aa9f87e27657e73, type: 3}
   - {fileID: 21300000, guid: 2bc314ddbebe9b34499007d142563d44, type: 3}
