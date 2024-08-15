@@ -232,6 +232,8 @@ public class PatternManager : MonoBehaviour
     private IEnumerator PlayPatternsCoroutine()
     {
         Debug.Log("Coroutine started.");
+        
+        DisableAllSequencers();
 
         while (isPlaying)
         {
@@ -282,6 +284,8 @@ public class PatternManager : MonoBehaviour
     {
         isPlaying = false;
         clock.pause = true;
+
+        DisableAllSequencers();
 
         UpdatePatternDisplay(); // Update UI
         Debug.Log("Stopped all patterns.");
@@ -627,6 +631,27 @@ public class PatternManager : MonoBehaviour
         {
             Debug.LogWarning("No active drum pattern.");
             return null;
+        }
+    }    
+
+    public void DisableAllSequencers()
+    {
+        // Disable all Helm sequencers
+        foreach (var helmSequencer in patterns)
+        {
+            helmSequencer.enabled = false;
+        }
+
+        // Disable all Sample sequencers
+        foreach (var sampleSequencer in samplePatterns)
+        {
+            sampleSequencer.enabled = false;
+        }
+
+        // Disable all Drum sequencers
+        foreach (var drumSequencer in drumPatterns)
+        {
+            drumSequencer.enabled = false;
         }
     }            
     private string CreateNewProjectFile()
