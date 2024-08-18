@@ -85,6 +85,10 @@ public class PatternManager : MonoBehaviour
 
     public void CreatePattern()
     {
+        if (clock.pause == false) {
+            return;
+        }
+
         if (sequencerPrefab == null)
         {
             Debug.LogError("Sequencer Prefab not assigned.");
@@ -293,6 +297,10 @@ public class PatternManager : MonoBehaviour
 
     public void RemovePattern(int index)
     {
+        if (clock.pause == false) {
+            return;
+        }
+                
         bool removedAny = false; // Flag to track if any pattern was removed
 
         // Log the counts of all lists
