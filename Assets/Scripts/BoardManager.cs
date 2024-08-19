@@ -55,7 +55,7 @@ public class BoardManager : MonoBehaviour
 
     void Update()
     {
-        sequencer = PatternManager.Instance.GetActiveDrumSequencer();
+        sequencer = PatternManager.Instance.drumSequencer.GetComponent<SampleSequencer>();
 
         foreach (Cell cell in boardCells)
         {

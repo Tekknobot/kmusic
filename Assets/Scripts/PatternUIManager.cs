@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using AudioHelm;
 
 public class PatternUIManager : MonoBehaviour
 {
@@ -49,7 +50,7 @@ public class PatternUIManager : MonoBehaviour
 
     void RemoveLastPattern()
     {
-        patternManager.RemovePattern(PatternManager.Instance.patterns.Count - 1);
+        patternManager.RemovePattern();
         UpdatePatternDisplay();
     }
 
@@ -86,7 +87,7 @@ public class PatternUIManager : MonoBehaviour
 
     public void UpdatePatternDisplay()
     {
-        int totalPatterns = patternManager.PatternsCount;
+        int totalPatterns = PatternManager.Instance.sequencersLength / 16;
         int currentPatternIndex = patternManager.CurrentPatternIndex + 1; // Display index should be 1-based
 
         patternDisplayText.text = $"{currentPatternIndex}/{totalPatterns}";

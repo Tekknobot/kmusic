@@ -36,7 +36,7 @@ public class Cell : MonoBehaviour
 
         if (sequencer == null)
         {
-            sequencer = GameObject.Find("Sequencer");
+            sequencer = GameObject.Find("HelmSequencer");
             if (sequencer == null)
             {
                 Debug.LogError("Sequencer GameObject not found in scene.");
@@ -53,6 +53,16 @@ public class Cell : MonoBehaviour
                 return;
             }
         }        
+
+        if (drumSequencer == null)
+        {
+            drumSequencer = GameObject.Find("Sequencer");
+            if (drumSequencer == null)
+            {
+                Debug.LogError("Sequencer GameObject not found in scene.");
+                return;
+            }
+        }
 
         InitializeCell();
     }
@@ -125,13 +135,9 @@ public class Cell : MonoBehaviour
 
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                if (PatternManager.Instance.patterns.Count > 0)
+                if (PatternManager.Instance.patternCount > 0)
                 {
-                    activeSequencer = PatternManager.Instance.GetActiveSequencer();
-                }
-                else
-                {
-                    activeSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
+                    activeSequencer = sequencer.GetComponent<HelmSequencer>();
                 }
 
                 if (activeSequencer != null)
@@ -148,11 +154,7 @@ public class Cell : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsPadManagerLastClicked())
             {
-                if (PatternManager.Instance.drumPatterns.Count > 0)
-                {
-                    activeDrumSequencer = PatternManager.Instance.GetActiveDrumSequencer();
-                }
-                else
+                if (PatternManager.Instance.patternCount > 0)
                 {
                     activeDrumSequencer = drumSequencer.GetComponent<SampleSequencer>();
                 }
@@ -170,13 +172,9 @@ public class Cell : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsSampleManagerLastClicked())
             {
-                if (PatternManager.Instance.samplePatterns.Count > 0)
+                if (PatternManager.Instance.patternCount > 0)
                 {
-                    activeSampleSequencer = PatternManager.Instance.GetActiveSampleSequencer();
-                }
-                else
-                {
-                    activeSampleSequencer = mySampleSequencer.GetComponent<AudioHelm.SampleSequencer>();
+                    activeSampleSequencer = mySampleSequencer.GetComponent<SampleSequencer>();
                 }
 
                 if (activeSampleSequencer != null)
@@ -206,13 +204,9 @@ public class Cell : MonoBehaviour
 
             if (ManagerHandler.Instance.IsKeyManagerLastClicked())
             {
-                if (PatternManager.Instance.patterns.Count > 0)
+                if (PatternManager.Instance.patternCount > 0)
                 {
-                    activeSequencer = PatternManager.Instance.GetActiveSequencer();
-                }
-                else
-                {
-                    activeSequencer = BoardManager.Instance.helm.GetComponent<HelmSequencer>();
+                    activeSequencer = sequencer.GetComponent<HelmSequencer>();
                 }
 
                 if (activeSequencer != null)
@@ -228,13 +222,9 @@ public class Cell : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsPadManagerLastClicked())
             {
-                if (PatternManager.Instance.drumPatterns.Count > 0)
+                if (PatternManager.Instance.patternCount > 0)
                 {
-                    activeDrumSequencer = PatternManager.Instance.GetActiveDrumSequencer();
-                }
-                else
-                {
-                    activeDrumSequencer = sequencer.GetComponent<AudioHelm.SampleSequencer>();
+                    activeDrumSequencer = drumSequencer.GetComponent<SampleSequencer>();
                 }
 
                 if (activeDrumSequencer != null)
@@ -249,14 +239,11 @@ public class Cell : MonoBehaviour
             }
             else if (ManagerHandler.Instance.IsSampleManagerLastClicked())
             {
-                if (PatternManager.Instance.samplePatterns.Count > 0)
+                if (PatternManager.Instance.patternCount > 0)
                 {
-                    activeSampleSequencer = PatternManager.Instance.GetActiveSampleSequencer();
+                    activeSampleSequencer = mySampleSequencer.GetComponent<SampleSequencer>();
                 }
-                else
-                {
-                    activeSampleSequencer = mySampleSequencer.GetComponent<AudioHelm.SampleSequencer>();
-                }
+
                 if (activeSampleSequencer != null)
                 {
                     activeSampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);

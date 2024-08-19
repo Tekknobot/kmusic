@@ -16,9 +16,6 @@ public class CellDownHandler : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (PatternManager.Instance.currentPatternIndex <= -1) {
-            return;
-        }
         // Rotate and return the cell
         cell.RotateAndReturn();
     }

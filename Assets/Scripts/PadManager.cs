@@ -234,7 +234,7 @@ public class PadManager : MonoBehaviour
         Debug.Log($"Displaying sprite '{sprite.name}' on matching steps for MIDI Note {spriteMidiNote}.");
 
         // Get the current drum pattern sequencer
-        SampleSequencer currentDrumSequencer = PatternManager.Instance.GetActiveDrumSequencer();
+        SampleSequencer currentDrumSequencer = PatternManager.Instance.drumSequencer.GetComponent<SampleSequencer>();
 
         if (currentDrumSequencer == null)
         {

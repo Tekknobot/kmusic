@@ -44,7 +44,9 @@ public class PatternManager : MonoBehaviour
     public TextMeshProUGUI projectFileText; // Reference to the TextMeshPro component
     public GameObject componentButton;
     public GameObject chopButton;
-
+    public int sequencersLength;
+    public int patternCount = 0;
+    
     private void Awake()
     {
         // Ensure this is the only instance
@@ -85,109 +87,50 @@ public class PatternManager : MonoBehaviour
 
     public void CreatePattern()
     {
-        if (clock.pause == false) {
+        if (clock.pause == false)
+        {
+            Debug.LogWarning("Cannot create pattern while clock is running.");
             return;
         }
 
-        if (sequencerPrefab == null)
+        // Calculate the length based on the number of patterns
+        int newLength = CalculateNewLength();
+
+        // Initialize and set length for each sequencer
+        HelmSequencer helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
+        if (helmSequencer != null)
         {
-            Debug.LogError("Sequencer Prefab not assigned.");
-            return;
+            helmSequencer.length = newLength;
         }
 
-        // Create HelmSequencer
-        GameObject helmSequencerObj = Instantiate(sequencerPrefab, transform);
-        helmSequencerObj.GetComponent<HelmSequencer>().loop = true;
-        HelmSequencer newHelmSequencer = helmSequencerObj.GetComponent<HelmSequencer>();
-        if (newHelmSequencer == null)
+        SampleSequencer sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
+        if (sampleSequencer != null)
         {
-            Debug.LogError("New sequencer prefab does not have a HelmSequencer component.");
-            return;
-        }
-        newHelmSequencer.enabled = false;
-        newHelmSequencer.name = $"{sequencerPrefab.name}_{patterns.Count + 1}"; // Name the HelmSequencer
-
-        // Create SampleSequencer for samples
-        GameObject sampleSequencerObj = Instantiate(sampleSequencerPrefab, transform);
-        sampleSequencerObj.GetComponent<SampleSequencer>().loop = true;
-        SampleSequencer newSampleSequencer = sampleSequencerObj.GetComponent<SampleSequencer>();
-        if (newSampleSequencer == null)
-        {
-            Debug.LogError("New sequencer prefab does not have a SampleSequencer component.");
-            return;
-        }
-        newSampleSequencer.enabled = false;
-        newSampleSequencer.name = $"{sampleSequencerPrefab.name}_Sample_{samplePatterns.Count + 1}"; // Name the SampleSequencer
-
-        // Create SampleSequencer for drums
-        GameObject drumSequencerObj = Instantiate(drumSequencerPrefab, transform);
-        drumSequencerObj.GetComponent<SampleSequencer>().loop = true;
-        SampleSequencer newDrumSequencer = drumSequencerObj.GetComponent<SampleSequencer>();
-        if (newDrumSequencer == null)
-        {
-            Debug.LogError("New sequencer prefab does not have a SampleSequencer component.");
-            return;
-        }
-        newDrumSequencer.enabled = false;
-        newDrumSequencer.name = $"{drumSequencerPrefab.name}_Drum_{drumPatterns.Count + 1}"; // Name the DrumSequencer
-
-        // Load the currently selected drum kit into the new drum sequencer
-        KitButton kitButton = FindObjectOfType<KitButton>();
-        if (kitButton != null)
-        {
-            kitButton.LoadKitIntoSampler(newDrumSequencer.GetComponent<Sampler>());
-        }
-        else
-        {
-            Debug.LogError("KitButton not found. Unable to load kit into new drum sequencer.");
+            sampleSequencer.length = newLength;
         }
 
-        // Transfer notes from the last existing sequencers to the new sequencers
-
-        // Transfer HelmSequencer notes
-        if (patterns.Count > 0)
+        SampleSequencer drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
+        if (drumSequencer != null)
         {
-            HelmSequencer lastHelmSequencer = patterns[patterns.Count - 1];
-            TransferNotes(lastHelmSequencer, newHelmSequencer);
-        }
-        else if (sourceSequencer != null)
-        {
-            TransferNotes(sourceSequencer, newHelmSequencer);
+            drumSequencer.length = newLength;
         }
 
-        // Transfer SampleSequencer notes
-        if (samplePatterns.Count > 0)
-        {
-            SampleSequencer lastSampleSequencer = samplePatterns[samplePatterns.Count - 1];
-            TransferSamplerNotes(lastSampleSequencer, newSampleSequencer);
-        }
-        else if (sampleSequencer != null)
-        {
-            TransferSamplerNotes(sampleSequencer, newSampleSequencer);
-        }
+        // Update the pattern count
+        patternCount++;
 
-        // Transfer DrumSequencer notes
-        if (drumPatterns.Count > 0)
-        {
-            SampleSequencer lastDrumSequencer = drumPatterns[drumPatterns.Count - 1];
-            TransferSamplerNotes(lastDrumSequencer, newDrumSequencer);
-        }
-        else if (drumSequencer != null)
-        {
-            TransferSamplerNotes(drumSequencer, newDrumSequencer);
-        }
+        // Optionally, store the length for future reference if needed
+        sequencersLength = newLength;
 
-        // Add new sequencers to the lists
-        patterns.Add(newHelmSequencer);
-        samplePatterns.Add(newSampleSequencer);
-        drumPatterns.Add(newDrumSequencer);
-
-        Debug.Log($"Three patterns created and added to the list. Total patterns: {patterns.Count}");
-
+        // Update UI and save patterns
         UpdateBoardManager();
-        UpdatePatternDisplay(); // Update UI
-
+        UpdatePatternDisplay();
         SavePatterns();
+    }
+
+    private int CalculateNewLength()
+    {
+        // Length is 16 for the first pattern, increment by 16 for each additional pattern
+        return 16 + 16 * patternCount;
     }
 
 
@@ -294,71 +237,45 @@ public class PatternManager : MonoBehaviour
         UpdatePatternDisplay(); // Update UI
         Debug.Log("Stopped all patterns.");
     }
-
-    public void RemovePattern(int index)
+    public void RemovePattern()
     {
-        if (clock.pause == false) {
+        if (!clock.pause)
+        {
+            Debug.LogWarning("Cannot remove pattern while clock is running.");
             return;
         }
-                
-        bool removedAny = false; // Flag to track if any pattern was removed
 
-        // Log the counts of all lists
-        Debug.Log($"Patterns count: {patterns.Count}, SamplePatterns count: {samplePatterns.Count}, DrumPatterns count: {drumPatterns.Count}");
-
-        // Remove HelmSequencer pattern if index is valid
-        if (index >= 0 && index < patterns.Count)
+        // Decrease the length of each sequencer by 16
+        HelmSequencer helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
+        if (helmSequencer != null)
         {
-            HelmSequencer patternToRemove = patterns[index];
-            Destroy(patternToRemove.gameObject);
-            patterns.RemoveAt(index);
-            removedAny = true;
-            Debug.Log($"Removed HelmSequencer pattern at index: {index}");
-        }
-        else
-        {
-            Debug.LogWarning($"Invalid HelmSequencer index: {index}. No HelmSequencer pattern was removed.");
+            helmSequencer.length = Mathf.Max(16, helmSequencer.length - 16);
         }
 
-        // Remove SampleSequencer pattern if index is valid
-        if (index >= 0 && index < samplePatterns.Count)
+        SampleSequencer sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
+        if (sampleSequencer != null)
         {
-            SampleSequencer samplePatternToRemove = samplePatterns[index];
-            Destroy(samplePatternToRemove.gameObject);
-            samplePatterns.RemoveAt(index);
-            removedAny = true;
-            Debug.Log($"Removed SampleSequencer pattern at index: {index}");
-        }
-        else
-        {
-            Debug.LogWarning($"Invalid SampleSequencer index: {index}. No SampleSequencer pattern was removed.");
+            sampleSequencer.length = Mathf.Max(16, sampleSequencer.length - 16);
         }
 
-        // Remove DrumSequencer pattern if index is valid
-        if (index >= 0 && index < drumPatterns.Count)
+        SampleSequencer drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
+        if (drumSequencer != null)
         {
-            SampleSequencer drumPatternToRemove = drumPatterns[index];
-            Destroy(drumPatternToRemove.gameObject);
-            drumPatterns.RemoveAt(index);
-            removedAny = true;
-            Debug.Log($"Removed DrumSequencer pattern at index: {index}");
-        }
-        else
-        {
-            Debug.LogWarning($"Invalid DrumSequencer index: {index}. No DrumSequencer pattern was removed.");
+            drumSequencer.length = Mathf.Max(16, drumSequencer.length - 16);
         }
 
-        if (removedAny)
-        {
-            UpdateBoardManager();
-            UpdatePatternDisplay(); // Update UI
-            SavePatterns(); // Save the updated list of patterns
-        }
-        else
-        {
-            Debug.LogWarning("No patterns were removed.");
-        }
+        // Update patternCount to ensure it does not go below 0
+        patternCount = Mathf.Max(0, patternCount - 1);
+
+        // Update sequencersLength to the length of helmSequencer
+        sequencersLength = helmSequencer != null ? helmSequencer.length : 0;
+
+        // Update UI and save the patterns
+        UpdateBoardManager();
+        UpdatePatternDisplay(); // Update UI
+        SavePatterns(); // Save the updated list of patterns
     }
+
 
 
     private void UpdateBoardManager(HelmSequencer currentPattern = null)
