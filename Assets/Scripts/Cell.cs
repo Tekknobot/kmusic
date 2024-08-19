@@ -142,7 +142,7 @@ public class Cell : MonoBehaviour
 
                 if (activeSequencer != null)
                 {
-                    activeSequencer.RemoveNotesInRange(midiNote, this.step, this.step + 1);
+                    activeSequencer.RemoveNotesInRange(midiNote, GetPatternStepIndex(step), GetPatternStepIndex(step) + 1);
                     KeyManager.Instance.RemoveKeyTileData(oldSprite, (int)step);
                     DataManager.EraseKeyTileDataToFile(KeyManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
@@ -161,7 +161,7 @@ public class Cell : MonoBehaviour
 
                 if (activeDrumSequencer != null)
                 {
-                    activeDrumSequencer.RemoveNotesInRange(midiNote, step, step + 1);
+                    activeDrumSequencer.RemoveNotesInRange(midiNote, GetPatternStepIndex(step), GetPatternStepIndex(step) + 1);
                     DataManager.EraseTileDataToFile(PadManager.Instance.currentSprite.name, PadManager.Instance.currentSprite.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
                 }
@@ -179,7 +179,7 @@ public class Cell : MonoBehaviour
 
                 if (activeSampleSequencer != null)
                 {
-                    activeSampleSequencer.RemoveNotesInRange(midiNote, step, step + 1);
+                    activeSampleSequencer.RemoveNotesInRange(midiNote, GetPatternStepIndex(step), GetPatternStepIndex(step) + 1);
                     SampleManager.Instance.RemoveSampleTileData(oldSprite, (int)step);
                     DataManager.EraseSampleTileDataToFile(SampleManager.Instance.currentSample.name, (int)step);
                     Debug.Log($"Removed MIDI {midiNote} at Step = {step}");
@@ -211,9 +211,11 @@ public class Cell : MonoBehaviour
 
                 if (activeSequencer != null)
                 {
-                    activeSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    // Calculate pattern-specific step index
+                    int patternStepIndex = GetPatternStepIndex(step);
+                    activeSequencer.AddNote(midiNote, patternStepIndex, patternStepIndex + 1, 1.0f);
                     KeyManager.Instance.SaveKeyTileData(newSprite, (int)step);
-                    Debug.Log($"Added MIDI {midiNote} at Step = {step}");
+                    Debug.Log($"Added MIDI {midiNote} at Pattern Step = {patternStepIndex}");
                 }
                 else
                 {
@@ -229,8 +231,10 @@ public class Cell : MonoBehaviour
 
                 if (activeDrumSequencer != null)
                 {
-                    activeDrumSequencer.AddNote(midiNote, step, step + 1, 1.0f);
-                    Debug.Log($"Added MIDI {midiNote} at Step = {step}");
+                    // Calculate pattern-specific step index
+                    int patternStepIndex = GetPatternStepIndex(step);
+                    activeDrumSequencer.AddNote(midiNote, patternStepIndex, patternStepIndex + 1, 1.0f);
+                    Debug.Log($"Added MIDI {midiNote} at Pattern Step = {patternStepIndex}");
                 }
                 else
                 {
@@ -246,9 +250,11 @@ public class Cell : MonoBehaviour
 
                 if (activeSampleSequencer != null)
                 {
-                    activeSampleSequencer.AddNote(midiNote, step, step + 1, 1.0f);
+                    // Calculate pattern-specific step index
+                    int patternStepIndex = GetPatternStepIndex(step);
+                    activeSampleSequencer.AddNote(midiNote, patternStepIndex, patternStepIndex + 1, 1.0f);
                     SampleManager.Instance.SaveSampleTileData(newSprite, (int)step);
-                    Debug.Log($"Added MIDI {midiNote} at Step = {step}");
+                    Debug.Log($"Added MIDI {midiNote} at Pattern Step = {patternStepIndex}");
                 }
                 else
                 {
@@ -261,6 +267,13 @@ public class Cell : MonoBehaviour
             DataManager.SaveSampleTileDataToFile(SampleManager.Instance.sampleTileData);
             PatternManager.Instance.SavePatterns();
         }
+    }
+
+    private int GetPatternStepIndex(float step)
+    {
+        int stepsPerPattern = 16;
+        int patternOffset = (PatternManager.Instance.currenPatternIndex - 1) * stepsPerPattern;
+        return (int)step + patternOffset;
     }
 
     public void RotateAndReturn()
@@ -378,7 +391,6 @@ public class Cell : MonoBehaviour
             Debug.LogError("SpriteRenderer component is not set.");
         }
     }    
-
 }
 
 [System.Serializable]
