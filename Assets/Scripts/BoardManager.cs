@@ -57,19 +57,61 @@ public class BoardManager : MonoBehaviour
     {
         sequencer = PatternManager.Instance.drumSequencer.GetComponent<SampleSequencer>();
 
+        // Get the current step index based on currentIndex
+        int stepIndexInRange = sequencer.currentIndex % 16;
+
+        // Iterate through each cell on the board
         foreach (Cell cell in boardCells)
         {
             if (cell != null)
-            {        
-                if (sequencer.currentIndex == cell.step)
+            {
+                int cellStepIndex = (int)cell.step % 16; // Convert cell step to 0-15 range
+
+                // Check if the cell should be highlighted
+                if (stepIndexInRange == cellStepIndex)
                 {
-                    HighlightCellOnStep(sequencer.currentIndex);
+                    HighlightCell(cell);
                 }
                 else
                 {
+                    // Reset the cell color if not highlighted
                     cell.GetComponent<SpriteRenderer>().color = Color.white;
                 }
             }
+        }
+    }
+
+
+    // Method to highlight a cell when sequencer.currentIndex matches cell step
+    public void HighlightCellOnStep(int stepIndex)
+    {
+        // Iterate through all board cells
+        for (int x = 0; x < boardCells.GetLength(0); x++)
+        {
+            for (int y = 0; y < boardCells.GetLength(1); y++)
+            {
+                Cell cell = boardCells[x, y];
+                if (cell != null && cell.step == stepIndex)
+                {
+                    HighlightCell(cell);
+                    highlightedCellIndex = stepIndex;
+                }
+            }
+        }
+    }
+
+    // Method to highlight a single cell by changing its sprite color to grey
+    private void HighlightCell(Cell cell)
+    {
+        // Change sprite color to grey
+        SpriteRenderer spriteRenderer = cell.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.color = Color.grey;
+        }
+        else
+        {
+            Debug.LogError("SpriteRenderer component not found on cell.");
         }
     }
 
@@ -243,38 +285,7 @@ public class BoardManager : MonoBehaviour
         return new Vector2Int(boardCells.GetLength(0), boardCells.GetLength(1));
     }
 
-    // Method to highlight a cell when sequencer.currentIndex matches cell step
-    public void HighlightCellOnStep(int stepIndex)
-    {
-        // Iterate through all board cells
-        for (int x = 0; x < boardCells.GetLength(0); x++)
-        {
-            for (int y = 0; y < boardCells.GetLength(1); y++)
-            {
-                Cell cell = boardCells[x, y];
-                if (cell != null && cell.step == stepIndex)
-                {
-                    HighlightCell(cell);
-                    highlightedCellIndex = stepIndex;
-                }
-            }
-        }
-    }
 
-    // Method to highlight a single cell by changing its sprite color to grey
-    private void HighlightCell(Cell cell)
-    {
-        // Change sprite color to grey
-        SpriteRenderer spriteRenderer = cell.GetComponent<SpriteRenderer>();
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.color = Color.grey;
-        }
-        else
-        {
-            Debug.LogError("SpriteRenderer component not found on cell.");
-        }
-    }
 
     // Method to update the board with the given notes
     public void UpdateBoardWithNotes(List<AudioHelm.Note> notes)
