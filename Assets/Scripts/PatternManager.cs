@@ -46,7 +46,10 @@ public class PatternManager : MonoBehaviour
     public GameObject chopButton;
     public int sequencersLength;
     public int patternCount = 0;
-    
+    // A variable to keep track of the previously displayed pattern to avoid unnecessary updates
+    public int previousPattern = -1;
+    public int currenPatternIndex = -1;
+        
     private void Awake()
     {
         // Ensure this is the only instance
@@ -72,18 +75,31 @@ public class PatternManager : MonoBehaviour
         LoadPatterns();
     }
 
-    void Update() {
-        if (isPlaying) {
-            sequencerPrefab.GetComponent<HelmSequencer>().loop = false;
-            sampleSequencerPrefab.GetComponent<SampleSequencer>().loop = false;
-            drumSequencerPrefab.GetComponent<SampleSequencer>().loop = false;
-        }  
-        else {
-            sequencerPrefab.GetComponent<HelmSequencer>().loop = true;
-            sampleSequencerPrefab.GetComponent<SampleSequencer>().loop = true;
-            drumSequencerPrefab.GetComponent<SampleSequencer>().loop = true;            
-        }         
+    void Update()
+    {
+        // Assuming you have a way to get the current index, e.g., from a clock or sequencer
+        int currentIndex = GetCurrentIndex(); // This is a placeholder for however you're tracking the current step index
+
+        // Determine the current pattern number based on the index
+        int currentPattern = (currentIndex / 16) + 1;
+
+        currenPatternIndex = currentPattern;
+        
+        // Update the pattern display if the pattern has changed
+        if (currentPattern != previousPattern)
+        {
+            UpdatePatternDisplay();
+            previousPattern = currentPattern;
+        }
     }
+
+    private int GetCurrentIndex()
+    {
+        // Placeholder for actual logic to retrieve the current index
+        // For example, it could be tied to the clock or sequencer's current step
+        return sequencerPrefab.GetComponent<HelmSequencer>().currentIndex; // Assuming clock.currentStep gives you the current index
+    }
+
 
     public void CreatePattern()
     {
@@ -98,20 +114,24 @@ public class PatternManager : MonoBehaviour
 
         // Initialize and set length for each sequencer
         HelmSequencer helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
+        SampleSequencer sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
+        SampleSequencer drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
+
         if (helmSequencer != null)
         {
+            CopySteps(helmSequencer, newLength, patternCount == 0);
             helmSequencer.length = newLength;
         }
 
-        SampleSequencer sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
         if (sampleSequencer != null)
         {
+            CopySteps(sampleSequencer, newLength, patternCount == 0);
             sampleSequencer.length = newLength;
         }
 
-        SampleSequencer drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
         if (drumSequencer != null)
         {
+            CopySteps(drumSequencer, newLength, patternCount == 0);
             drumSequencer.length = newLength;
         }
 
@@ -127,6 +147,60 @@ public class PatternManager : MonoBehaviour
         SavePatterns();
     }
 
+    private void CopySteps(HelmSequencer sequencer, int newLength, bool isFirstPattern)
+    {
+        if (sequencer == null)
+            return;
+
+        int copyStart = isFirstPattern ? 0 : newLength - 32;  // For first pattern, copy from start; otherwise, from last 16 steps
+        int copyEnd = isFirstPattern ? 16 : newLength - 16;
+
+        // Assume HelmSequencer has a method GetAllNotes() that returns a list of notes
+        var notes = sequencer.GetAllNotes();  // Hypothetical method
+        foreach (var note in notes)
+        {
+            if (note.start >= copyStart && note.start < copyEnd)
+            {
+                // Create a copy of the note for the next 16 steps
+                var newNote = new Note
+                {
+                    note = note.note,
+                    start = note.start + 16,
+                    end = Mathf.Min(note.end + 16, newLength),
+                    velocity = note.velocity
+                };
+                sequencer.AddNote(newNote.note, newNote.start, newNote.end);  // Add the copied note
+            }
+        }
+    }
+
+    private void CopySteps(SampleSequencer sequencer, int newLength, bool isFirstPattern)
+    {
+        if (sequencer == null)
+            return;
+
+        int copyStart = isFirstPattern ? 0 : newLength - 32;  // For first pattern, copy from start; otherwise, from last 16 steps
+        int copyEnd = isFirstPattern ? 16 : newLength - 16;
+
+        // Assume SampleSequencer has a method GetAllNotes() that returns a list of notes
+        var notes = sequencer.GetAllNotes();  // Hypothetical method
+        foreach (var note in notes)
+        {
+            if (note.start >= copyStart && note.start < copyEnd)
+            {
+                // Create a copy of the note for the next 16 steps
+                var newNote = new Note
+                {
+                    note = note.note,
+                    start = note.start + 16,
+                    end = Mathf.Min(note.end + 16, newLength),
+                    velocity = note.velocity
+                };
+                sequencer.AddNote(newNote.note, newNote.start, newNote.end);  // Add the copied note
+            }
+        }
+    }
+
     private int CalculateNewLength()
     {
         // Length is 16 for the first pattern, increment by 16 for each additional pattern
@@ -134,34 +208,9 @@ public class PatternManager : MonoBehaviour
     }
 
 
-    private void TransferNotes(HelmSequencer source, HelmSequencer target)
-    {
-        target.Clear();
-        foreach (AudioHelm.Note note in source.GetAllNotes())
-        {
-            target.AddNote(note.note, note.start, note.end, note.velocity);
-        }
-        Debug.Log("Notes transferred from source to target sequencer.");
-    }
-
-    private void TransferSamplerNotes(SampleSequencer source, SampleSequencer target)
-    {
-        target.Clear();
-        foreach (AudioHelm.Note note in source.GetAllNotes())
-        {
-            target.AddNote(note.note, note.start, note.end, note.velocity);
-        }
-        Debug.Log("Notes transferred from source to target sequencer.");
-    }    
 
     public void StartPatterns()
     {
-        if (patterns.Count == 0 && samplePatterns.Count == 0 && drumPatterns.Count == 0)
-        {
-            Debug.LogError("No patterns created to play.");
-            return;
-        }
-
         if (clock == null)
         {
             Debug.LogError("Clock not assigned.");
@@ -173,58 +222,6 @@ public class PatternManager : MonoBehaviour
         clock.pause = false;
 
         StopAllCoroutines(); // Stop any previous coroutines to avoid conflicts
-        StartCoroutine(PlayPatternsCoroutine());
-    }
-
-    private IEnumerator PlayPatternsCoroutine()
-    {
-        Debug.Log("Coroutine started.");
-        
-        DisableAllSequencers();
-
-        while (isPlaying)
-        {
-            float secondsPerBeat = 60f / clock.bpm;
-            float stepDuration = secondsPerBeat / 4; // Duration of one step
-
-            // Update the current pattern index
-            currentPatternIndex = (currentPatternIndex + 1) % patterns.Count;
-            currentSamplePatternIndex = (currentSamplePatternIndex + 1) % samplePatterns.Count;
-            currentDrumPatternIndex = (currentDrumPatternIndex + 1) % drumPatterns.Count;
-
-            HelmSequencer currentPattern = patterns[currentPatternIndex];
-            SampleSequencer currentSamplePattern = samplePatterns[currentSamplePatternIndex];
-            SampleSequencer currentDrumPattern = drumPatterns[currentDrumPatternIndex];
-
-            Debug.Log($"Playing pattern index: {currentPatternIndex}");
-
-            // Start the new pattern
-            currentPattern.enabled = true;
-            currentSamplePattern.enabled = true;
-            currentDrumPattern.enabled = true;
-
-            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 1)
-            {
-                UpdateBoardManager(currentPattern);
-            }
-            else if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 2)
-            {
-                UpdateBoardManageForSamples(currentSamplePattern);
-            }
-
-            UpdatePatternDisplay(); // Update UI
-
-            // Wait for board manager to reach the desired cell index (or other condition)
-            yield return new WaitUntil(() => boardManager.GetHighlightedCellIndex() == 15);
-
-            // Wait for the duration of one step
-            yield return new WaitForSeconds(stepDuration);
-
-            // Disable the patterns after the step duration
-            currentPattern.enabled = false;
-            currentSamplePattern.enabled = false;
-            currentDrumPattern.enabled = false;
-        }
     }
 
     public void StopPatterns()

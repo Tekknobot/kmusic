@@ -88,7 +88,7 @@ public class PatternUIManager : MonoBehaviour
     public void UpdatePatternDisplay()
     {
         int totalPatterns = PatternManager.Instance.sequencersLength / 16;
-        int currentPatternIndex = patternManager.CurrentPatternIndex + 1; // Display index should be 1-based
+        int currentPatternIndex = PatternManager.Instance.currenPatternIndex; // Display index should be 1-based
 
         patternDisplayText.text = $"{currentPatternIndex}/{totalPatterns}";
     }
