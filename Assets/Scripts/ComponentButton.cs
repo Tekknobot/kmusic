@@ -104,6 +104,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     musicPlayerObject.SetActive(true);
                     musicPlayerObject.transform.position = initialPositionMusicPlayer;
+                    currentPatternGroup = 0;
                 }
                 break;
             case 1:
@@ -125,6 +126,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     mixerGroupObject.SetActive(true);
                     mixerGroupObject.transform.position = initialPositionMixerGroup;
+                    currentPatternGroup = 3;
                 }
                 break;
         }

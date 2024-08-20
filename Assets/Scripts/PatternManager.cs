@@ -93,7 +93,9 @@ public class PatternManager : MonoBehaviour
         if (currentPattern != previousPattern)
         {
             previousPattern = currentPattern;
-            UpdateBoardManager();
+            if (componentButton.GetComponent<ComponentButton>().currentObjectIndex == 1) {
+                UpdateBoardManager();
+            }
             UpdatePatternDisplay();
         }
     }
@@ -279,8 +281,6 @@ public class PatternManager : MonoBehaviour
         SavePatterns(); // Save the updated list of patterns
     }
 
-
-
     private void UpdateBoardManager()
     {
         if (boardManager == null)
@@ -348,7 +348,7 @@ public class PatternManager : MonoBehaviour
         {
             // Handle the case where currentPattern is null
             Debug.LogWarning("Current pattern is not available.");
-            boardManager.ResetBoard();
+            //boardManager.ResetBoard();
         }
     }
 
@@ -359,13 +359,13 @@ public class PatternManager : MonoBehaviour
             if (currentPattern != null)
             {
                 List<AudioHelm.Note> notes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
-                boardManager.ResetBoard();
+                //boardManager.ResetBoard();
                 boardManager.UpdateBoardWithSampleNotes(notes);
                 boardManager.HighlightCellOnStep(currentStepIndex);
             }
             else
             {
-                boardManager.ResetBoard();
+                //boardManager.ResetBoard();
             }
         }
         else

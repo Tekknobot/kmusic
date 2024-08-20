@@ -228,12 +228,10 @@ public class PadManager : MonoBehaviour
         return lastClickedSprite;
     }
 
-    // Method to display all saved tiles for a specific sprite on matching cells
     private void DisplaySpriteOnMatchingSteps(Sprite sprite, int spriteMidiNote)
     {
         Debug.Log($"Displaying sprite '{sprite.name}' on matching steps for MIDI Note {spriteMidiNote}.");
 
-        // Get the current drum pattern sequencer
         SampleSequencer currentDrumSequencer = PatternManager.Instance.drumSequencer.GetComponent<SampleSequencer>();
 
         if (currentDrumSequencer == null)
@@ -242,27 +240,60 @@ public class PadManager : MonoBehaviour
             return;
         }
 
-        // Iterate through the notes in the current drum pattern
+        int stepsPerPattern = 16;
+        int currentPatternIndex = PatternManager.Instance.currentPatternIndex;
+        int patternStartStep = (currentPatternIndex - 1) * stepsPerPattern;
+        int patternEndStep = patternStartStep + stepsPerPattern - 1;
+        int totalSteps = currentDrumSequencer.length;
+
+        // Ensure patternEndStep does not exceed total steps of the sequencer
+        if (patternEndStep >= totalSteps)
+        {
+            patternEndStep = totalSteps - 1;
+        }
+
+        // Debugging logs to verify calculations
+        Debug.Log($"Current Pattern Index: {currentPatternIndex}");
+        Debug.Log($"Pattern Start Step: {patternStartStep}");
+        Debug.Log($"Pattern End Step: {patternEndStep}");
+        Debug.Log($"Total Steps in Sequencer: {totalSteps}");
+
         foreach (var note in currentDrumSequencer.GetAllNotes())
         {
-            int step = (int)note.start; // Assuming that 'start' represents the step position
-            int midiNote = note.note; // Assuming note contains midiNote property
+            int step = (int)note.start;
+            int midiNote = note.note;
 
-            // Check if the MIDI note matches the sprite's associated MIDI note
+            // Calculate local step within the current pattern section
+            int localStep = step - patternStartStep;
+
+            // Debugging each note
+            Debug.Log($"Processing note at step {step} (Local Step: {localStep}), MIDI Note: {midiNote}");
+
             if (midiNote == spriteMidiNote)
             {
-                // Find the cell on the board that corresponds to this step
-                Cell cell = BoardManager.Instance.GetCellByStep(step);
-                if (cell != null)
+                if (localStep >= 0 && localStep < stepsPerPattern)
                 {
-                    // Set the sprite on the cell
-                    cell.SetSprite(sprite);
-                    Debug.Log($"Set sprite '{sprite.name}' on cell at step {step} (MIDI Note: {midiNote}).");
+                    Debug.Log($"Note at step {step} (Local Step: {localStep}) is within the range.");
+
+                    Cell cell = BoardManager.Instance.GetCellByStep(localStep);
+                    if (cell != null)
+                    {
+                        cell.SetSprite(sprite);
+                        Debug.Log($"Set sprite '{sprite.name}' on cell at step {localStep} (MIDI Note: {midiNote}).");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"No cell found for step {localStep}. Unable to set sprite.");
+                    }
                 }
                 else
                 {
-                    Debug.LogWarning($"No cell found for step {step}. Unable to set sprite.");
+                    Debug.Log($"Note at step {step} (Local Step: {localStep}) is outside the range.");
                 }
+            }
+            else
+            {
+                Debug.Log($"Note MIDI Note {midiNote} does not match sprite MIDI Note {spriteMidiNote}.");
             }
         }
 
