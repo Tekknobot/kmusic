@@ -93,7 +93,7 @@ public class PatternManager : MonoBehaviour
         if (currentPattern != previousPattern)
         {
             previousPattern = currentPattern;
-            if (componentButton.GetComponent<ComponentButton>().currentObjectIndex == 1) {
+            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 1) {
                 UpdateBoardManager();
             }
             UpdatePatternDisplay();

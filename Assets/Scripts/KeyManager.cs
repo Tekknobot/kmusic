@@ -177,7 +177,7 @@ public class KeyManager : MonoBehaviour
 
             // Scale the clicked key temporarily
             StartCoroutine(ScaleKey(clickedKey));
-            //BoardManager.Instance.ResetBoard();
+            BoardManager.Instance.ResetBoard();
         }
 
         // Additional debug information

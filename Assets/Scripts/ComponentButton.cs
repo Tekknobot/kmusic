@@ -126,7 +126,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     mixerGroupObject.SetActive(true);
                     mixerGroupObject.transform.position = initialPositionMixerGroup;
-                    currentPatternGroup = 3;
+                    currentPatternGroup = 4;
                 }
                 break;
         }
