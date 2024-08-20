@@ -287,58 +287,88 @@ public class BoardManager : MonoBehaviour
 
 
 
-    // Method to update the board with the given notes
     public void UpdateBoardWithNotes(List<AudioHelm.Note> notes)
     {
+        int stepsPerPattern = 16;
+        int currentPatternIndex = PatternManager.Instance.currentPatternIndex;
+
+        // Validate currentPatternIndex
+        if (currentPatternIndex < 1)
+        {
+            Debug.LogError("Invalid currentPatternIndex. It must be 1 or greater.");
+            return;
+        }
+
+        int patternStartStep = (currentPatternIndex - 1) * stepsPerPattern;
+        int patternEndStep = patternStartStep + stepsPerPattern - 1;
+
+        // Log pattern range details
+        Debug.Log($"Updating board for Pattern Index: {currentPatternIndex}");
+        Debug.Log($"Pattern Start Step: {patternStartStep}");
+        Debug.Log($"Pattern End Step: {patternEndStep}");
+
+        HelmSequencer currentPattern = PatternManager.Instance.sequencerPrefab.GetComponent<HelmSequencer>();
+        if (currentPattern != null)
+        {
+            int totalSteps = currentPattern.length;
+
+            // Ensure pattern end step does not exceed the total number of steps
+            if (patternEndStep >= totalSteps)
+            {
+                patternEndStep = totalSteps - 1;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Current pattern is not available.");
+            ResetBoard();
+            return;
+        }
+
+        // Process notes
         foreach (var note in notes)
         {
-            var step = note.start;
-            var sprite = KeyManager.Instance.GetSpriteByStep((int)step);
+            int noteStep = (int)note.start;
 
-            if (sprite == null)
+            // Ensure the note is within the current pattern range
+            if (noteStep < patternStartStep || noteStep > patternEndStep)
             {
-                Debug.LogError($"No sprite found for step {step}.");
+                Debug.Log($"Skipping note at step {noteStep}, outside of pattern range.");
                 continue;
             }
 
-            var cell = GetCellByStep(note.start);
+            int adjustedStep = noteStep - patternStartStep;
+
+            if (adjustedStep < 0 || adjustedStep >= stepsPerPattern)
+            {
+                Debug.LogWarning($"Adjusted step {adjustedStep} is out of the 16-step range for note {note.note}.");
+                continue;
+            }
+
+            var sprite = KeyManager.Instance.GetSpriteFromNote(note.note);
+
+            if (sprite == null)
+            {
+                Debug.LogError($"No sprite found for adjusted step {adjustedStep}. Note: {note.note}");
+                continue;
+            }
+
+            var cell = GetCellByStep(adjustedStep);
             if (cell != null)
             {
+                Debug.Log($"Setting sprite {sprite.name} for cell at adjusted step {adjustedStep}");
                 cell.SetSprite(sprite);
             }
             else
             {
-                Debug.LogError($"Cell not found for position {note.start}.");
+                Debug.LogError($"Cell not found for adjusted step {adjustedStep}. Note: {note.note}");
             }
         }
 
-        // Iterate through each note and update the corresponding cell's sprite
-        foreach (var note in notes)
+        // Optional: Log if no notes were processed
+        if (notes.Count == 0)
         {
-            if (stepToSpriteMap.TryGetValue(note.start, out Sprite sprite))
-            {
-                Debug.Log($"Updating step {note.start} with sprite {sprite.name}");
-
-                // Iterate through all cells on the board
-                for (int x = 0; x < boardCells.GetLength(0); x++)
-                {
-                    for (int y = 0; y < boardCells.GetLength(1); y++)
-                    {
-                        Cell cell = boardCells[x, y];
-                        if (cell != null && cell.step == note.start)
-                        {
-                            sprite = KeyManager.Instance.GetSpriteFromNote(note.note);
-                            Debug.Log($"Setting sprite for cell at position ({x}, {y})");
-                            cell.SetSprite(sprite);
-                            break; // Exit the inner loop since we found the matching cell
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Debug.LogWarning($"No sprite found for step {note.start} in stepToSpriteMap.");
-            }
+            Debug.LogWarning("No notes provided to update the board.");
         }
     }
 

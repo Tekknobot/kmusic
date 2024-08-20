@@ -272,7 +272,7 @@ public class Cell : MonoBehaviour
     private int GetPatternStepIndex(float step)
     {
         int stepsPerPattern = 16;
-        int patternOffset = (PatternManager.Instance.currenPatternIndex - 1) * stepsPerPattern;
+        int patternOffset = (PatternManager.Instance.currentPatternIndex - 1) * stepsPerPattern;
         return (int)step + patternOffset;
     }
 

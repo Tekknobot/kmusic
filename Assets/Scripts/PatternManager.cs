@@ -26,7 +26,7 @@ public class PatternManager : MonoBehaviour
     public List<SampleSequencer> samplePatterns = new List<SampleSequencer>();
     public List<SampleSequencer> drumPatterns = new List<SampleSequencer>();
 
-    public int currentPatternIndex = -1;
+    public int currentPatternIndex = 0;
     public int currentSamplePatternIndex = -1;
     public int currentDrumPatternIndex = -1;
 
@@ -48,7 +48,6 @@ public class PatternManager : MonoBehaviour
     public int patternCount = 0;
     // A variable to keep track of the previously displayed pattern to avoid unnecessary updates
     public int previousPattern = -1;
-    public int currenPatternIndex = -1;
         
     private void Awake()
     {
@@ -78,20 +77,27 @@ public class PatternManager : MonoBehaviour
     void Update()
     {
         // Assuming you have a way to get the current index, e.g., from a clock or sequencer
-        int currentIndex = GetCurrentIndex(); // This is a placeholder for however you're tracking the current step index
+        int currentIndex = GetCurrentIndex(); // Placeholder for getting the current step index
 
-        // Determine the current pattern number based on the index
-        int currentPattern = (currentIndex / 16) + 1;
+        // Define the number of steps per pattern
+        int stepsPerPattern = 16;
 
-        currenPatternIndex = currentPattern;
-        
+        // Determine the current pattern number based on the index and round up
+        // Cast currentIndex to double to resolve ambiguity with Math.Ceiling
+        int currentPattern = (int)Math.Ceiling((double)currentIndex / stepsPerPattern);
+
+        // Update currentPatternIndex
+        currentPatternIndex = currentPattern;
+
         // Update the pattern display if the pattern has changed
         if (currentPattern != previousPattern)
         {
-            UpdatePatternDisplay();
             previousPattern = currentPattern;
+            UpdateBoardManager();
+            UpdatePatternDisplay();
         }
     }
+
 
     private int GetCurrentIndex()
     {
@@ -275,25 +281,74 @@ public class PatternManager : MonoBehaviour
 
 
 
-    private void UpdateBoardManager(HelmSequencer currentPattern = null)
+    private void UpdateBoardManager()
     {
-        if (boardManager != null)
+        if (boardManager == null)
         {
-            if (currentPattern != null)
+            Debug.LogError("BoardManager not assigned.");
+            return;
+        }
+
+        if (PatternManager.Instance == null || boardManager == null)
+        {
+            Debug.LogError("PatternManager or BoardManager is not set.");
+            return;
+        }
+
+        HelmSequencer currentPattern = sequencerPrefab.GetComponent<HelmSequencer>();
+
+        if (currentPattern != null)
+        {
+            int stepsPerPattern = 16;
+            int totalSteps = currentPattern.length;
+
+            // Adjust pattern index to be 1-based and calculate start and end steps
+            int currentPatternIndex = PatternManager.Instance.currentPatternIndex;
+            int patternStartStep = (currentPatternIndex - 1) * stepsPerPattern;
+            int patternEndStep = patternStartStep + stepsPerPattern - 1;
+
+            // Ensure patternEndStep does not exceed total steps of the sequencer
+            if (patternEndStep >= totalSteps)
             {
-                List<AudioHelm.Note> notes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
-                boardManager.ResetBoard();
-                boardManager.UpdateBoardWithNotes(notes);
-                boardManager.HighlightCellOnStep(currentStepIndex);
+                patternEndStep = totalSteps - 1;
             }
-            else
+
+            // Log values for debugging
+            Debug.Log($"Pattern Index: {currentPatternIndex}");
+            Debug.Log($"Pattern Start Step: {patternStartStep}");
+            Debug.Log($"Pattern End Step: {patternEndStep}");
+
+            // Get all notes from the current pattern
+            List<AudioHelm.Note> allNotes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
+
+            // Log total notes and their steps
+            Debug.Log($"Total Notes in Pattern: {allNotes.Count}");
+            foreach (var note in allNotes)
             {
-                boardManager.ResetBoard();
+                Debug.Log($"Note at step {note.start}");
             }
+
+            // Filter notes based on the current pattern section
+            List<AudioHelm.Note> notesInSection = allNotes.FindAll(note =>
+                note.start >= patternStartStep && note.start <= patternEndStep
+            );
+
+            // Log filtered notes
+            Debug.Log($"Notes in Section: {notesInSection.Count}");
+            foreach (var note in notesInSection)
+            {
+                Debug.Log($"Filtered Note at step {note.start}");
+            }
+
+            // Reset the board and update with filtered notes
+            boardManager.ResetBoard();
+            boardManager.UpdateBoardWithNotes(notesInSection);
         }
         else
         {
-            Debug.LogError("BoardManager not assigned.");
+            // Handle the case where currentPattern is null
+            Debug.LogWarning("Current pattern is not available.");
+            boardManager.ResetBoard();
         }
     }
 
@@ -1053,7 +1108,7 @@ public class PatternManager : MonoBehaviour
             }
 
             // Update the board
-            UpdateBoardManager(currentPattern);
+            UpdateBoardManager();
             UpdateBoardManageForSamples(currentSamplePattern);
             UpdateBoardManageForSamples(currentDrumPattern);
 

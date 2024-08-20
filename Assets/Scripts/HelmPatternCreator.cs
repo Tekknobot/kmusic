@@ -289,13 +289,24 @@ public class HelmPatternCreator : MonoBehaviour
             PrepareSequencerForNextCycle(firstSequencer);
             StartSequencer(firstSequencer); // Start only the first sequencer
 
-            // Update the BoardManager with the notes of the first sequencer
+            // Calculate the current pattern index and the step range for that pattern
+            int currentPatternIndex = PatternManager.Instance.currentPatternIndex;
+            int stepsPerPattern = 16;
+            int patternStartStep = currentPatternIndex * stepsPerPattern;
+            int patternEndStep = patternStartStep + stepsPerPattern - 1;
+
+            // Get and filter the notes based on the current pattern section
+            List<AudioHelm.Note> allNotes = new List<AudioHelm.Note>(firstSequencer.GetAllNotes());
+            List<AudioHelm.Note> notesInSection = allNotes.FindAll(note =>
+                note.start >= patternStartStep && note.start <= patternEndStep
+            );
+
+            // Update the BoardManager with the notes of the current pattern section
             if (boardManager != null)
             {
-                List<AudioHelm.Note> notes = new List<AudioHelm.Note>(firstSequencer.GetAllNotes());
                 boardManager.ResetBoard();
-                boardManager.UpdateBoardWithNotes(notes);
-                boardManager.HighlightCellOnStep(firstSequencer.currentIndex);
+                boardManager.UpdateBoardWithNotes(notesInSection);  // Use only the notes in the current section
+                boardManager.HighlightCellOnStep(firstSequencer.currentIndex % stepsPerPattern);
             }
 
             // Update the pattern display to show the first sequencer
