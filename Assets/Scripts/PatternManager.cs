@@ -71,7 +71,7 @@ public class PatternManager : MonoBehaviour
         }
 
         clock.pause = true;
-        LoadPatterns();
+        //LoadPatterns();
     }
 
     void Update()
@@ -526,7 +526,7 @@ public class PatternManager : MonoBehaviour
 
     private void PopulateDrumSequencerFromPatternData(SampleSequencer sequencer, PatternData patternData)
     {
-        foreach (var tile in patternData.drumTiles)
+        foreach (var tile in patternData.sampleTiles)
         {
             int noteValue;
             if (int.TryParse(tile.SpriteName, out noteValue))
@@ -602,32 +602,34 @@ public class PatternManager : MonoBehaviour
 
     public void SaveProject(string filename)
     {
-        ProjectData projectData = new ProjectData
+        try
         {
-            HelmPattern = GetPatternDataForSequencer(PatternManager.Instance.sequencerPrefab),
-            SamplePattern = GetPatternDataForSequencer(PatternManager.Instance.sampleSequencerPrefab),
-            DrumPattern = GetPatternDataForSequencer(PatternManager.Instance.drumSequencerPrefab),
-            songIndex = MultipleAudioLoader.Instance.currentIndex, // Save the current song index
-            bpm = clock.bpm,
-            timestamps = chopButton.GetComponent<Chop>().timestamps,
-            HelmSequencerLength = GetSequencerLength(PatternManager.Instance.sequencerPrefab),
-            SampleSequencerLength = GetSequencerLength(PatternManager.Instance.sampleSequencerPrefab),
-            DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab)
-        };
+            ProjectData projectData = new ProjectData
+            {
+                HelmPattern = GetPatternDataForSequencer(PatternManager.Instance.sequencerPrefab),
+                SamplePattern = GetPatternDataForSequencer(PatternManager.Instance.sampleSequencerPrefab),
+                DrumPattern = GetPatternDataForSequencer(PatternManager.Instance.drumSequencerPrefab),
+                songIndex = MultipleAudioLoader.Instance.currentIndex,
+                bpm = clock.bpm,
+                timestamps = chopButton.GetComponent<Chop>().timestamps,
+                HelmSequencerLength = GetSequencerLength(PatternManager.Instance.sequencerPrefab),
+                SampleSequencerLength = GetSequencerLength(PatternManager.Instance.sampleSequencerPrefab),
+                DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),                
+            };
 
-        string json = JsonUtility.ToJson(projectData, true);
-        File.WriteAllText(Path.Combine(Application.persistentDataPath, filename), json);
-        LastProjectFilename = filename; // Store the filename
-        Debug.Log($"Project saved to file: {filename}");
+            string json = JsonUtility.ToJson(projectData, true);
+            File.WriteAllText(Path.Combine(Application.persistentDataPath, filename), json);
+            Debug.Log("Project saved successfully.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error saving project: {ex.Message}");
+        }
     }
+
 
     public void LoadProject(string filename)
     {
-        // Clear the existing sequencers before loading new data
-        PatternManager.Instance.sequencerPrefab.GetComponent<HelmSequencer>().Clear();
-        PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>().Clear();
-        PatternManager.Instance.drumSequencerPrefab.GetComponent<SampleSequencer>().Clear();
-
         string path = Path.Combine(Application.persistentDataPath, filename);
         if (File.Exists(path))
         {
@@ -636,7 +638,6 @@ public class PatternManager : MonoBehaviour
                 string json = File.ReadAllText(path);
                 ProjectData projectData = JsonUtility.FromJson<ProjectData>(json);
 
-                // Check if the projectData is null
                 if (projectData == null)
                 {
                     Debug.LogError("Failed to load project: projectData is null.");
@@ -646,61 +647,72 @@ public class PatternManager : MonoBehaviour
                 // Load HelmSequencer pattern
                 if (projectData.HelmPattern != null)
                 {
-                    HelmSequencer helmSequencer = PatternManager.Instance.sequencerPrefab.GetComponent<HelmSequencer>();
+                    var helmSequencer = PatternManager.Instance.sequencerPrefab.GetComponent<HelmSequencer>();
                     if (helmSequencer != null)
                     {
-                        helmSequencer.enabled = false;
+                        helmSequencer.Clear();
+                        helmSequencer.length = projectData.HelmSequencerLength;
                         PopulateSequencerFromPatternData(helmSequencer, projectData.HelmPattern);
-                        Debug.Log($"Loaded HelmSequencer pattern: {projectData.HelmPattern.Name}");
+                        sequencersLength = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>().length;
+                        UpdatePatternDisplay();
+                        Debug.Log($"Loaded HelmSequencer pattern: {projectData.HelmPattern.Type}");
                     }
                     else
                     {
                         Debug.LogError("HelmSequencer not found.");
                     }
                 }
-                else {
+                else
+                {
                     Debug.LogError("Failed to load project: projectData.HelmPattern is null.");
-                    return;                    
                 }
 
                 // Load SampleSequencer pattern
                 if (projectData.SamplePattern != null)
                 {
-                    SampleSequencer sampleSequencer = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>();
+                    var sampleSequencer = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>();
                     if (sampleSequencer != null)
                     {
-                        sampleSequencer.enabled = false;
+                        sampleSequencer.Clear();
+                        sampleSequencer.length = projectData.SampleSequencerLength;
                         PopulateSampleSequencerFromPatternData(sampleSequencer, projectData.SamplePattern);
-                        Debug.Log($"Loaded SampleSequencer pattern: {projectData.SamplePattern.Name}");
+                        sequencersLength = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>().length;
+                        UpdatePatternDisplay();
+                        Debug.Log($"Loaded SampleSequencer pattern: {projectData.SamplePattern.Type}");
                     }
                     else
                     {
                         Debug.LogError("SampleSequencer not found.");
                     }
                 }
-                else {
+                else
+                {
                     Debug.LogError("Failed to load project: projectData.SamplePattern is null.");
-                    return;                    
                 }
+
                 // Load DrumSequencer pattern
                 if (projectData.DrumPattern != null)
                 {
-                    SampleSequencer drumSequencer = PatternManager.Instance.drumSequencerPrefab.GetComponent<SampleSequencer>();
+                    var drumSequencer = PatternManager.Instance.drumSequencerPrefab.GetComponent<SampleSequencer>();
                     if (drumSequencer != null)
                     {
-                        drumSequencer.enabled = false;
+                        drumSequencer.Clear();
+                        drumSequencer.length = projectData.DrumSequencerLength;
                         PopulateDrumSequencerFromPatternData(drumSequencer, projectData.DrumPattern);
-                        Debug.Log($"Loaded DrumSequencer pattern: {projectData.DrumPattern.Name}");
+                        sequencersLength = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>().length;
+                        UpdatePatternDisplay();
+                        Debug.Log($"Loaded DrumSequencer pattern: {projectData.DrumPattern.Type}");
                     }
                     else
                     {
                         Debug.LogError("DrumSequencer not found.");
                     }
                 }
-                else {
+                else
+                {
                     Debug.LogError("Failed to load project: projectData.DrumPattern is null.");
-                    return;                    
                 }
+
                 // Restore the song index
                 if (projectData.songIndex >= 0 && projectData.songIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
                 {
@@ -749,9 +761,11 @@ public class PatternManager : MonoBehaviour
     {
         PatternData patternData = new PatternData();
 
+        // Check if it's a HelmSequencer
         var helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
         if (helmSequencer != null)
         {
+            Debug.Log("HelmSequencer detected.");
             patternData.Type = PatternData.SequencerType.Helm;
             patternData.keyTiles = new List<TileData>();
 
@@ -761,21 +775,25 @@ public class PatternManager : MonoBehaviour
                 TileData tileData = new TileData
                 {
                     SpriteName = note.note.ToString(),
-                    NoteValue = note.note,
-                    Step = note.start,
                     StartTime = note.start,
                     EndTime = note.end,
-                    Velocity = note.velocity
+                    Step = note.start, // Ensure this is correct
+                    Velocity = note.velocity,
+                    NoteValue = note.note // If needed
                 };
                 patternData.keyTiles.Add(tileData);
             }
 
+            patternData.Length = helmSequencer.length; // Set length if available
+            Debug.Log("HelmSequencer data successfully retrieved.");
             return patternData;
         }
 
+        // Check if it's a SampleSequencer
         var sampleSequencer = sequencerPrefab.GetComponent<SampleSequencer>();
         if (sampleSequencer != null)
         {
+            Debug.Log("SampleSequencer detected.");
             patternData.Type = PatternData.SequencerType.Sample;
             patternData.sampleTiles = new List<TileData>();
 
@@ -785,23 +803,23 @@ public class PatternManager : MonoBehaviour
                 TileData tileData = new TileData
                 {
                     SpriteName = note.note.ToString(),
-                    NoteValue = note.note,
-                    Step = note.start,
                     StartTime = note.start,
                     EndTime = note.end,
-                    Velocity = note.velocity
+                    Step = note.start, // Ensure this is correct
+                    Velocity = note.velocity,
+                    NoteValue = note.note // If needed
                 };
                 patternData.sampleTiles.Add(tileData);
             }
 
+            patternData.Length = sampleSequencer.length; // Set length if available
+            Debug.Log("SampleSequencer data successfully retrieved.");
             return patternData;
         }
 
         Debug.LogWarning("Sequencer component not found.");
         return null;
     }
-
-
     private int GetSequencerLength(GameObject sequencerPrefab)
     {
         var helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
@@ -1061,7 +1079,9 @@ public class PatternManager : MonoBehaviour
         // Check if there is a filename for the current project
         if (!string.IsNullOrEmpty(LastProjectFilename))
         {
+            Debug.Log("About to save.");
             SaveProject(LastProjectFilename);
+            Debug.Log("Project Saved.");
         }
         else
         {
@@ -1071,24 +1091,49 @@ public class PatternManager : MonoBehaviour
 }
 
 
-[Serializable]
-public class ProjectData
+[System.Serializable]
+public class TileData
 {
-    // Patterns from different sequencers
-    public PatternData HelmPattern { get; set; }
-    public PatternData SamplePattern { get; set; }
-    public PatternData DrumPattern { get; set; }
+    public string SpriteName;
+    public float StartTime;
+    public float EndTime;
+    public float Step;
+    public float Velocity;
+    public int NoteValue; // Add NoteValue if it's used
 
-    // Metadata
-    public int songIndex; // Store the index or identifier of the song
-    public float bpm;     // Beats per minute for the project
+    public TileData() { }
 
-    // Lengths of the sequencers
-    public int HelmSequencerLength { get; set; }
-    public int SampleSequencerLength { get; set; }
-    public int DrumSequencerLength { get; set; }
-
-    // Timestamps for various events or beats within the project
-    public List<float> timestamps = new List<float>();
+    public TileData(string spriteName, float startTime, float endTime, float step, float velocity, int noteValue)
+    {
+        SpriteName = spriteName;
+        StartTime = startTime;
+        EndTime = endTime;
+        Step = step;
+        Velocity = velocity;
+        NoteValue = noteValue;
+    }
 }
 
+[System.Serializable]
+public class PatternData
+{
+    public enum SequencerType { Helm, Sample, Drum }
+    public SequencerType Type;
+    public List<TileData> keyTiles; // For HelmSequencer
+    public List<TileData> sampleTiles; // For SampleSequencer
+    public float Length; // Total length of the pattern or sequencer
+}
+
+[System.Serializable]
+public class ProjectData
+{
+    public PatternData HelmPattern;
+    public PatternData SamplePattern;
+    public PatternData DrumPattern;
+    public int songIndex;
+    public float bpm;
+    public List<float> timestamps;
+    public int HelmSequencerLength;    
+    public int SampleSequencerLength;    
+    public int DrumSequencerLength;
+}

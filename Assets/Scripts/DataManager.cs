@@ -426,28 +426,3 @@ public class DataManager : MonoBehaviour
     }
 
 }
-
-[Serializable]
-public class PatternData
-{
-    public string Name;                // Name of the pattern
-    public SequencerType Type;         // Type of sequencer (Helm or Sample)
-    public List<TileData> sampleTiles;       // List of TileData objects
-    public List<TileData> keyTiles; 
-    public List<TileData> drumTiles; 
-
-    public PatternData()
-    {
-        sampleTiles = new List<TileData>();  // Initialize list to avoid null reference
-        keyTiles = new List<TileData>();
-        drumTiles = new List<TileData>();
-    }
-
-    // Enumeration to differentiate between Helm and Sample sequencers
-    public enum SequencerType
-    {
-        Helm,
-        Sample,
-        Drum
-    }
-}
