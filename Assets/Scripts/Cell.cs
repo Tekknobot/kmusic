@@ -327,7 +327,7 @@ public class Cell : MonoBehaviour
 
     public void SaveTileData(Sprite sprite, float step, bool isKey)
     {
-        TileData data = new TileData(sprite.name, step);
+        TileData data = new TileData(sprite.name, step, KeyManager.Instance.GetNoteFromSprite(sprite), step, step + 1, 1);
 
         if (isKey)
         {
@@ -396,14 +396,24 @@ public class Cell : MonoBehaviour
 [System.Serializable]
 public class TileData
 {
-    public string SpriteName;
-    public float Step;
+    public string SpriteName;  // Name of the sprite associated with the tile (if applicable)
+    public float Step;         // The step or position within the sequencer
+    public int NoteValue;      // The MIDI note value (e.g., C4 = 60)
+    public float StartTime;    // The start time of the note
+    public float EndTime;      // The end time of the note
+    public float Velocity;     // The velocity of the note (e.g., volume or intensity)
 
-    public TileData(string spriteName, float step)
+    // Constructor to initialize all fields
+    public TileData(string spriteName, float step, int noteValue, float startTime, float endTime, float velocity)
     {
         SpriteName = spriteName;
         Step = step;
+        NoteValue = noteValue;
+        StartTime = startTime;
+        EndTime = endTime;
+        Velocity = velocity;
     }
 
+    // Parameterless constructor
     public TileData() { }
 }

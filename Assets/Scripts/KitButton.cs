@@ -17,7 +17,7 @@ public class KitButton : MonoBehaviour
 
     void Update()
     {
-        sampler = PatternManager.Instance.GetActiveDrumSequencer().gameObject.GetComponent<Sampler>();
+        sampler = PatternManager.Instance.drumSequencerPrefab.gameObject.GetComponent<Sampler>();
     }
 
     public void OnButtonClick()

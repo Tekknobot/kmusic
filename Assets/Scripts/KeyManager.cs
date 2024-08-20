@@ -27,6 +27,8 @@ public class KeyManager : MonoBehaviour
 
     public int midiNote;
 
+    private Dictionary<Sprite, int> spriteToNoteMap;
+
     private void Awake()
     {
         // Singleton pattern
@@ -575,6 +577,32 @@ public class KeyManager : MonoBehaviour
         }
     }
 
+
+    private void InitializeReverseDictionary()
+    {
+        spriteToNoteMap = new Dictionary<Sprite, int>();
+        foreach (var kvp in noteToSpriteMap)
+        {
+            if (!spriteToNoteMap.ContainsKey(kvp.Value))
+            {
+                spriteToNoteMap.Add(kvp.Value, kvp.Key);
+            }
+        }
+    }
+
+    public int GetNoteFromSprite(Sprite sprite)
+    {
+        // Check if the reverse dictionary has a mapping for the given sprite
+        if (spriteToNoteMap != null && spriteToNoteMap.ContainsKey(sprite))
+        {
+            return spriteToNoteMap[sprite];
+        }
+        else
+        {
+            Debug.LogError($"No MIDI note found for sprite {sprite.name}.");
+            return -1; // or some other invalid note indicator
+        }
+    }
 
 }
 
