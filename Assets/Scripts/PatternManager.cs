@@ -96,6 +96,9 @@ public class PatternManager : MonoBehaviour
             if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 1) {
                 UpdateBoardManager();
             }
+            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 2) {
+                UpdateBoardManageForSamples();
+            }            
             UpdatePatternDisplay();
         }
     }
@@ -352,25 +355,75 @@ public class PatternManager : MonoBehaviour
         }
     }
 
-    private void UpdateBoardManageForSamples(SampleSequencer currentPattern = null)
+    private void UpdateBoardManageForSamples()
     {
-        if (boardManager != null)
+        if (boardManager == null)
         {
-            if (currentPattern != null)
+            Debug.LogError("BoardManager not assigned.");
+            return;
+        }
+
+        if (PatternManager.Instance == null || sampleSequencerPrefab == null)
+        {
+            Debug.LogError("PatternManager or SampleSequencerPrefab is not set.");
+            return;
+        }
+
+        SampleSequencer currentPattern = sampleSequencerPrefab.GetComponent<SampleSequencer>();
+
+        if (currentPattern != null)
+        {
+            int stepsPerPattern = 16;
+            int totalSteps = currentPattern.length;
+
+            // Adjust pattern index to be 1-based and calculate start and end steps
+            int currentPatternIndex = PatternManager.Instance.currentPatternIndex;
+            int patternStartStep = (currentPatternIndex - 1) * stepsPerPattern;
+            int patternEndStep = patternStartStep + stepsPerPattern - 1;
+
+            // Ensure patternEndStep does not exceed total steps of the sequencer
+            if (patternEndStep >= totalSteps)
             {
-                List<AudioHelm.Note> notes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
-                //boardManager.ResetBoard();
-                boardManager.UpdateBoardWithSampleNotes(notes);
-                boardManager.HighlightCellOnStep(currentStepIndex);
+                patternEndStep = totalSteps - 1;
             }
-            else
+
+            // Log values for debugging
+            Debug.Log($"Pattern Index: {currentPatternIndex}");
+            Debug.Log($"Pattern Start Step: {patternStartStep}");
+            Debug.Log($"Pattern End Step: {patternEndStep}");
+
+            // Get all notes from the current pattern
+            List<AudioHelm.Note> allNotes = new List<AudioHelm.Note>(currentPattern.GetAllNotes());
+
+            // Log total notes and their steps
+            Debug.Log($"Total Notes in Pattern: {allNotes.Count}");
+            foreach (var note in allNotes)
             {
-                //boardManager.ResetBoard();
+                Debug.Log($"Note at step {note.start}");
             }
+
+            // Filter notes based on the current pattern section
+            List<AudioHelm.Note> notesInSection = allNotes.FindAll(note =>
+                note.start >= patternStartStep && note.start <= patternEndStep
+            );
+
+            // Log filtered notes
+            Debug.Log($"Notes in Section: {notesInSection.Count}");
+            foreach (var note in notesInSection)
+            {
+                Debug.Log($"Filtered Note at step {note.start}");
+            }
+
+            // Reset the board and update with filtered notes
+            boardManager.ResetBoard();
+            boardManager.UpdateBoardWithSampleNotes(notesInSection);
         }
         else
         {
-            Debug.LogError("BoardManager not assigned.");
+            // Handle the case where currentPattern is null
+            Debug.LogWarning("Current sample pattern is not available.");
+            // Optionally reset the board
+            //boardManager.ResetBoard();
         }
     }
 
@@ -421,7 +474,6 @@ public class PatternManager : MonoBehaviour
         DataManager.SaveProjectToFile(projectData);
         Debug.Log("Patterns saved to file.");
     }
-
 
     private PatternData ConvertSequencerToPatternData(HelmSequencer sequencer)
     {
@@ -1108,9 +1160,9 @@ public class PatternManager : MonoBehaviour
             }
 
             // Update the board
-            UpdateBoardManager();
-            UpdateBoardManageForSamples(currentSamplePattern);
-            UpdateBoardManageForSamples(currentDrumPattern);
+            //UpdateBoardManager();
+            //UpdateBoardManageForSamples(currentSamplePattern);
+            //UpdateBoardManageForSamples(currentDrumPattern);
 
             // Update the UI
             UpdatePatternDisplay();

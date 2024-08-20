@@ -125,7 +125,7 @@ public class SampleManager : MonoBehaviour
         bool foundAnySample = false; // To track if any sample was found and played
 
         // Use SampleSequencer instance directly
-        SampleSequencer sequencer = PatternManager.Instance.GetActiveSampleSequencer();
+        SampleSequencer sequencer = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>();
 
         if (sequencer == null)
         {
@@ -133,9 +133,9 @@ public class SampleManager : MonoBehaviour
             return;
         }
 
-        for (int i = 0; i < 16; i++)
+        for (int i = 0; i < sequencer.length; i++)
         {
-            for (int j = 0; j < 16; j++)
+            for (int j = 0; j < sequencer.length; j++)
             {
                 if (sequencer.NoteExistsInRange(75 - i, j, j + 1) && sequencer.currentIndex == j)
                 {

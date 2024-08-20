@@ -374,58 +374,106 @@ public class BoardManager : MonoBehaviour
 
     public void UpdateBoardWithSampleNotes(List<AudioHelm.Note> notes)
     {
-        foreach (var note in notes)
+        Debug.Log("Updating board with sample notes.");
+
+        if (PatternManager.Instance.boardManager == null)
         {
-            var step = note.start;
-            var sprite = SampleManager.Instance.GetSpriteByStep((int)step);
-
-            if (sprite == null)
-            {
-                Debug.LogError($"No sprite found for step {step}.");
-                continue;
-            }
-
-            var cell = GetCellByStep(note.start);
-            if (cell != null)
-            {
-                cell.SetSprite(sprite);
-            }
-            else
-            {
-                Debug.LogError($"Cell not found for position {note.start}.");
-            }
+            Debug.LogError("BoardManager not assigned.");
+            return;
         }
 
-        // Iterate through each note and update the corresponding cell's sprite
-        foreach (var note in notes)
+        if (PatternManager.Instance == null || PatternManager.Instance.sampleSequencerPrefab == null)
         {
-            if (stepToSpriteMap.TryGetValue(note.start, out Sprite sprite))
-            {
-                Debug.Log($"Updating step {note.start} with sprite {sprite.name}");
+            Debug.LogError("PatternManager or SampleSequencerPrefab is not set.");
+            return;
+        }
 
-                // Iterate through all cells on the board
-                for (int x = 0; x < boardCells.GetLength(0); x++)
+        SampleSequencer currentPattern = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>();
+
+        if (currentPattern != null)
+        {
+            int stepsPerPattern = 16;
+            int totalSteps = currentPattern.length;
+
+            // Adjust pattern index to be 1-based and calculate start and end steps
+            int currentPatternIndex = PatternManager.Instance.currentPatternIndex;
+            int patternStartStep = (currentPatternIndex - 1) * stepsPerPattern;
+            int patternEndStep = patternStartStep + stepsPerPattern - 1;
+
+            // Ensure patternEndStep does not exceed total steps of the sequencer
+            if (patternEndStep >= totalSteps)
+            {
+                patternEndStep = totalSteps - 1;
+            }
+
+            // Debugging logs to verify calculations
+            Debug.Log($"Current Pattern Index: {currentPatternIndex}");
+            Debug.Log($"Pattern Start Step: {patternStartStep}");
+            Debug.Log($"Pattern End Step: {patternEndStep}");
+            Debug.Log($"Total Steps in Sequencer: {totalSteps}");
+
+            // Reset the board before updating
+            PatternManager.Instance.boardManager.ResetBoard();
+
+            // Filter notes based on the current pattern section
+            List<AudioHelm.Note> notesInSection = notes.FindAll(note =>
+                note.start >= patternStartStep && note.start <= patternEndStep
+            );
+
+            // Log filtered notes
+            Debug.Log($"Notes in Section: {notesInSection.Count}");
+            foreach (var note in notesInSection)
+            {
+                Debug.Log($"Filtered Note at step {note.start}");
+            }
+
+            // Process filtered notes
+            foreach (var note in notesInSection)
+            {
+                int noteStep = (int)note.start;
+
+                // Calculate the local step within the pattern section
+                int adjustedStep = noteStep - patternStartStep;
+
+                if (adjustedStep < 0 || adjustedStep >= stepsPerPattern)
                 {
-                    for (int y = 0; y < boardCells.GetLength(1); y++)
-                    {
-                        Cell cell = boardCells[x, y];
-                        if (cell != null && cell.step == note.start)
-                        {
-                            sprite = SampleManager.Instance.GetSpriteFromNote(note.note);
-                            Debug.Log($"Setting sprite for cell at position ({x}, {y})");
-                            cell.SetSprite(sprite);
-                            break; // Exit the inner loop since we found the matching cell
-                        }
-                    }
+                    Debug.LogWarning($"Adjusted step {adjustedStep} is out of the 16-step range for note {note.note}.");
+                    continue;
+                }
+
+                // Get the sprite for the adjusted step
+                var sprite = SampleManager.Instance.GetSpriteFromNote(note.note);
+
+                if (sprite == null)
+                {
+                    Debug.LogError($"No sprite found for step {adjustedStep}.");
+                    continue;
+                }
+
+                // Find the cell and update its sprite
+                var cell = PatternManager.Instance.boardManager.GetCellByStep(adjustedStep);
+                if (cell != null)
+                {
+                    Debug.Log($"Setting sprite {sprite.name} for cell at adjusted step {adjustedStep}");
+                    cell.SetSprite(sprite);
+                }
+                else
+                {
+                    Debug.LogError($"Cell not found for adjusted step {adjustedStep}. Note: {note.note}");
                 }
             }
-            else
+
+            // Optional: Log if no notes were processed
+            if (notesInSection.Count == 0)
             {
-                Debug.LogWarning($"No sprite found for step {note.start} in stepToSpriteMap.");
+                Debug.LogWarning("No notes within the current pattern section.");
             }
         }
+        else
+        {
+            Debug.LogWarning("Current sample pattern is not available.");
+        }
     }
-
 
     public Cell GetCellByStep(float step)
     {
