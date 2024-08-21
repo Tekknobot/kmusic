@@ -125,12 +125,15 @@ public class PatternManager : MonoBehaviour
             else if (componentButtonScript.currentPatternGroup == 2)
             {
                 UpdateBoardManageForSamples();
-            }            
+            }  
+            
+            // Update currentPatternIndex
+            currentPatternIndex = currentPattern;
+
             isBoardUpdateRequired = false;
+            UpdatePatternDisplay();
         }
     }
-
-
 
     private int GetCurrentIndex()
     {
