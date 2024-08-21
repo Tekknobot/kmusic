@@ -71,7 +71,7 @@ public class PatternManager : MonoBehaviour
         }
 
         clock.pause = true;
-        //LoadPatterns();
+        CreatePattern();
     }
 
     void Update()
@@ -251,6 +251,10 @@ public class PatternManager : MonoBehaviour
             return;
         }
 
+        if (PatternManager.Instance.sequencersLength / 16 == 1) {
+            return;
+        }
+
         // Decrease the length of each sequencer by 16
         HelmSequencer helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
         if (helmSequencer != null)
@@ -275,6 +279,8 @@ public class PatternManager : MonoBehaviour
 
         // Update sequencersLength to the length of helmSequencer
         sequencersLength = helmSequencer != null ? helmSequencer.length : 0;
+
+        currentPatternIndex = patternCount;
 
         // Update UI and save the patterns
         UpdateBoardManager();
@@ -450,7 +456,8 @@ public class PatternManager : MonoBehaviour
             DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),
             songIndex = MultipleAudioLoader.Instance.currentIndex,
             bpm = clock.bpm,
-            timestamps = chopButton.GetComponent<Chop>().timestamps
+            timestamps = chopButton.GetComponent<Chop>().timestamps,
+            patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex,
         };
 
         // Save all pattern data to file
@@ -563,7 +570,8 @@ public class PatternManager : MonoBehaviour
             DrumSequencerLength = 0,
             songIndex = 0,
             bpm = 120f,
-            timestamps = new List<float>()
+            timestamps = new List<float>(),
+            patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex,
         };
 
         // Convert the ProjectData object to JSON
@@ -574,6 +582,9 @@ public class PatternManager : MonoBehaviour
 
         // Write the JSON to the file
         File.WriteAllText(path, json);
+
+        CreatePattern();
+        RemovePattern();
 
         Debug.Log($"New project file created: {newFilename}");
 
@@ -590,8 +601,14 @@ public class PatternManager : MonoBehaviour
         // Load the newly created project
         LoadProject(newFilename);
 
-        // Optionally, set all sequencers to loop and update the display
-        // SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
+        sequencerPrefab.GetComponent<HelmSequencer>().length = 16;
+        sampleSequencerPrefab.GetComponent<SampleSequencer>().length = 16;
+        drumSequencerPrefab.GetComponent<SampleSequencer>().length = 16; 
+
+        currentPatternIndex = 1;
+
+        // Optionally, set all sequencers to loop and update the display    
+        SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
         UpdatePatternDisplay(); // Update UI to reflect loaded patterns
 
         Debug.Log($"New project created and loaded: {newFilename}");
@@ -614,7 +631,8 @@ public class PatternManager : MonoBehaviour
                 timestamps = chopButton.GetComponent<Chop>().timestamps,
                 HelmSequencerLength = GetSequencerLength(PatternManager.Instance.sequencerPrefab),
                 SampleSequencerLength = GetSequencerLength(PatternManager.Instance.sampleSequencerPrefab),
-                DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),                
+                DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),
+                patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex,              
             };
 
             string json = JsonUtility.ToJson(projectData, true);
@@ -626,7 +644,6 @@ public class PatternManager : MonoBehaviour
             Debug.LogError($"Error saving project: {ex.Message}");
         }
     }
-
 
     public void LoadProject(string filename)
     {
@@ -743,6 +760,10 @@ public class PatternManager : MonoBehaviour
                     Debug.LogError("Chop component not found on chopButton.");
                 }
 
+                // Restore patch
+                sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex = projectData.patch;
+                sequencerPrefab.GetComponent<HelmPatchController>().LoadCurrentPatch();
+
                 Debug.Log($"Project loaded from file: {filename}");
                 UpdatePatternDisplay(); // Update UI to reflect loaded patterns
             }
@@ -820,6 +841,7 @@ public class PatternManager : MonoBehaviour
         Debug.LogWarning("Sequencer component not found.");
         return null;
     }
+
     private int GetSequencerLength(GameObject sequencerPrefab)
     {
         var helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
@@ -837,7 +859,6 @@ public class PatternManager : MonoBehaviour
         Debug.LogWarning("Sequencer component not found.");
         return 0; // Default length if the sequencer is not found
     }
-
 
     public string GenerateUniqueFilename()
     {
@@ -916,34 +937,10 @@ public class PatternManager : MonoBehaviour
         if (!string.IsNullOrEmpty(nextFilename))
         {
             LoadProject(nextFilename);
-            SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
+            SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled           
             UpdatePatternDisplay(); // Update UI
         }
     }  
-
-    public void LoadNewProject(string filename)
-    {
-        // Ensure the filename is not empty
-        if (!string.IsNullOrEmpty(filename))
-        {
-            // Load the new project
-            LoadProject(filename);
-
-            // Ensure all sequencers have looping enabled
-            SetAllSequencersLoop(true);
-
-            // Update UI to reflect new patterns
-            UpdatePatternDisplay();
-
-            // Optionally, update the last accessed file
-            lastAccessedFile = Path.Combine(Application.persistentDataPath, filename);
-            LastProjectFilename = filename;
-        }
-        else
-        {
-            Debug.LogError("Filename is null or empty.");
-        }
-    }
 
     private void SetAllSequencersLoop(bool loopEnabled)
     {
@@ -1031,48 +1028,58 @@ public class PatternManager : MonoBehaviour
 
     public void ClearCurrentPattern()
     {
-        if (currentPatternIndex >= 0 && currentPatternIndex < patterns.Count)
+        if (currentPatternIndex < 0)
         {
-            // Clear the current pattern's sequencer
-            HelmSequencer currentPattern = patterns[currentPatternIndex];
-            if (currentPattern != null)
-            {
-                currentPattern.Clear(); // Assuming Clear() method clears all notes and resets the sequencer
-                Debug.Log("Current pattern cleared.");
-            }
-
-            SampleSequencer currentSamplePattern = samplePatterns[currentPatternIndex];
-            if (currentSamplePattern != null)
-            {
-                currentSamplePattern.Clear(); // Assuming Clear() method clears all notes and resets the sequencer
-                Debug.Log("Current pattern cleared.");
-            }
-
-            SampleSequencer currentDrumPattern = drumPatterns[currentPatternIndex];
-            if (currentDrumPattern != null)
-            {
-                currentDrumPattern.Clear(); // Assuming Clear() method clears all notes and resets the sequencer
-                Debug.Log("Current pattern cleared.");
-            }
-
-            // Update the board
-            //UpdateBoardManager();
-            //UpdateBoardManageForSamples(currentSamplePattern);
-            //UpdateBoardManageForSamples(currentDrumPattern);
-
-            // Update the UI
-            UpdatePatternDisplay();
-
-            // Save the updated state to reflect the cleared pattern
-            SavePatterns();
-
-            Debug.Log("Board reset, patterns updated, and patterns saved.");
+            Debug.LogWarning("No valid currentPatternIndex to clear.");
+            return;
         }
-        else
+
+        // Define the range of steps based on the currentPatternIndex
+        int stepsPerPattern = 16; // Assuming each pattern is 16 steps long
+        int startStep = (currentPatternIndex - 1) * stepsPerPattern;
+        int endStep = startStep + stepsPerPattern;
+
+        // Clear the notes in the specified range for HelmSequencer
+        var helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
+        if (helmSequencer != null)
         {
-            Debug.LogWarning("No current pattern to clear.");
+            for (int noteValue = 0; noteValue <= 127; noteValue++)
+            {
+                helmSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+            }
+            Debug.Log($"Helm pattern notes cleared from step {startStep} to {endStep}.");
         }
+
+        // Clear the notes in the specified range for SampleSequencer
+        var sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
+        if (sampleSequencer != null)
+        {
+            for (int noteValue = 0; noteValue <= 127; noteValue++)
+            {
+                sampleSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+            }
+            Debug.Log($"Sample pattern notes cleared from step {startStep} to {endStep}.");
+        }
+
+        // Clear the notes in the specified range for DrumSequencer
+        var drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
+        if (drumSequencer != null)
+        {
+            for (int noteValue = 0; noteValue <= 127; noteValue++)
+            {
+                drumSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+            }
+            Debug.Log($"Drum pattern notes cleared from step {startStep} to {endStep}.");
+        }
+
+        // Reset the board and update the UI to reflect the cleared patterns
+        BoardManager.Instance.ResetBoard();
+        UpdatePatternDisplay();
+        SavePatterns();
+
+        Debug.Log("Board reset, pattern updated, and patterns saved.");
     }
+
 
     public void SaveOver()
     {
@@ -1133,6 +1140,7 @@ public class ProjectData
     public int songIndex;
     public float bpm;
     public List<float> timestamps;
+    public int patch;
     public int HelmSequencerLength;    
     public int SampleSequencerLength;    
     public int DrumSequencerLength;

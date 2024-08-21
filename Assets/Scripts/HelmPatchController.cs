@@ -15,7 +15,7 @@ public class HelmPatchController : MonoBehaviour
     public Slider[] parameterSliders; // Array of sliders for Helm parameters
     public AudioHelm.Param[] helmParams; // Array of Helm parameters
 
-    private int currentPatchIndex;
+    public int currentPatchIndex;
     private const string PLAYER_PREFS_PREFIX = "HelmParameter_"; // Prefix for PlayerPrefs keys
 
     private void Awake()
@@ -55,7 +55,7 @@ public class HelmPatchController : MonoBehaviour
         SyncSlidersWithParameters();       
     }
 
-    private void LoadCurrentPatch()
+    public void LoadCurrentPatch()
     {
         // Check if helmController and patches array are properly assigned
         if (helmController != null && patches != null && patches.Length > 0)

@@ -92,6 +92,9 @@ public class PatternUIManager : MonoBehaviour
         if (currentPatternIndex <= 0) {
             currentPatternIndex = 1;
         }
+        if (totalPatterns == 0) {
+            totalPatterns = 1;
+        }
         patternDisplayText.text = $"{currentPatternIndex}/{totalPatterns}";
     }
 }
