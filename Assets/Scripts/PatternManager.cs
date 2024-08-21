@@ -26,7 +26,7 @@ public class PatternManager : MonoBehaviour
     public List<SampleSequencer> samplePatterns = new List<SampleSequencer>();
     public List<SampleSequencer> drumPatterns = new List<SampleSequencer>();
 
-    public int currentPatternIndex = 0;
+    public int currentPatternIndex = 1;
     public int currentSamplePatternIndex = -1;
     public int currentDrumPatternIndex = -1;
 
@@ -71,6 +71,7 @@ public class PatternManager : MonoBehaviour
         }
 
         clock.pause = true;
+        currentPatternIndex = 1;
         CreatePattern();
     }
 
@@ -86,22 +87,32 @@ public class PatternManager : MonoBehaviour
         // Cast currentIndex to double to resolve ambiguity with Math.Ceiling
         int currentPattern = (int)Math.Ceiling((double)currentIndex / stepsPerPattern);
 
-        // Update currentPatternIndex
-        currentPatternIndex = currentPattern;
+        // Ensure currentPattern is never 0 by setting the minimum value to 1
+        currentPattern = Math.Max(currentPattern, 1);
 
         // Update the pattern display if the pattern has changed
         if (currentPattern != previousPattern)
         {
             previousPattern = currentPattern;
-            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 1) {
+            
+            var componentButtonScript = componentButton.GetComponent<ComponentButton>();
+
+            if (componentButtonScript.currentPatternGroup == 1)
+            {
                 UpdateBoardManager();
             }
-            if (componentButton.GetComponent<ComponentButton>().currentPatternGroup == 2) {
+            else if (componentButtonScript.currentPatternGroup == 2)
+            {
                 UpdateBoardManageForSamples();
-            }            
+            }
+
+            // Update currentPatternIndex
+            currentPatternIndex = currentPattern;
+
             UpdatePatternDisplay();
         }
     }
+
 
 
     private int GetCurrentIndex()
@@ -583,9 +594,6 @@ public class PatternManager : MonoBehaviour
         // Write the JSON to the file
         File.WriteAllText(path, json);
 
-        CreatePattern();
-        RemovePattern();
-
         Debug.Log($"New project file created: {newFilename}");
 
         // Return the filename for immediate loading
@@ -612,6 +620,10 @@ public class PatternManager : MonoBehaviour
         UpdatePatternDisplay(); // Update UI to reflect loaded patterns
 
         Debug.Log($"New project created and loaded: {newFilename}");
+
+        sequencersLength = 16;
+
+        SaveOver();
 
         UpdateProjectFileText();
     }
@@ -763,6 +775,8 @@ public class PatternManager : MonoBehaviour
                 // Restore patch
                 sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex = projectData.patch;
                 sequencerPrefab.GetComponent<HelmPatchController>().LoadCurrentPatch();
+
+                currentPatternIndex = 1;
 
                 Debug.Log($"Project loaded from file: {filename}");
                 UpdatePatternDisplay(); // Update UI to reflect loaded patterns
@@ -996,6 +1010,17 @@ public class PatternManager : MonoBehaviour
                 // Clear the current project data
                 lastAccessedFile = null;
                 LastProjectFilename = null;
+
+                sequencersLength = 1;
+                currentPatternIndex = 0;
+
+                sequencerPrefab.GetComponent<HelmSequencer>().Clear();
+                sampleSequencerPrefab.GetComponent<SampleSequencer>().Clear();
+                drumSequencerPrefab.GetComponent<SampleSequencer>().Clear();
+
+                sequencerPrefab.GetComponent<HelmSequencer>().length = 16;
+                sampleSequencerPrefab.GetComponent<SampleSequencer>().length = 16;
+                drumSequencerPrefab.GetComponent<SampleSequencer>().length = 16;               
 
                 // Update the UI to reflect the deletion
                 UpdatePatternDisplay();

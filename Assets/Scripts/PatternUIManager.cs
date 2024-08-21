@@ -56,6 +56,9 @@ public class PatternUIManager : MonoBehaviour
 
     void SaveNewProject()
     {
+        if (PatternManager.Instance.isPlaying) {
+            return;
+        }        
         patternManager.CreateAndLoadNewProject(); // Call the method to save project
         UpdatePatternDisplay();
     }
@@ -81,6 +84,9 @@ public class PatternUIManager : MonoBehaviour
     }
 
     void DeleteCurrentProject() {
+        if (PatternManager.Instance.isPlaying) {
+            return;
+        }        
         patternManager.DeleteCurrentProject(); // Clear all patterns
         UpdatePatternDisplay();
     }
@@ -89,12 +95,6 @@ public class PatternUIManager : MonoBehaviour
     {
         int totalPatterns = PatternManager.Instance.sequencersLength / 16;
         int currentPatternIndex = PatternManager.Instance.currentPatternIndex; // Display index should be 1-based
-        if (currentPatternIndex <= 0) {
-            currentPatternIndex = 1;
-        }
-        if (totalPatterns == 0) {
-            totalPatterns = 1;
-        }
         patternDisplayText.text = $"{currentPatternIndex}/{totalPatterns}";
     }
 }
