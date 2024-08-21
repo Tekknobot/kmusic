@@ -142,48 +142,63 @@ public class PatternManager : MonoBehaviour
 
     public void CreatePattern()
     {
-        if (clock.pause == false)
+        if (!clock.pause)
         {
             Debug.LogWarning("Cannot create pattern while clock is running.");
             return;
         }
 
-        // Calculate the length based on the number of patterns
-        int newLength = CalculateNewLength();
-
-        // Initialize and set length for each sequencer
+        // Get the current length of the sequencer
         HelmSequencer helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
         SampleSequencer sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
         SampleSequencer drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
 
+        if (helmSequencer == null || sampleSequencer == null || drumSequencer == null)
+        {
+            Debug.LogError("One or more sequencer components are not assigned.");
+            return;
+        }
+
+        // Calculate the current number of patterns based on sequencer length
+        int stepsPerPattern = 16;
+        int currentLength = helmSequencer.length;
+        int currentPatternCount = currentLength / stepsPerPattern;
+
+        // Calculate the new length by adding a pattern
+        int newLength = (currentPatternCount + 1) * stepsPerPattern;
+
+        // Initialize and set length for each sequencer
         if (helmSequencer != null)
         {
-            CopySteps(helmSequencer, newLength, patternCount == 0);
+            // If it's the first pattern, initialize or copy default steps
+            CopySteps(helmSequencer, newLength, currentPatternCount == 0);
             helmSequencer.length = newLength;
         }
 
         if (sampleSequencer != null)
         {
-            CopySteps(sampleSequencer, newLength, patternCount == 0);
+            CopySteps(sampleSequencer, newLength, currentPatternCount == 0);
             sampleSequencer.length = newLength;
         }
 
         if (drumSequencer != null)
         {
-            CopySteps(drumSequencer, newLength, patternCount == 0);
+            CopySteps(drumSequencer, newLength, currentPatternCount == 0);
             drumSequencer.length = newLength;
         }
 
         // Update the pattern count
-        patternCount++;
+        patternCount = currentPatternCount + 1;
 
         // Optionally, store the length for future reference if needed
         sequencersLength = newLength;
 
         // Update UI and save patterns
-        UpdateBoardManager();
+        //UpdateBoardManager();
         UpdatePatternDisplay();
         SavePatterns();
+
+        Debug.Log($"Pattern created with length {newLength}. Total patterns: {patternCount}");
     }
 
     private void CopySteps(HelmSequencer sequencer, int newLength, bool isFirstPattern)
@@ -282,6 +297,8 @@ public class PatternManager : MonoBehaviour
         if (PatternManager.Instance.sequencersLength / 16 == 1) {
             return;
         }
+
+        ClearLast16Steps();
 
         // Decrease the length of each sequencer by 16
         HelmSequencer helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
@@ -1117,6 +1134,86 @@ public class PatternManager : MonoBehaviour
         }
 
         // Reset the board and update the UI to reflect the cleared patterns
+        BoardManager.Instance.ResetBoard();
+        UpdatePatternDisplay();
+        SavePatterns();
+
+        Debug.Log("Board reset, pattern updated, and patterns saved.");
+    }
+
+
+    public void ClearLast16Steps()
+    {
+        if (currentPatternIndex < 0)
+        {
+            Debug.LogWarning("No valid currentPatternIndex to clear.");
+            return;
+        }
+
+        // Define the range of steps to clear
+        int stepsToClear = 16;  // Number of steps to clear from the end
+
+        // Get the current pattern to determine its length
+        var helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
+        if (helmSequencer != null)
+        {
+            int totalSteps = helmSequencer.length; // Total steps in the sequencer
+
+            // Calculate the start step for clearing the last section
+            int startStep = Mathf.Max(0, totalSteps - stepsToClear); // Ensure startStep is not less than 0
+            int endStep = totalSteps; // End step is the total number of steps
+
+            // Clear the notes in the specified range for HelmSequencer
+            for (int noteValue = 0; noteValue <= 127; noteValue++)
+            {
+                helmSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+            }
+            Debug.Log($"Helm pattern notes cleared from step {startStep} to {endStep}.");
+        }
+        else
+        {
+            Debug.LogWarning("HelmSequencer component is not assigned.");
+        }
+
+        // Clear the notes in the specified range for SampleSequencer
+        var sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
+        if (sampleSequencer != null)
+        {
+            int totalSteps = sampleSequencer.length; // Total steps in the sequencer
+            int startStep = Mathf.Max(0, totalSteps - stepsToClear);
+            int endStep = totalSteps;
+
+            for (int noteValue = 0; noteValue <= 127; noteValue++)
+            {
+                sampleSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+            }
+            Debug.Log($"Sample pattern notes cleared from step {startStep} to {endStep}.");
+        }
+        else
+        {
+            Debug.LogWarning("SampleSequencer component is not assigned.");
+        }
+
+        // Clear the notes in the specified range for DrumSequencer
+        var drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
+        if (drumSequencer != null)
+        {
+            int totalSteps = drumSequencer.length; // Total steps in the sequencer
+            int startStep = Mathf.Max(0, totalSteps - stepsToClear);
+            int endStep = totalSteps;
+
+            for (int noteValue = 0; noteValue <= 127; noteValue++)
+            {
+                drumSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+            }
+            Debug.Log($"Drum pattern notes cleared from step {startStep} to {endStep}.");
+        }
+        else
+        {
+            Debug.LogWarning("DrumSequencer component is not assigned.");
+        }
+
+        // Reset the board and update the UI to reflect the cleared sections
         BoardManager.Instance.ResetBoard();
         UpdatePatternDisplay();
         SavePatterns();
