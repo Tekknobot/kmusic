@@ -48,7 +48,8 @@ public class PatternManager : MonoBehaviour
     public int patternCount = 0;
     // A variable to keep track of the previously displayed pattern to avoid unnecessary updates
     public int previousPattern = -1;
-        
+    public bool isBoardUpdateRequired = false;
+
     private void Awake()
     {
         // Ensure this is the only instance
@@ -108,8 +109,24 @@ public class PatternManager : MonoBehaviour
 
             // Update currentPatternIndex
             currentPatternIndex = currentPattern;
-
+            
+            isBoardUpdateRequired = true;
             UpdatePatternDisplay();
+        }
+
+        if (isBoardUpdateRequired)
+        {
+            var componentButtonScript = componentButton.GetComponent<ComponentButton>();
+
+            if (componentButtonScript.currentPatternGroup == 1)
+            {
+                UpdateBoardManager();
+            }
+            else if (componentButtonScript.currentPatternGroup == 2)
+            {
+                UpdateBoardManageForSamples();
+            }            
+            isBoardUpdateRequired = false;
         }
     }
 
