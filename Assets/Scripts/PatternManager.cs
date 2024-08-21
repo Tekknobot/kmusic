@@ -85,7 +85,6 @@ public class PatternManager : MonoBehaviour
         int stepsPerPattern = 16;
 
         // Determine the current pattern number based on the index and round up
-        // Cast currentIndex to double to resolve ambiguity with Math.Ceiling
         int currentPattern = (int)Math.Ceiling((double)currentIndex / stepsPerPattern);
 
         // Ensure currentPattern is never 0 by setting the minimum value to 1
@@ -95,43 +94,69 @@ public class PatternManager : MonoBehaviour
         if (currentPattern != previousPattern)
         {
             previousPattern = currentPattern;
-            
-            var componentButtonScript = componentButton.GetComponent<ComponentButton>();
-
-            if (componentButtonScript.currentPatternGroup == 1)
-            {
-                UpdateBoardManager();
-            }
-            else if (componentButtonScript.currentPatternGroup == 2)
-            {
-                UpdateBoardManageForSamples();
-            }
-
-            // Update currentPatternIndex
             currentPatternIndex = currentPattern;
-            
             isBoardUpdateRequired = true;
             UpdatePatternDisplay();
         }
+        
+        if (currentPatternIndex == 1)
+        {
+            isBoardUpdateRequired = true;
 
+            // Check if board update is required
+            if (isBoardUpdateRequired)
+            {
+                var componentButtonScript = componentButton.GetComponent<ComponentButton>();
+
+                if (componentButtonScript.currentPatternGroup == 1)
+                {
+                    Debug.Log("Updating board for Group 1 (Helm/Standard)");
+                    UpdateBoardManager();
+                }
+                else if (componentButtonScript.currentPatternGroup == 2)
+                {
+                    Debug.Log("Updating board for Group 2 (Samples)");
+                    UpdateBoardManageForSamples();
+                }
+                else if (componentButtonScript.currentPatternGroup == 1) {
+                    
+                }
+                else if (componentButtonScript.currentPatternGroup == 0) {
+                    
+                }                
+
+                currentPatternIndex = currentPattern;
+                isBoardUpdateRequired = true;
+                UpdatePatternDisplay();
+
+                // Reset the flag indicating a board update is required
+                isBoardUpdateRequired = false;
+            }            
+        }
+
+        // Check if board update is required
         if (isBoardUpdateRequired)
         {
             var componentButtonScript = componentButton.GetComponent<ComponentButton>();
 
             if (componentButtonScript.currentPatternGroup == 1)
             {
+                Debug.Log("Updating board for Group 1 (Helm/Standard)");
                 UpdateBoardManager();
             }
             else if (componentButtonScript.currentPatternGroup == 2)
             {
+                Debug.Log("Updating board for Group 2 (Samples)");
                 UpdateBoardManageForSamples();
-            }  
-            
-            // Update currentPatternIndex
-            currentPatternIndex = currentPattern;
-
+            }
+            else if (componentButtonScript.currentPatternGroup == 1) {
+                
+            }
+            else if (componentButtonScript.currentPatternGroup == 0) {
+                
+            }       
+            // Reset the flag indicating a board update is required
             isBoardUpdateRequired = false;
-            UpdatePatternDisplay();
         }
     }
 
