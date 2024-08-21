@@ -643,6 +643,8 @@ public class PatternManager : MonoBehaviour
         SaveOver();
 
         UpdateProjectFileText();
+
+        boardManager.ResetBoard();
     }
 
 
