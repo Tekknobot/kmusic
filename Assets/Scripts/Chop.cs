@@ -193,7 +193,7 @@ public class Chop : MonoBehaviour
     {
         if (timestamps.Count > 0 && selectedChopIndex >= 0 && selectedChopIndex < timestamps.Count)
         {
-            currentTimestampText.text = $"Current Chop: {selectedChopIndex + 1}/{timestamps.Count} Timestamp: {timestamps[selectedChopIndex]:F2}s";
+            currentTimestampText.text = $"Current Chop: {selectedChopIndex + 1}/{timestamps.Count} Timestamp: {timestamps[selectedChopIndex]:F2} sec";
         }
         else
         {
