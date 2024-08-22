@@ -40,6 +40,8 @@ public class SampleManager : MonoBehaviour
 
     public SampleSequencer sampleSequencer;
 
+    public int selectedChopIndex = -1; // Initialize with -1 to indicate no selection
+
     private void Awake()
     {
         // Singleton pattern
@@ -250,16 +252,28 @@ public class SampleManager : MonoBehaviour
 
     public void OnSampleClicked(GameObject clickedSample)
     {
-        midiNote = clickedSample.GetComponent<SampleClickHandler>().midiNote;
+        // Retrieve the associated SampleClickHandler to get the MIDI note
+        SampleClickHandler sampleHandler = clickedSample.GetComponent<SampleClickHandler>();
+        midiNote = sampleHandler.midiNote;
 
+        // Update the last clicked sample
         lastClickedSample = clickedSample.GetComponent<SpriteRenderer>().sprite;
         currentSample = lastClickedSample;
 
+        // Update the selectedChopIndex based on the sample's index
+        selectedChopIndex = System.Array.IndexOf(samples, currentSample);
+        
+        chopScript.selectedChopIndex = selectedChopIndex;
+        chopScript.UpdateCurrentTimestampDisplay();
+
+        // Ensure selectedChopIndex is valid
+        if (selectedChopIndex == -1)
+        {
+            Debug.LogError("Sample clicked but no matching index found in samples array.");
+        }
+
         // Set SampleManager as the last clicked manager
         ManagerHandler.Instance.SetLastClickedManager(false, false, true);
-
-        // Reset the board to display default configuration first
-        //BoardManager.Instance.ResetBoard();
 
         // Scale the clicked sample temporarily
         StartCoroutine(ScaleObject(clickedSample, originalScales[clickedSample], 0.1f, 1.2f, 0.1f));
@@ -267,11 +281,9 @@ public class SampleManager : MonoBehaviour
         // Play the corresponding audio clip
         PlaySampleAudio(currentSample.name);
 
-        // Display the sprite on cells with matching step data
-        //DisplaySpriteOnMatchingSteps();
-
-        Debug.Log($"Clicked Sample: {clickedSample.name}");
+        Debug.Log($"Clicked Sample: {clickedSample.name}, selectedChopIndex: {selectedChopIndex}");
     }
+
 
     public void OnSampleEvent(GameObject clickedSample)
     {

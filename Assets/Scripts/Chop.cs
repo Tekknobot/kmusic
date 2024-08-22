@@ -7,9 +7,15 @@ public class Chop : MonoBehaviour
 {
     public Button chopButton; // Reference to the button that will trigger the chop action
     public Button clearChopsButton; // Reference to the button that will clear the chops
+    public Button trimBackButton; // Button for trimming back by 0.1 seconds
+    public Button trimForwardButton; // Button for trimming forward by 0.1 seconds
+    public Button microStepBackButton; // Button for micro-stepping back by 0.01 seconds
+    public Button microStepForwardButton; // Button for micro-stepping forward by 0.01 seconds
     public TextMeshProUGUI feedbackText; // Reference to the TextMeshProUGUI component for feedback
+    public TextMeshProUGUI currentTimestampText; // Reference to display the current timestamp
 
     private const int MaxChops = 16; // Maximum number of chops
+    public int selectedChopIndex = 0; // Index of the currently selected chop
     public List<float> timestamps = new List<float>(); // List to store timestamps
 
     private AudioSource audioSource; // Reference to the AudioSource
@@ -38,10 +44,51 @@ public class Chop : MonoBehaviour
             Debug.LogError("Clear Chops button is not assigned.");
         }
 
-        // Ensure the TextMeshProUGUI component is assigned
+        // Ensure the trim buttons are assigned and add listeners
+        if (trimBackButton != null)
+        {
+            trimBackButton.onClick.AddListener(OnTrimBackButtonClick);
+        }
+        else
+        {
+            Debug.LogError("Trim Back button is not assigned.");
+        }
+
+        if (trimForwardButton != null)
+        {
+            trimForwardButton.onClick.AddListener(OnTrimForwardButtonClick);
+        }
+        else
+        {
+            Debug.LogError("Trim Forward button is not assigned.");
+        }
+
+        if (microStepBackButton != null)
+        {
+            microStepBackButton.onClick.AddListener(OnMicroStepBackButtonClick);
+        }
+        else
+        {
+            Debug.LogError("Micro Step Back button is not assigned.");
+        }
+
+        if (microStepForwardButton != null)
+        {
+            microStepForwardButton.onClick.AddListener(OnMicroStepForwardButtonClick);
+        }
+        else
+        {
+            Debug.LogError("Micro Step Forward button is not assigned.");
+        }
+
+        // Ensure the TextMeshProUGUI components are assigned
         if (feedbackText == null)
         {
             Debug.LogError("Feedback TextMeshProUGUI is not assigned.");
+        }
+        if (currentTimestampText == null)
+        {
+            Debug.LogError("Current Timestamp TextMeshProUGUI is not assigned.");
         }
 
         // Get the AudioSource component from the MusicPlayer GameObject
@@ -61,6 +108,7 @@ public class Chop : MonoBehaviour
 
         // Load the saved timestamps
         LoadTimestamps();
+        UpdateCurrentTimestampDisplay(); // Display the first timestamp
     }
 
     private void OnChopButtonClick()
@@ -77,11 +125,15 @@ public class Chop : MonoBehaviour
             float timestamp = audioSource.time;
             timestamps.Add(timestamp);
 
+            // Select the newly added chop
+            selectedChopIndex = timestamps.Count - 1;
+
             // Save the updated timestamps
             SaveTimestamps();
 
             // Update feedback with the added timestamp and current chop count
             UpdateFeedbackText($"Added chop: Timestamp = {timestamp}. Total Chops = {timestamps.Count}");
+            UpdateCurrentTimestampDisplay();
         }
         else
         {
@@ -94,6 +146,41 @@ public class Chop : MonoBehaviour
         ClearChops();
     }
 
+    private void OnTrimBackButtonClick()
+    {
+        AdjustSelectedTimestamp(-0.1f);
+    }
+
+    private void OnTrimForwardButtonClick()
+    {
+        AdjustSelectedTimestamp(0.1f);
+    }
+
+    private void OnMicroStepBackButtonClick()
+    {
+        AdjustSelectedTimestamp(-0.01f);
+    }
+
+    private void OnMicroStepForwardButtonClick()
+    {
+        AdjustSelectedTimestamp(0.01f);
+    }
+
+    private void AdjustSelectedTimestamp(float adjustment)
+    {
+        if (timestamps.Count > 0 && selectedChopIndex >= 0 && selectedChopIndex < timestamps.Count)
+        {
+            timestamps[selectedChopIndex] = Mathf.Max(0, timestamps[selectedChopIndex] + adjustment);
+            UpdateCurrentTimestampDisplay();
+            SaveTimestamps();
+            UpdateFeedbackText($"Adjusted chop {selectedChopIndex + 1} by {adjustment} seconds. New Timestamp = {timestamps[selectedChopIndex]}");
+        }
+        else
+        {
+            UpdateFeedbackText("No chops available to adjust.");
+        }
+    }
+
     private void UpdateFeedbackText(string message)
     {
         if (feedbackText != null)
@@ -102,11 +189,25 @@ public class Chop : MonoBehaviour
         }
     }
 
+    public void UpdateCurrentTimestampDisplay()
+    {
+        if (timestamps.Count > 0 && selectedChopIndex >= 0 && selectedChopIndex < timestamps.Count)
+        {
+            currentTimestampText.text = $"Current Chop: {selectedChopIndex + 1}/{timestamps.Count} Timestamp: {timestamps[selectedChopIndex]:F2}s";
+        }
+        else
+        {
+            currentTimestampText.text = "No chops available.";
+        }
+    }
+
     // Method to clear the chops
     public void ClearChops()
     {
         timestamps.Clear();
         SaveTimestamps(); // Clear saved chops
+        selectedChopIndex = 0;
+        UpdateCurrentTimestampDisplay();
         UpdateFeedbackText("Chops cleared.");
     }
 
@@ -137,6 +238,10 @@ public class Chop : MonoBehaviour
                 }
             }
 
+            // Reset the selected chop index
+            selectedChopIndex = timestamps.Count > 0 ? 0 : -1;
+
+            UpdateCurrentTimestampDisplay();
             UpdateFeedbackText($"Loaded {timestamps.Count} chops.");
         }
         else

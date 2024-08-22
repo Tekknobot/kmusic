@@ -21,6 +21,8 @@ public class ComponentButton : MonoBehaviour
 
     public int currentPatternGroup = 1;
 
+    public GameObject TrimmerUI;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -105,6 +107,7 @@ public class ComponentButton : MonoBehaviour
                     musicPlayerObject.SetActive(true);
                     musicPlayerObject.transform.position = initialPositionMusicPlayer;
                     currentPatternGroup = 0;
+                    TrimmerUI.SetActive(false);
                 }
                 break;
             case 1:
@@ -112,6 +115,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     keyManagerObject.transform.position = initialPositionKeyManager;
                     currentPatternGroup = 1;
+                    TrimmerUI.SetActive(false);
                 }
                 break;
             case 2:
@@ -119,6 +123,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     sampleManagerObject.transform.position = initialPositionSampleManager;
                     currentPatternGroup = 2;
+                    TrimmerUI.SetActive(true);
                 }
                 break;
             case 3:
@@ -127,6 +132,7 @@ public class ComponentButton : MonoBehaviour
                     mixerGroupObject.SetActive(true);
                     mixerGroupObject.transform.position = initialPositionMixerGroup;
                     currentPatternGroup = 4;
+                    TrimmerUI.SetActive(false);
                 }
                 break;
         }
