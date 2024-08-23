@@ -16,6 +16,7 @@ public class AudioVisualizer : MonoBehaviour
     public Chop chopScript;
 
     private RectTransform markerContainer; // New RectTransform for markers
+    public List<GameObject> timestampMarkers = new List<GameObject>(); // Store timestamp markers
 
     public void StartRender()
     {           
@@ -154,34 +155,35 @@ public class AudioVisualizer : MonoBehaviour
 
     public void AddTimestampMarkers(List<float> timestamps)
     {
+        // Clear previous markers
+        foreach (var marker in timestampMarkers)
+        {
+            Destroy(marker);
+        }
+        timestampMarkers.Clear();
+
         if (markerContainer == null)
         {
             Debug.LogError("Marker container is not initialized.");
             return;
         }
 
-        // Calculate the width and height of the segment to use for marker placement
         float segmentWidth = waveformContainer.rect.width;
         float segmentHeight = waveformContainer.rect.height;
 
         foreach (float timestamp in timestamps)
         {
-            // Get the start and end timestamps for the segment being visualized
             float startTimestamp = chopScript.timestamps[0];
             float endTimestamp = chopScript.timestamps[chopScript.timestamps.Count - 1];
 
-            // Only add markers for timestamps within the current segment
             if (timestamp < startTimestamp || timestamp > endTimestamp)
                 continue;
 
-            // Normalize the timestamp relative to the segment
             float normalizedTime = (timestamp - startTimestamp) / (endTimestamp - startTimestamp);
             float markerPositionX = normalizedTime * segmentWidth;
 
-            // Instantiate the marker as a child of markerContainer
             GameObject marker = Instantiate(markerPrefab, markerContainer);
 
-            // Ensure the marker has a RectTransform component
             RectTransform rt = marker.GetComponent<RectTransform>();
             if (rt == null)
             {
@@ -189,25 +191,20 @@ public class AudioVisualizer : MonoBehaviour
                 return;
             }
 
-            // Set the position of the marker
             rt.anchoredPosition = new Vector2(markerPositionX, 0);
-
-            // Scale the marker to fit the height of the container
-            rt.sizeDelta = new Vector2(1, segmentHeight/2); // Adjust width (2) as needed
-
-            // Ensure the marker stretches across the height of the container
+            rt.sizeDelta = new Vector2(1, segmentHeight / 2); 
             rt.anchorMin = new Vector2(0.5f, 0);
             rt.anchorMax = new Vector2(0.5f, 1);
 
-            // Adjust the color of the marker (optional)
             RawImage rawImage = marker.GetComponent<RawImage>();
             if (rawImage != null)
             {
-                rawImage.color = Color.red; // Set to a visible color
+                rawImage.color = Color.red; // Set initial color to red
             }
 
-            // Set the marker to be rendered in front of other elements
             marker.transform.SetSiblingIndex(markerContainer.childCount - 1);
+
+            timestampMarkers.Add(marker); // Add to the list
         }
     }
 }

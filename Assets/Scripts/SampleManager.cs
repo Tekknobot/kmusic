@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 using AudioHelm;
 
 public class SampleManager : MonoBehaviour
@@ -41,6 +42,9 @@ public class SampleManager : MonoBehaviour
     public SampleSequencer sampleSequencer;
 
     public int selectedChopIndex = -1; // Initialize with -1 to indicate no selection
+
+    private static readonly Color Orange = new Color(1.0f, 0.5f, 0.0f); // Define orange color
+
 
     private void Awake()
     {
@@ -266,6 +270,8 @@ public class SampleManager : MonoBehaviour
         chopScript.selectedChopIndex = selectedChopIndex;
         chopScript.UpdateCurrentTimestampDisplay();
 
+        SetMarkerColor(selectedChopIndex, Orange);
+
         // Ensure selectedChopIndex is valid
         if (selectedChopIndex == -1)
         {
@@ -282,6 +288,39 @@ public class SampleManager : MonoBehaviour
         PlaySampleAudio(currentSample.name);
 
         Debug.Log($"Clicked Sample: {clickedSample.name}, selectedChopIndex: {selectedChopIndex}");
+    }
+
+
+    private void SetMarkerColor(int index, Color color, float resetDelay = 0.25f)
+    {
+        AudioVisualizer audioVisualizer = GameObject.Find("AudioVisualizer").GetComponent<AudioVisualizer>();
+
+        if (index >= 0 && index < audioVisualizer.timestampMarkers.Count)
+        {
+            RawImage rawImage = audioVisualizer.timestampMarkers[index].GetComponent<RawImage>();
+            if (rawImage != null)
+            {
+                rawImage.color = color;
+
+                if (resetDelay > 0f)
+                {
+                    // Start a coroutine to reset the color after the specified delay
+                    StartCoroutine(ResetMarkerColorAfterDelay(rawImage, Color.red, resetDelay));
+                }
+            }
+        }
+    }
+
+    private IEnumerator ResetMarkerColorAfterDelay(RawImage rawImage, Color resetColor, float delay)
+    {
+        // Wait for the specified delay
+        yield return new WaitForSeconds(delay);
+
+        // Reset the color to the specified reset color (red)
+        if (rawImage != null)
+        {
+            rawImage.color = resetColor;
+        }
     }
 
 
