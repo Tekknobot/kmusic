@@ -93,13 +93,6 @@ public class Cell : MonoBehaviour
         Sprite lastClickedSprite = ManagerHandler.Instance.GetLastClickedSprite();
         midiNote = ManagerHandler.Instance.GetLastClickedMidiNote();
 
-        // If the last clicked sprite and the sprite at the step do not match, return early
-        if (lastClickedSprite != BoardManager.Instance.GetSpriteByStep(step) && BoardManager.Instance.GetSpriteByStep(step) != defaultSprite)
-        {
-            Debug.Log("Returning early due to sprite mismatch.");
-            return;
-        }
-
         // Check if the last clicked manager is SampleManager
         if (ManagerHandler.Instance.IsSampleManagerLastClicked())
         {
