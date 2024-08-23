@@ -22,6 +22,8 @@ public class Chop : MonoBehaviour
 
     private const string TimestampsKey = "ChopTimestamps"; // Key for saving/loading timestamps
 
+    public AudioVisualizer audioVisualizer;
+
     private void Awake()
     {
         // Ensure the chop button is assigned and add a listener
@@ -126,7 +128,7 @@ public class Chop : MonoBehaviour
             timestamps.Add(timestamp);
 
             // Select the newly added chop
-            selectedChopIndex = timestamps.Count - 1;
+            selectedChopIndex = timestamps.Count - 1; 
 
             // Save the updated timestamps
             SaveTimestamps();
@@ -138,12 +140,17 @@ public class Chop : MonoBehaviour
         else
         {
             UpdateFeedbackText("AudioSource is not playing or not assigned.");
-        }
+        }       
     }
 
     private void OnClearChopsButtonClick()
     {
         ClearChops();
+        // Also clear visual markers
+        foreach (Transform child in audioVisualizer.waveformContainer)
+        {
+            Destroy(child.gameObject);
+        }        
     }
 
     private void OnTrimBackButtonClick()
