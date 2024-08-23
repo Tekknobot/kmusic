@@ -66,6 +66,7 @@ public class PatternUIManager : MonoBehaviour
             return;
         }
         patternManager.LoadNextProject(); // Call the method to load project
+        patternManager.clock.Reset();
         
         projectNameInputField.text = string.Empty;
         projectNameInputField.gameObject.SetActive(false);
