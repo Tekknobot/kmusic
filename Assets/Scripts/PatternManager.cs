@@ -685,6 +685,10 @@ public class PatternManager : MonoBehaviour
 
         sequencersLength = 16;
 
+        MultipleAudioLoader.Instance.currentIndex = 0;
+        string songToLoad = MultipleAudioLoader.Instance.clipFileNames[0];
+        StartCoroutine(MultipleAudioLoader.Instance.LoadClip(songToLoad));
+
         SaveOver();
 
         UpdateProjectFileText();

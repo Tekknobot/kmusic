@@ -18,7 +18,7 @@ public class AudioVisualizer : MonoBehaviour
     private RectTransform markerContainer; // New RectTransform for markers
 
     public void StartRender()
-    {
+    {           
         // Clear existing waveform and marker elements
         foreach (Transform child in waveformContainer)
         {
@@ -45,8 +45,11 @@ public class AudioVisualizer : MonoBehaviour
         audioClip.GetData(audioSamples, 0);
 
         // Draw waveform and create marker container
-        DrawWaveform(chopScript.timestamps[0], chopScript.timestamps[chopScript.timestamps.Count - 1]);
-        CreateMarkerContainer(); // Create marker container
+        if (chopScript.timestamps.Count > 0) {
+            DrawWaveform(chopScript.timestamps[0], chopScript.timestamps[chopScript.timestamps.Count - 1]);
+            CreateMarkerContainer(); // Create marker container
+        }
+
 
         // Ensure markerContainer is created and valid
         if (markerContainer == null)
