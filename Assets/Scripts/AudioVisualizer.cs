@@ -11,17 +11,26 @@ public class AudioVisualizer : MonoBehaviour
 
     private float[] audioSamples;
     private int sampleRate;
-    public Material waveformMaterial; // Reference to the material\
+    public Material waveformMaterial; // Reference to the material
 
     public Chop chopScript;
 
+    private RectTransform markerContainer; // New RectTransform for markers
+
     public void StartRender()
     {
+        // Clear existing waveform and marker elements
         foreach (Transform child in waveformContainer)
         {
             Destroy(child.gameObject);
         }
 
+        if (markerContainer != null)
+        {
+            Destroy(markerContainer.gameObject);
+        }
+
+        // Retrieve the audio clip
         audioClip = MultipleAudioLoader.Instance.audioSource.clip;
 
         if (audioClip == null)
@@ -30,18 +39,58 @@ public class AudioVisualizer : MonoBehaviour
             return;
         }
 
+        // Initialize audio samples
         sampleRate = audioClip.samples;
         audioSamples = new float[sampleRate * audioClip.channels];
         audioClip.GetData(audioSamples, 0);
 
+        // Draw waveform and create marker container
         DrawWaveform(chopScript.timestamps[0], chopScript.timestamps[chopScript.timestamps.Count - 1]);
+        CreateMarkerContainer(); // Create marker container
+
+        // Ensure markerContainer is created and valid
+        if (markerContainer == null)
+        {
+            Debug.LogError("MarkerContainer is not created.");
+            return;
+        }
+
+        // Add timestamp markers
         AddTimestampMarkers(chopScript.timestamps);
     }
 
+
+    private void CreateMarkerContainer()
+    {
+        // Create a new GameObject for the marker container
+        GameObject markerContainerObject = new GameObject("MarkerContainer");
+        markerContainerObject.transform.SetParent(waveformContainer, false);
+
+        // Add RectTransform component and set its properties
+        markerContainer = markerContainerObject.AddComponent<RectTransform>();
+        markerContainer.anchorMin = new Vector2(0, 0);
+        markerContainer.anchorMax = new Vector2(0, 1); // Adjust anchorMax to match the width and align with the left edge
+        markerContainer.pivot = new Vector2(0, 0.5f); // Align pivot to the left edge center
+
+        // Calculate the width of the markerContainer based on the left and right edge positions
+        float leftEdge = -351.9445f;
+        float rightEdge = 1.104523f;
+        float width = rightEdge - leftEdge; // Width = right - left
+
+        // Set the sizeDelta to the calculated width and the full height of the waveformContainer
+        float containerHeight = waveformContainer.rect.height;
+        markerContainer.sizeDelta = new Vector2(width, containerHeight);
+
+        // Set the anchoredPosition to align the left edge at -351.9445 units
+        markerContainer.anchoredPosition = new Vector2(leftEdge + (width / 2), 0); // Center the container horizontally
+    }
+
+
+
     private void DrawWaveform(float startTimestamp, float endTimestamp)
     {
-        float containerWidth = waveformContainer.GetComponent<RectTransform>().rect.width;
-        float containerHeight = waveformContainer.GetComponent<RectTransform>().rect.height;
+        float containerWidth = waveformContainer.rect.width;
+        float containerHeight = waveformContainer.rect.height;
 
         // Ensure timestamps are within the audio clip length
         startTimestamp = Mathf.Clamp(startTimestamp, 0, audioClip.length);
@@ -102,13 +151,32 @@ public class AudioVisualizer : MonoBehaviour
 
     public void AddTimestampMarkers(List<float> timestamps)
     {
+        if (markerContainer == null)
+        {
+            Debug.LogError("Marker container is not initialized.");
+            return;
+        }
+
+        // Calculate the width and height of the segment to use for marker placement
+        float segmentWidth = waveformContainer.rect.width;
+        float segmentHeight = waveformContainer.rect.height;
+
         foreach (float timestamp in timestamps)
         {
-            float normalizedTime = timestamp / audioClip.length;
-            float markerPositionX = normalizedTime * waveformContainer.rect.width;
+            // Get the start and end timestamps for the segment being visualized
+            float startTimestamp = chopScript.timestamps[0];
+            float endTimestamp = chopScript.timestamps[chopScript.timestamps.Count - 1];
 
-            // Instantiate the marker as a child of waveformContainer
-            GameObject marker = Instantiate(markerPrefab, waveformContainer);
+            // Only add markers for timestamps within the current segment
+            if (timestamp < startTimestamp || timestamp > endTimestamp)
+                continue;
+
+            // Normalize the timestamp relative to the segment
+            float normalizedTime = (timestamp - startTimestamp) / (endTimestamp - startTimestamp);
+            float markerPositionX = normalizedTime * segmentWidth;
+
+            // Instantiate the marker as a child of markerContainer
+            GameObject marker = Instantiate(markerPrefab, markerContainer);
 
             // Ensure the marker has a RectTransform component
             RectTransform rt = marker.GetComponent<RectTransform>();
@@ -122,22 +190,21 @@ public class AudioVisualizer : MonoBehaviour
             rt.anchoredPosition = new Vector2(markerPositionX, 0);
 
             // Scale the marker to fit the height of the container
-            rt.sizeDelta = new Vector2(rt.sizeDelta.x, waveformContainer.rect.height);
+            rt.sizeDelta = new Vector2(2, segmentHeight); // Adjust width (2) as needed
 
             // Ensure the marker stretches across the height of the container
             rt.anchorMin = new Vector2(0.5f, 0);
             rt.anchorMax = new Vector2(0.5f, 1);
 
-            // Adjust marker visibility
-            Image image = marker.GetComponent<Image>();
-            if (image != null)
+            // Adjust the color of the marker (optional)
+            RawImage rawImage = marker.GetComponent<RawImage>();
+            if (rawImage != null)
             {
-                image.color = Color.white; // Set the marker color to white or any other visible color
+                rawImage.color = Color.red; // Set to a visible color
             }
 
             // Set the marker to be rendered in front of other elements
-            marker.transform.SetSiblingIndex(waveformContainer.childCount - 1);
+            marker.transform.SetSiblingIndex(markerContainer.childCount - 1);
         }
     }
-
 }
