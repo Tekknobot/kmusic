@@ -49,6 +49,7 @@ public class PatternManager : MonoBehaviour
     // A variable to keep track of the previously displayed pattern to avoid unnecessary updates
     public int previousPattern = -1;
     public bool isBoardUpdateRequired = false;
+    public string currentProjectFilename; // Keep track of the current project filename
 
     private void Awake()
     {
@@ -627,10 +628,10 @@ public class PatternManager : MonoBehaviour
         }
     }
 
-    private string CreateNewProjectFile()
+    private string CreateNewProjectFile(string customName)
     {
-        // Generate a unique filename for the new project
-        string newFilename = GenerateUniqueFilename();
+        // Generate a unique filename for the new project using the custom name
+        string newFilename = UserGenerateUniqueFilename(customName);
 
         // Create a new ProjectData object with default values
         ProjectData newProjectData = new ProjectData
@@ -662,10 +663,17 @@ public class PatternManager : MonoBehaviour
         return newFilename;
     }
 
-    public void CreateAndLoadNewProject()
+    public void CreateAndLoadNewProject(string customName)
     {
-        // Create a new project file and get the filename
-        string newFilename = CreateNewProjectFile();
+        // Ensure the custom name is not empty
+        if (string.IsNullOrWhiteSpace(customName))
+        {
+            Debug.LogError("Project name cannot be empty!");
+            return;
+        }
+
+        // Create a new project file with the custom name and get the filename
+        string newFilename = CreateNewProjectFile(customName);
         LastProjectFilename = newFilename;
 
         // Load the newly created project
@@ -673,7 +681,7 @@ public class PatternManager : MonoBehaviour
 
         sequencerPrefab.GetComponent<HelmSequencer>().length = 16;
         sampleSequencerPrefab.GetComponent<SampleSequencer>().length = 16;
-        drumSequencerPrefab.GetComponent<SampleSequencer>().length = 16; 
+        drumSequencerPrefab.GetComponent<SampleSequencer>().length = 16;
 
         currentPatternIndex = 1;
 
@@ -976,75 +984,108 @@ public class PatternManager : MonoBehaviour
         return $"Project_{newNumber}.json";
     }
 
-    public string[] GetSortedProjectFilesArray()
+    public string UserGenerateUniqueFilename(string customName)
     {
         // Define the filename pattern to search for
-        string pattern = "Project_*.json";
+        string pattern = customName + "*.json";
         string[] existingFiles = Directory.GetFiles(Application.persistentDataPath, pattern);
 
-        // Extract numbers from filenames and sort them
-        var sortedFiles = existingFiles
-            .Select(file => new
+        int highestNumber = 0;
+
+        // Iterate through existing files to find the highest number
+        foreach (string file in existingFiles)
+        {
+            // Extract the number from the filename
+            string filename = Path.GetFileNameWithoutExtension(file);
+            string numberPart = filename.Substring(customName.Length);
+
+            // Try to parse the number
+            if (int.TryParse(numberPart, out int number))
             {
-                File = file,
-                Number = int.TryParse(Path.GetFileNameWithoutExtension(file).Substring("Project_".Length), out int num) ? num : -1
-            })
-            .Where(x => x.Number != -1)
-            .OrderBy(x => x.Number)
-            .Select(x => x.File)
+                if (number > highestNumber)
+                {
+                    highestNumber = number;
+                }
+            }
+        }
+
+        // Increment the highest number by 1 for the new filename
+        int newNumber = highestNumber + 1;
+
+        // Log the new filename for debugging
+        Debug.Log($"Generated new filename: {customName}{newNumber}.json");
+
+        return $"{customName}.json";
+    }
+
+    public string[] GetSortedProjectFilesArray()
+    {
+        // Get all files in the directory
+        string[] existingFiles = Directory.GetFiles(Application.persistentDataPath, "*.json");
+
+        // Sort files alphabetically by their names
+        var sortedFiles = existingFiles
+            .OrderBy(file => Path.GetFileName(file)) // Sort by the filename
             .ToArray(); // Convert to string[]
 
         return sortedFiles;
     }
 
 
-    public string GetNextProjectFile()
-    {
-        // Get all files starting with "Project" in the persistent data path
-        string[] projectFiles = GetSortedProjectFilesArray();
 
-        if (projectFiles.Length == 0)
-        {
-            Debug.LogWarning("No project files found.");
-            return null;
-        }
-
-        // Sort files by creation time to ensure consistent ordering
-        var sortedFiles = projectFiles
-            .Select(file => new FileInfo(file))
-            .OrderBy(fileInfo => fileInfo.CreationTime)
-            .Select(fileInfo => fileInfo.FullName)
-            .ToArray();
-
-        // Find the index of the last accessed file
-        int startIndex = 0;
-        if (!string.IsNullOrEmpty(lastAccessedFile))
-        {
-            startIndex = Array.IndexOf(sortedFiles, lastAccessedFile);
-            startIndex = (startIndex + 1) % sortedFiles.Length; // Move to next file
-        }
-
-        // Get the next file
-        string nextFile = sortedFiles[startIndex];
-        lastAccessedFile = nextFile; // Update the last accessed file
-        LastProjectFilename = Path.GetFileName(nextFile); // Update the last project filename
-        
-        UpdateProjectFileText(); // Update the UI text
-
-        Debug.Log($"Next project file selected: {LastProjectFilename}");
-        return LastProjectFilename;
-    }
-
+    // Method to get the next project file from the sorted array
     public void LoadNextProject()
     {
-        string nextFilename = GetNextProjectFile();
+        // Get the sorted list of project files
+        string[] sortedFiles = GetSortedProjectFilesArray();
+
+        // Check if there are any files
+        if (sortedFiles.Length == 0)
+        {
+            Debug.LogWarning("No project files found.");
+            return;
+        }
+
+        // Find the index of the current project file
+        int currentIndex = Array.IndexOf(sortedFiles, Path.Combine(Application.persistentDataPath, currentProjectFilename));
+
+        // Handle case where current filename is not found
+        if (currentIndex == -1)
+        {
+            Debug.LogWarning($"Current project filename '{currentProjectFilename}' not found in sorted files. Loading the first project.");
+            currentIndex = -1; // Force to load the first project
+        }
+
+        // Determine the next index
+        int nextIndex = (currentIndex + 1) % sortedFiles.Length;
+
+        // Get the next filename from the sorted list
+        string nextFilePath = sortedFiles[nextIndex];
+        string nextFilename = Path.GetFileName(nextFilePath);
+
+        // Load the next project if the filename is valid
         if (!string.IsNullOrEmpty(nextFilename))
         {
             LoadProject(nextFilename);
-            SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled           
+            
+            // Update the current project filename and last project filename
+            currentProjectFilename = nextFilename;
+            LastProjectFilename = nextFilename;
+
+            SetAllSequencersLoop(true); // Ensure all sequencers have looping enabled
             UpdatePatternDisplay(); // Update UI
+
+            // Update project file text with the new filename
+            UpdateProjectFileText();
+            
+            Debug.Log($"Loaded next project: {nextFilename}");
         }
-    }  
+        else
+        {
+            Debug.LogWarning("Next filename is empty or invalid.");
+        }
+    }
+
 
     private void SetAllSequencersLoop(bool loopEnabled)
     {

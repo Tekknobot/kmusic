@@ -9,7 +9,7 @@ public class PatternUIManager : MonoBehaviour
     public Button playPatternsButton;
     public Button stopPatternsButton;
     public Button removePatternButton;
-    public Button saveNewProjectButton; // New button for saving the project
+
     public Button loadProjectButton;    // New button for loading a project
     public Button clearPatternsButton;  // New button for clearing patterns
     public Button saveOverButton;
@@ -17,17 +17,23 @@ public class PatternUIManager : MonoBehaviour
     public TextMeshProUGUI patternDisplayText;
     public PatternManager patternManager;
 
+    public TMP_InputField projectNameInputField; // UI Input Field for user input
+    public Button createProjectButton; // Button to create a new project
+    public Button goButton;
+       
     void Start()
     {
         if (createPatternButton != null) createPatternButton.onClick.AddListener(CreatePattern);
         if (playPatternsButton != null) playPatternsButton.onClick.AddListener(StartPatterns);
         if (stopPatternsButton != null) stopPatternsButton.onClick.AddListener(StopPatterns);
         if (removePatternButton != null) removePatternButton.onClick.AddListener(RemoveLastPattern);
-        if (saveNewProjectButton != null) saveNewProjectButton.onClick.AddListener(SaveNewProject); // Register new button
         if (loadProjectButton != null) loadProjectButton.onClick.AddListener(LoadProject);           // Register new button
         if (clearPatternsButton != null) clearPatternsButton.onClick.AddListener(ClearPatterns);    // Register new button
         if (saveOverButton != null) saveOverButton.onClick.AddListener(SaveOver);    // Register new button
         if (delete != null) delete.onClick.AddListener(DeleteCurrentProject);    // Register new button
+
+        if (createProjectButton != null) createProjectButton.onClick.AddListener(OnCreateProjectButtonClicked);
+        if (goButton != null) goButton.onClick.AddListener(GoToProject);
     }
 
     void CreatePattern()
@@ -54,21 +60,17 @@ public class PatternUIManager : MonoBehaviour
         UpdatePatternDisplay();
     }
 
-    void SaveNewProject()
-    {
-        if (PatternManager.Instance.isPlaying) {
-            return;
-        }        
-        patternManager.CreateAndLoadNewProject(); // Call the method to save project
-        UpdatePatternDisplay();
-    }
-
     void LoadProject()
     {
         if (PatternManager.Instance.isPlaying) {
             return;
         }
         patternManager.LoadNextProject(); // Call the method to load project
+        
+        projectNameInputField.text = string.Empty;
+        projectNameInputField.gameObject.SetActive(false);
+        projectNameInputField.enabled = false;
+
         UpdatePatternDisplay();
     }
 
@@ -96,5 +98,34 @@ public class PatternUIManager : MonoBehaviour
         int totalPatterns = PatternManager.Instance.sequencersLength / 16;
         int currentPatternIndex = PatternManager.Instance.currentPatternIndex; // Display index should be 1-based
         patternDisplayText.text = $"{currentPatternIndex}/{totalPatterns}";
+    }
+
+    private void OnCreateProjectButtonClicked()
+    {
+        if (PatternManager.Instance.isPlaying) {
+            return;
+        }       
+
+        projectNameInputField.gameObject.SetActive(true);
+        projectNameInputField.enabled = true;
+    }    
+
+    private void GoToProject() {
+        string customName = projectNameInputField.text;
+
+        // Ensure the custom name is not empty
+        if (string.IsNullOrWhiteSpace(customName))
+        {
+            //statusText.text = "Project name cannot be empty!";
+            return;
+        }
+
+        // Call method to create and load new project
+        FindObjectOfType<PatternManager>().CreateAndLoadNewProject(customName);
+
+        UpdatePatternDisplay();    
+
+        projectNameInputField.text = string.Empty;
+        projectNameInputField.gameObject.SetActive(false);
     }
 }
