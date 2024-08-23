@@ -301,7 +301,7 @@ public class PatternManager : MonoBehaviour
         }
 
         isPlaying = true;
-        clock.Reset();
+        //clock.Reset();
         clock.pause = false;
 
         StopAllCoroutines(); // Stop any previous coroutines to avoid conflicts
