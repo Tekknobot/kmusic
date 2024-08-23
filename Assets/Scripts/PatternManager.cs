@@ -976,10 +976,32 @@ public class PatternManager : MonoBehaviour
         return $"Project_{newNumber}.json";
     }
 
+    public string[] GetSortedProjectFilesArray()
+    {
+        // Define the filename pattern to search for
+        string pattern = "Project_*.json";
+        string[] existingFiles = Directory.GetFiles(Application.persistentDataPath, pattern);
+
+        // Extract numbers from filenames and sort them
+        var sortedFiles = existingFiles
+            .Select(file => new
+            {
+                File = file,
+                Number = int.TryParse(Path.GetFileNameWithoutExtension(file).Substring("Project_".Length), out int num) ? num : -1
+            })
+            .Where(x => x.Number != -1)
+            .OrderBy(x => x.Number)
+            .Select(x => x.File)
+            .ToArray(); // Convert to string[]
+
+        return sortedFiles;
+    }
+
+
     public string GetNextProjectFile()
     {
         // Get all files starting with "Project" in the persistent data path
-        string[] projectFiles = Directory.GetFiles(Application.persistentDataPath, "Project*.json");
+        string[] projectFiles = GetSortedProjectFilesArray();
 
         if (projectFiles.Length == 0)
         {
