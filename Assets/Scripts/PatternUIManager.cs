@@ -121,12 +121,12 @@ public class PatternUIManager : MonoBehaviour
             return;
         }
 
+        projectNameInputField.text = string.Empty;
+        projectNameInputField.gameObject.SetActive(false);
+
         // Call method to create and load new project
         FindObjectOfType<PatternManager>().CreateAndLoadNewProject(customName);
 
         UpdatePatternDisplay();    
-
-        projectNameInputField.text = string.Empty;
-        projectNameInputField.gameObject.SetActive(false);
     }
 }

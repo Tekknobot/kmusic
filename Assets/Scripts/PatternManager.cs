@@ -694,15 +694,30 @@ public class PatternManager : MonoBehaviour
         sequencersLength = 16;
 
         MultipleAudioLoader.Instance.currentIndex = 0;
-        string songToLoad = MultipleAudioLoader.Instance.clipFileNames[0];
-        StartCoroutine(MultipleAudioLoader.Instance.LoadClip(songToLoad));
+
+        if (MultipleAudioLoader.Instance.clipFileNames != null && MultipleAudioLoader.Instance.clipFileNames.Count > 0)
+        {
+            string songToLoad = MultipleAudioLoader.Instance.clipFileNames[0];
+            // Proceed with loading the song
+            if (!string.IsNullOrEmpty(songToLoad))
+            {
+                StartCoroutine(MultipleAudioLoader.Instance.LoadClip(songToLoad));
+            }
+            else
+            {
+                Debug.LogWarning("No song to load; skipping song load process.");
+            }            
+        }
+        else
+        {
+            Debug.LogError("clipFileNames list is empty or null.");
+        }
 
         SaveOver();
-
         UpdateProjectFileText();
-
         boardManager.ResetBoard();
     }
+
 
 
     public void SaveProject(string filename)
@@ -1174,13 +1189,17 @@ public class PatternManager : MonoBehaviour
     {
         if (projectFileText != null)
         {
+            Debug.Log($"Updating project file text to: {LastProjectFilename}");
             projectFileText.text = $"{LastProjectFilename}";
+
+            // Additional Debugging: Check if the text has been updated successfully
+            Debug.Log($"TextMeshProUGUI text after update: {projectFileText.text}");
         }
         else
         {
             Debug.LogError("TextMeshProUGUI component is not assigned.");
         }
-    }      
+    }
 
     public void ClearCurrentPattern()
     {
