@@ -27,6 +27,7 @@ public class MultipleAudioLoader : MonoBehaviour
     private const string LastLoadedClipKey = "LastLoadedClip"; // Key for saving the last loaded clip name
 
     private bool isUserDragging = false; // To keep track if the user is dragging the slider
+    private Coroutine currentLoadCoroutine; // To keep track of the currently running load coroutine
 
     private void Awake()
     {
@@ -76,7 +77,7 @@ public class MultipleAudioLoader : MonoBehaviour
         string lastLoadedClip = PlayerPrefs.GetString(LastLoadedClipKey, null);
         if (!string.IsNullOrEmpty(lastLoadedClip))
         {
-            StartCoroutine(LoadClip(lastLoadedClip));
+            yield return LoadClip(lastLoadedClip); // Directly use the LoadClip coroutine
         }
     }
 
@@ -104,6 +105,12 @@ public class MultipleAudioLoader : MonoBehaviour
     {
         Debug.Log("Starting to load and play clip: " + fileName);
 
+        // Stop any ongoing loading coroutine
+        if (currentLoadCoroutine != null)
+        {
+            StopCoroutine(currentLoadCoroutine);
+        }
+
         if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
         {
             Debug.Log("Clip found in dictionary.");
@@ -125,12 +132,7 @@ public class MultipleAudioLoader : MonoBehaviour
             if (www.result == UnityWebRequest.Result.Success)
             {
                 Debug.Log("Successfully loaded audio clip.");
-                if (currentClip != null)
-                {
-                    Resources.UnloadAsset(currentClip);
-                    Debug.Log("Unloaded previous clip.");
-                }
-
+                
                 AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
                 if (newClip == null)
                 {

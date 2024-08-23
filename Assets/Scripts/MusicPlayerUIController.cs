@@ -15,6 +15,9 @@ public class MusicPlayerUIController : MonoBehaviour
     public GameObject waveform;     // Reference to the waveform visualizer GameObject
 
     private int currentTrackIndex = 0; // Index of the currently selected track
+    private Coroutine currentTrackCoroutine; // Reference to the currently running track coroutine
+    private bool isOperationInProgress = false; // Lock to prevent overlapping operations
+    private float debounceTime = 0.5f; // Debounce time in seconds
 
     private void Start()
     {
@@ -28,8 +31,8 @@ public class MusicPlayerUIController : MonoBehaviour
         // Add listeners to buttons
         playButton.onClick.AddListener(PlayTrack);
         stopButton.onClick.AddListener(StopTrack);
-        nextButton.onClick.AddListener(PlayNextTrack);
-        previousButton.onClick.AddListener(PlayPreviousTrack);
+        nextButton.onClick.AddListener(() => StartCoroutine(HandleTrackChange(PlayNextTrack)));
+        previousButton.onClick.AddListener(() => StartCoroutine(HandleTrackChange(PlayPreviousTrack)));
 
         // Initialize the UI
         StartCoroutine(InitializeUI());
@@ -49,14 +52,18 @@ public class MusicPlayerUIController : MonoBehaviour
 
     private void PlayTrack()
     {
+        if (isOperationInProgress) return;
+        isOperationInProgress = true;
+
         currentTrackIndex = MultipleAudioLoader.Instance.currentIndex;
 
         // Play the current track if one is loaded
         if (currentTrackIndex >= 0 && currentTrackIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
         {
-            StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
+            StartNewCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         }
         UpdateTrackName();
+        StartCoroutine(ResetOperationLock());
     }
 
     private IEnumerator PlayTrackCoroutine(string clipFileName)
@@ -73,6 +80,9 @@ public class MusicPlayerUIController : MonoBehaviour
 
     private void StopTrack()
     {
+        if (isOperationInProgress) return;
+        isOperationInProgress = true;
+
         // Stop the current track and reset the AudioSource
         if (MultipleAudioLoader.Instance.audioSource.isPlaying)
         {
@@ -80,6 +90,8 @@ public class MusicPlayerUIController : MonoBehaviour
             waveform.GetComponent<WaveformVisualizer>().StopWave();
             UpdateTrackName();
         }
+
+        StartCoroutine(ResetOperationLock());
     }
 
     private void PlayNextTrack()
@@ -88,7 +100,7 @@ public class MusicPlayerUIController : MonoBehaviour
         currentTrackIndex = (currentTrackIndex + 1) % MultipleAudioLoader.Instance.clipFileNames.Count;
 
         // Play the next track and update the UI
-        StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
+        StartNewCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         UpdateTrackName();
     }
 
@@ -102,7 +114,7 @@ public class MusicPlayerUIController : MonoBehaviour
         }
 
         // Play the previous track and update the UI
-        StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
+        StartNewCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         UpdateTrackName();
     }
 
@@ -117,5 +129,38 @@ public class MusicPlayerUIController : MonoBehaviour
         {
             trackNameText.text = "No Track Loaded";
         }
+    }
+
+    private void StartNewCoroutine(IEnumerator coroutine)
+    {
+        // Stop the currently running coroutine if any
+        if (currentTrackCoroutine != null)
+        {
+            StopCoroutine(currentTrackCoroutine);
+        }
+
+        // Start the new coroutine and store its reference
+        currentTrackCoroutine = StartCoroutine(coroutine);
+    }
+
+    private IEnumerator HandleTrackChange(System.Action trackChangeAction)
+    {
+        if (isOperationInProgress) yield break;
+
+        isOperationInProgress = true;
+
+        trackChangeAction();
+
+        // Debounce to prevent rapid clicking
+        yield return new WaitForSeconds(debounceTime);
+
+        isOperationInProgress = false;
+    }
+
+    private IEnumerator ResetOperationLock()
+    {
+        // Ensure there's a short delay before the next operation can begin
+        yield return new WaitForSeconds(0.1f);
+        isOperationInProgress = false;
     }
 }
