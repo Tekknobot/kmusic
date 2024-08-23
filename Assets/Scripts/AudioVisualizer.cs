@@ -190,7 +190,7 @@ public class AudioVisualizer : MonoBehaviour
             rt.anchoredPosition = new Vector2(markerPositionX, 0);
 
             // Scale the marker to fit the height of the container
-            rt.sizeDelta = new Vector2(2, segmentHeight); // Adjust width (2) as needed
+            rt.sizeDelta = new Vector2(1, segmentHeight/2); // Adjust width (2) as needed
 
             // Ensure the marker stretches across the height of the container
             rt.anchorMin = new Vector2(0.5f, 0);

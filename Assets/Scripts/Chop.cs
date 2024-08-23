@@ -156,21 +156,25 @@ public class Chop : MonoBehaviour
     private void OnTrimBackButtonClick()
     {
         AdjustSelectedTimestamp(-0.1f);
+        GameObject.Find("AudioVisualizer").GetComponent<AudioVisualizer>().StartRender();
     }
 
     private void OnTrimForwardButtonClick()
     {
         AdjustSelectedTimestamp(0.1f);
+        GameObject.Find("AudioVisualizer").GetComponent<AudioVisualizer>().StartRender();
     }
 
     private void OnMicroStepBackButtonClick()
     {
         AdjustSelectedTimestamp(-0.01f);
+        GameObject.Find("AudioVisualizer").GetComponent<AudioVisualizer>().StartRender();
     }
 
     private void OnMicroStepForwardButtonClick()
     {
         AdjustSelectedTimestamp(0.01f);
+        GameObject.Find("AudioVisualizer").GetComponent<AudioVisualizer>().StartRender();
     }
 
     private void AdjustSelectedTimestamp(float adjustment)
