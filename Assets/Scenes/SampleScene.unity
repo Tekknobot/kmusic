@@ -2962,8 +2962,10 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 99e667dc8fd147e46ac9f213b643d054, type: 3}
   - {fileID: 21300000, guid: 49a77df0148f3b54d98a78f6a27707b7, type: 3}
   currentSprite: {fileID: 0}
+  lastClickedSprite: {fileID: 0}
   sequencer: {fileID: 1983356395}
   midiNote: 0
+  selectedSprite: {fileID: 0}
 --- !u!1 &126341317
 GameObject:
   m_ObjectHideFlags: 0
@@ -12203,34 +12205,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!83 &586941837
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 44100
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &589228560
 GameObject:
   m_ObjectHideFlags: 0
