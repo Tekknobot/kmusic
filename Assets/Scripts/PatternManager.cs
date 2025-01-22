@@ -743,6 +743,7 @@ public class PatternManager : MonoBehaviour
     {
         try
         {
+            // Create a new ProjectData object and populate its fields
             ProjectData projectData = new ProjectData
             {
                 HelmPattern = GetPatternDataForSequencer(PatternManager.Instance.sequencerPrefab),
@@ -754,11 +755,14 @@ public class PatternManager : MonoBehaviour
                 HelmSequencerLength = GetSequencerLength(PatternManager.Instance.sequencerPrefab),
                 SampleSequencerLength = GetSequencerLength(PatternManager.Instance.sampleSequencerPrefab),
                 DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),
-                patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex,              
+                patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex,
+                sliderValues = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().GetAllSliderValues() // Save slider values
             };
 
+            // Serialize to JSON
             string json = JsonUtility.ToJson(projectData, true);
             File.WriteAllText(Path.Combine(Application.persistentDataPath, filename), json);
+
             Debug.Log("Project saved successfully.");
         }
         catch (Exception ex)
@@ -766,6 +770,7 @@ public class PatternManager : MonoBehaviour
             Debug.LogError($"Error saving project: {ex.Message}");
         }
     }
+
 
     public void LoadProject(string filename)
     {
@@ -882,9 +887,28 @@ public class PatternManager : MonoBehaviour
                     Debug.LogError("Chop component not found on chopButton.");
                 }
 
-                // Restore patch
-                sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex = projectData.patch;
-                sequencerPrefab.GetComponent<HelmPatchController>().LoadCurrentPatch();
+                // Restore patch and slider values
+                var helmPatchController = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>();
+                if (helmPatchController != null)
+                {
+                    // Restore the patch
+                    helmPatchController.currentPatchIndex = projectData.patch;
+                    helmPatchController.LoadCurrentPatch();
+
+                    // Restore the slider values
+                    if (projectData.sliderValues != null && projectData.sliderValues.Count > 0)
+                    {
+                        helmPatchController.SetAllSliderValues(projectData.sliderValues);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("No slider values found in project data.");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("HelmPatchController not found in sequencerPrefab.");
+                }
 
                 currentPatternIndex = 1;
 
@@ -896,11 +920,8 @@ public class PatternManager : MonoBehaviour
                 Debug.LogError($"Error loading project: {ex.Message}");
             }
         }
-        else
-        {
-            Debug.LogError($"File not found: {filename}");
-        }
     }
+
 
     private PatternData GetPatternDataForSequencer(GameObject sequencerPrefab)
     {
@@ -1418,4 +1439,7 @@ public class ProjectData
     public int HelmSequencerLength;    
     public int SampleSequencerLength;    
     public int DrumSequencerLength;
+
+    public List<float> sliderValues; // List to store slider values
+
 }

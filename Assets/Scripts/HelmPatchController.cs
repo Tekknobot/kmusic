@@ -182,4 +182,78 @@ public class HelmPatchController : MonoBehaviour
             Debug.LogError("HelmController is not assigned.");
         }
     }
+
+    public int GetCurrentPatchIndex()
+    {
+        return currentPatchIndex;
+    }  
+
+    public ProjectData SaveCurrentState()
+    {
+        ProjectData projectData = new ProjectData();
+
+        // Save the current patch index
+        projectData.patch = currentPatchIndex;
+
+        // Save slider values
+        projectData.sliderValues = GetAllSliderValues();
+
+        // Save other properties as needed
+        // For example, BPM, sequencer lengths, etc., would come from other controllers.
+
+        return projectData;
+    }
+    public List<float> GetAllSliderValues()
+    {
+        List<float> values = new List<float>();
+
+        // Iterate through all sliders and store their current values
+        foreach (var slider in parameterSliders)
+        {
+            values.Add(slider.value);
+        }
+
+        return values;
+    }
+
+    public void LoadFromProjectData(ProjectData projectData)
+    {
+        if (projectData == null)
+        {
+            Debug.LogError("Project data is null.");
+            return;
+        }
+
+        // Load the patch index and set the patch
+        if (patches != null && projectData.patch >= 0 && projectData.patch < patches.Length)
+        {
+            currentPatchIndex = projectData.patch;
+            LoadCurrentPatch(); // Load the patch based on the index
+        }
+        else
+        {
+            Debug.LogWarning("Invalid patch index in project data.");
+        }
+
+        // Load slider values and update Helm parameters
+        SetAllSliderValues(projectData.sliderValues);
+    }
+
+    public void SetAllSliderValues(List<float> values)
+    {
+        // Validate input
+        if (values == null || values.Count != parameterSliders.Length)
+        {
+            Debug.LogError("Invalid slider values list provided.");
+            return;
+        }
+
+        // Update each slider and synchronize the parameter in HelmController
+        for (int i = 0; i < parameterSliders.Length; i++)
+        {
+            parameterSliders[i].value = values[i];  // Update slider
+            SetParameter(i, values[i]);            // Sync HelmController parameter
+        }
+    }
+
 }
