@@ -121,9 +121,12 @@ public class PatternManager : MonoBehaviour
                     Debug.Log("Updating board for Group 2 (Samples)");
                     UpdateBoardManageForSamples();
                 }
-                else if (componentButtonScript.currentPatternGroup == 4) {
-                    ExecuteImmediate();
+                else if (componentButtonScript.currentPatternGroup == 3) {
+                    ExecuteDrumDisplay();
                 }              
+                else if (componentButtonScript.currentPatternGroup == 4) {
+                    ExecuteDrumDisplay();
+                }  
 
                 currentPatternIndex = currentPattern;
                 isBoardUpdateRequired = true;
@@ -149,9 +152,12 @@ public class PatternManager : MonoBehaviour
                 Debug.Log("Updating board for Group 2 (Samples)");
                 UpdateBoardManageForSamples();
             }
-            else if (componentButtonScript.currentPatternGroup == 4) {
-                ExecuteImmediate();
+            else if (componentButtonScript.currentPatternGroup == 3) {
+                ExecuteDrumDisplay();
             }      
+            else if (componentButtonScript.currentPatternGroup == 4) {
+                ExecuteDrumDisplay();
+            }               
             // Reset the flag indicating a board update is required
             isBoardUpdateRequired = false;
         }
@@ -160,7 +166,7 @@ public class PatternManager : MonoBehaviour
     /// <summary>
     /// Executes the logic immediately without a delay.
     /// </summary>
-    public void ExecuteImmediate()
+    public void ExecuteDrumDisplay()
     {
         // Get the pad corresponding to the current sprite
         GameObject pad = PadManager.Instance.GetPadByCurrentPad();
