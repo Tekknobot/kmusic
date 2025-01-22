@@ -67,10 +67,10 @@ Shader "Custom/CameraEffects"
                     // Apply a deep red tint for night vision
                     col.rgb = lerp(fixed3(0.2, 0.0, 0.0), fixed3(0.8, 0.1, 0.1), grayscale * 1.5);
                 }
-                else if (_EffectType == 3) // Green Theme Night Mode
+                else if (_EffectType == 3) // Black Theme Night Mode
                 {
-                    // Apply a green tint for night vision (classic night vision look)
-                    col.rgb = lerp(fixed3(0.0, 0.2, 0.0), fixed3(0.0, 1.0, 0.0), grayscale * 1.5);
+                    // Apply a black-tinted night mode
+                    col.rgb = lerp(fixed3(0.0, 0.0, 0.0), fixed3(0.2, 0.2, 0.2), grayscale * 1.5);
                 }
                 else if (_EffectType == 4) // Cyan Theme Night Mode
                 {
