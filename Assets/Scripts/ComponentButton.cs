@@ -132,7 +132,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     mixerGroupObject.SetActive(true);
                     mixerGroupObject.transform.position = initialPositionMixerGroup;
-                    currentPatternGroup = 4;
+                    currentPatternGroup = 3;
                     TrimmerUI.SetActive(false);
                 }
                 break;

@@ -124,7 +124,7 @@ public class PatternManager : MonoBehaviour
                 else if (componentButtonScript.currentPatternGroup == 3) {
                     ExecuteDrumDisplay();
                 }              
-                else if (componentButtonScript.currentPatternGroup == 4) {
+                else if (componentButtonScript.currentPatternGroup == 0) {
                     ExecuteDrumDisplay();
                 }  
 
@@ -155,7 +155,7 @@ public class PatternManager : MonoBehaviour
             else if (componentButtonScript.currentPatternGroup == 3) {
                 ExecuteDrumDisplay();
             }      
-            else if (componentButtonScript.currentPatternGroup == 4) {
+            else if (componentButtonScript.currentPatternGroup == 0) {
                 ExecuteDrumDisplay();
             }               
             // Reset the flag indicating a board update is required
