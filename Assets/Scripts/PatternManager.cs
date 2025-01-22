@@ -94,6 +94,8 @@ public class PatternManager : MonoBehaviour
         // Update the pattern display if the pattern has changed
         if (currentPattern != previousPattern)
         {
+            isBoardUpdateRequired = true;
+
             previousPattern = currentPattern;
             currentPatternIndex = currentPattern;
             isBoardUpdateRequired = true;
@@ -119,12 +121,9 @@ public class PatternManager : MonoBehaviour
                     Debug.Log("Updating board for Group 2 (Samples)");
                     UpdateBoardManageForSamples();
                 }
-                else if (componentButtonScript.currentPatternGroup == 1) {
-                    
-                }
-                else if (componentButtonScript.currentPatternGroup == 0) {
-                    
-                }                
+                else if (componentButtonScript.currentPatternGroup == 4) {
+                    ExecuteImmediate();
+                }              
 
                 currentPatternIndex = currentPattern;
                 isBoardUpdateRequired = true;
@@ -150,16 +149,36 @@ public class PatternManager : MonoBehaviour
                 Debug.Log("Updating board for Group 2 (Samples)");
                 UpdateBoardManageForSamples();
             }
-            else if (componentButtonScript.currentPatternGroup == 1) {
-                
-            }
-            else if (componentButtonScript.currentPatternGroup == 0) {
-                
-            }       
+            else if (componentButtonScript.currentPatternGroup == 4) {
+                ExecuteImmediate();
+            }      
             // Reset the flag indicating a board update is required
             isBoardUpdateRequired = false;
         }
     }
+
+    /// <summary>
+    /// Executes the logic immediately without a delay.
+    /// </summary>
+    public void ExecuteImmediate()
+    {
+        // Get the pad corresponding to the current sprite
+        GameObject pad = PadManager.Instance.GetPadByCurrentPad();
+
+        // Reset the board before updating
+        BoardManager.Instance.ResetBoard();
+
+        if (pad != null)
+        {
+            Debug.Log($"Executing UpdateBoardForPad for pad: {pad.name}");
+            PadManager.Instance.UpdateBoardForPad(pad);
+        }
+        else
+        {
+            Debug.LogWarning("No pad found for the current sprite.");
+        }
+    }
+
 
     private int GetCurrentIndex()
     {

@@ -11,7 +11,7 @@ public class PadManager : MonoBehaviour
     public Sprite[] sprites;             // Array of sprites to assign to each pad
 
     public Sprite currentSprite;         // Current sprite tracked by PadManager
-    private Sprite lastClickedSprite;    // Last clicked sprite
+    public Sprite lastClickedSprite;    // Last clicked sprite
 
     public static Sprite DefaultSprite { get; private set; } // Static property to access defaultSprite
 
@@ -27,6 +27,8 @@ public class PadManager : MonoBehaviour
     private Dictionary<Sprite, int> spriteMidiNoteMap = new Dictionary<Sprite, int>();
 
     public int midiNote;
+    public Sprite selectedSprite; // New variable to hold the currently selected sprite
+
 
     private void Awake()
     {
@@ -158,6 +160,7 @@ public class PadManager : MonoBehaviour
         {
             // lastClickedSprite = spriteRenderer.sprite; // Update last clicked sprite
             currentSprite = spriteRenderer.sprite;
+            selectedSprite = spriteRenderer.sprite;
 
             // Scale the clicked pad temporarily
             StartCoroutine(ScalePad(clickedPad));
@@ -172,6 +175,39 @@ public class PadManager : MonoBehaviour
         // Additional debug information
         Debug.Log($"Clicked Pad: {clickedPad.name}");
     }
+
+    /// <summary>
+    /// Updates the board for the given pad without scaling or playing a sound.
+    /// </summary>
+    /// <param name="clickedPad">The GameObject representing the clicked pad.</param>
+    public void UpdateBoardForPad(GameObject clickedPad)
+    {
+        if (clickedPad == null)
+        {
+            Debug.LogWarning("No pad provided to update the board.");
+            return;
+        }
+
+        // Update the MIDI note from the clicked pad
+        midiNote = clickedPad.GetComponent<PadClickHandler>().midiNote;
+
+        // Reset the board to display default configuration first
+        BoardManager.Instance.ResetBoard();
+
+        // Update the current sprite tracked by PadManager
+        SpriteRenderer spriteRenderer = clickedPad.GetComponent<SpriteRenderer>();
+        if (spriteRenderer != null)
+        {
+            currentSprite = spriteRenderer.sprite;
+
+            // Display the sprite on cells with matching step data
+            DisplaySpriteOnMatchingSteps(currentSprite, spriteMidiNoteMap[currentSprite]);
+        }
+
+        // Additional debug information
+        Debug.Log($"Updated board for pad: {clickedPad.name}");
+    }
+
 
     // Coroutine to scale the clicked pad
     private IEnumerator ScalePad(GameObject padObject)
@@ -299,5 +335,32 @@ public class PadManager : MonoBehaviour
 
         Debug.Log($"Displayed sprite '{sprite.name}' on board based on the current drum pattern for MIDI Note {spriteMidiNote}.");
     }
+
+    /// <summary>
+    /// Finds the pad GameObject corresponding to the selectedSprite.
+    /// </summary>
+    /// <returns>The GameObject of the corresponding pad, or null if no match is found.</returns>
+    public GameObject GetPadByCurrentPad()
+    {
+        if (selectedSprite == null)
+        {
+            Debug.LogWarning("No current sprite is available. Returning null.");
+            return null;
+        }
+
+        foreach (var padObject in originalScales.Keys)
+        {
+            SpriteRenderer spriteRenderer = padObject.GetComponent<SpriteRenderer>();
+            if (spriteRenderer != null && spriteRenderer.sprite == selectedSprite)
+            {
+                Debug.Log($"Found pad corresponding to current sprite: {padObject.name}");
+                return padObject;
+            }
+        }
+
+        Debug.LogWarning("No pad found corresponding to the current sprite.");
+        return null;
+    }
+
 
 }
