@@ -1284,36 +1284,16 @@ public class PatternManager : MonoBehaviour
         }
 
         // Get the full path of the current project file
-        string path = Path.Combine(Application.persistentDataPath, LastProjectFilename);
+        string projectPath = Path.Combine(Application.persistentDataPath, LastProjectFilename);
+        string midiPath = Path.Combine(Application.persistentDataPath, Path.GetFileNameWithoutExtension(LastProjectFilename) + ".json.mid");
 
-        if (File.Exists(path))
+        // Delete the project file
+        if (File.Exists(projectPath))
         {
             try
             {
-                // Delete the project file
-                File.Delete(path);
+                File.Delete(projectPath);
                 Debug.Log($"Project file deleted: {LastProjectFilename}");
-
-                // Clear the current project data
-                lastAccessedFile = null;
-                LastProjectFilename = null;
-
-                sequencersLength = 1;
-                currentPatternIndex = 0;
-
-                sequencerPrefab.GetComponent<HelmSequencer>().Clear();
-                sampleSequencerPrefab.GetComponent<SampleSequencer>().Clear();
-                drumSequencerPrefab.GetComponent<SampleSequencer>().Clear();
-
-                sequencerPrefab.GetComponent<HelmSequencer>().length = 16;
-                sampleSequencerPrefab.GetComponent<SampleSequencer>().length = 16;
-                drumSequencerPrefab.GetComponent<SampleSequencer>().length = 16;               
-
-                // Update the UI to reflect the deletion
-                UpdatePatternDisplay();
-                UpdateProjectFileText();
-
-                Debug.Log("Current project data cleared and UI updated.");
             }
             catch (Exception ex)
             {
@@ -1322,8 +1302,47 @@ public class PatternManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError($"File not found: {path}. Cannot delete.");
+            Debug.LogWarning($"Project file not found: {projectPath}. Skipping project deletion.");
         }
+
+        // Delete the corresponding MIDI file
+        if (File.Exists(midiPath))
+        {
+            try
+            {
+                File.Delete(midiPath);
+                Debug.Log($"MIDI file deleted: {Path.GetFileName(midiPath)}");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error deleting MIDI file: {ex.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"MIDI file not found: {midiPath}. Skipping MIDI deletion.");
+        }
+
+        // Clear the current project data
+        lastAccessedFile = null;
+        LastProjectFilename = null;
+
+        sequencersLength = 1;
+        currentPatternIndex = 0;
+
+        sequencerPrefab.GetComponent<HelmSequencer>().Clear();
+        sampleSequencerPrefab.GetComponent<SampleSequencer>().Clear();
+        drumSequencerPrefab.GetComponent<SampleSequencer>().Clear();
+
+        sequencerPrefab.GetComponent<HelmSequencer>().length = 16;
+        sampleSequencerPrefab.GetComponent<SampleSequencer>().length = 16;
+        drumSequencerPrefab.GetComponent<SampleSequencer>().length = 16;
+
+        // Update the UI to reflect the deletion
+        UpdatePatternDisplay();
+        UpdateProjectFileText();
+
+        Debug.Log("Current project data cleared and UI updated.");
     }
 
     private void UpdateProjectFileText()
