@@ -107,6 +107,7 @@ public class ComponentButton : MonoBehaviour
                     musicPlayerObject.SetActive(true);
                     musicPlayerObject.transform.position = initialPositionMusicPlayer;
                     currentPatternGroup = 0;
+                    PatternManager.Instance.ExecuteDrumDisplay();
                     TrimmerUI.SetActive(false);
                 }
                 break;
@@ -115,6 +116,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     keyManagerObject.transform.position = initialPositionKeyManager;
                     currentPatternGroup = 1;
+                    PatternManager.Instance.UpdateBoardManager();
                     TrimmerUI.SetActive(false);
                 }
                 break;
@@ -123,6 +125,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     sampleManagerObject.transform.position = initialPositionSampleManager;
                     currentPatternGroup = 2;
+                    PatternManager.Instance.UpdateBoardManageForSamples();
                     TrimmerUI.SetActive(true);
                     GameObject.Find("AudioVisualizer").GetComponent<AudioVisualizer>().StartRender();
                 }
@@ -132,6 +135,7 @@ public class ComponentButton : MonoBehaviour
                 {
                     mixerGroupObject.SetActive(true);
                     mixerGroupObject.transform.position = initialPositionMixerGroup;
+                    PatternManager.Instance.ExecuteDrumDisplay();
                     currentPatternGroup = 3;
                     TrimmerUI.SetActive(false);
                 }

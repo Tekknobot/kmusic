@@ -362,5 +362,118 @@ public class PadManager : MonoBehaviour
         return null;
     }
 
+    public int GetNoteFromSprite(Sprite sprite)
+    {
+        if (sprite == null)
+        {
+            Debug.LogError("Sprite is null. Cannot determine MIDI note.");
+            return -1; // Return -1 for invalid input
+        }
+
+        // Match the sprite name with the corresponding sound and MIDI note
+        switch (sprite.name)
+        {
+            case "cell_babyblue": // Kick
+                return 48; // MIDI note for kick drum
+            case "cell_blue": // Snare
+                return 49; // MIDI note for snare drum
+            case "cell_green": // Closed hi-hat
+                return 50; // MIDI note for closed hi-hat
+            case "cell_orange": // Open hi-hat
+                return 51; // MIDI note for open hi-hat
+            case "cell_pink": // Clap
+                return 52; // MIDI note for hand clap
+            case "cell_purple": // Crash
+                return 53; // MIDI note for crash cymbal
+            case "cell_red": // Ride
+                return 54; // MIDI note for ride cymbal
+            case "cell_yellow": // Rim
+                return 55; // MIDI note for rimshot
+            default:
+                Debug.LogWarning($"No MIDI note found for sprite '{sprite.name}'.");
+                return -1; // Return -1 if no match is found
+        }
+    }
+
+    public int GetMidiNoteForSprite(string spriteName)
+    {
+        if (string.IsNullOrEmpty(spriteName))
+        {
+            Debug.LogError("Sprite name is null or empty. Cannot determine MIDI note.");
+            return -1; // Return -1 for invalid input
+        }
+
+        // Match the sprite name with the corresponding MIDI note
+        switch (spriteName)
+        {
+            case "cell_babyblue": // Kick
+                return 48; // MIDI note for kick drum
+            case "cell_blue": // Snare
+                return 49; // MIDI note for snare drum
+            case "cell_green": // Closed hi-hat
+                return 50; // MIDI note for closed hi-hat
+            case "cell_orange": // Open hi-hat
+                return 51; // MIDI note for open hi-hat
+            case "cell_pink": // Clap
+                return 52; // MIDI note for hand clap
+            case "cell_purple": // Crash
+                return 53; // MIDI note for crash cymbal
+            case "cell_red": // Ride
+                return 54; // MIDI note for ride cymbal
+            case "cell_yellow": // Rim
+                return 55; // MIDI note for rimshot
+            default:
+                Debug.LogWarning($"No MIDI note found for sprite name '{spriteName}'.");
+                return -1; // Return -1 if no match is found
+        }
+    }
+
+
+    public void RemovePadTileData(Sprite sprite, int step)
+    {
+        if (sprite == null)
+        {
+            Debug.LogError("Sprite is null. Cannot remove tile data.");
+            return;
+        }
+
+        string spriteName = sprite.name;
+
+        // Check if the sprite is in the tileDataGroups dictionary
+        if (tileDataGroups.ContainsKey(spriteName))
+        {
+            // Get the list of TileData for the sprite
+            List<TileData> tileDataList = tileDataGroups[spriteName];
+
+            // Find the TileData with the specified step
+            TileData tileToRemove = tileDataList.Find(tile => tile.Step == step);
+
+            if (tileToRemove != null)
+            {
+                // Remove the TileData from the list
+                tileDataList.Remove(tileToRemove);
+
+                // If the list becomes empty, remove the sprite from the dictionary
+                if (tileDataList.Count == 0)
+                {
+                    tileDataGroups.Remove(spriteName);
+                }
+
+                Debug.Log($"Removed TileData for Sprite: {spriteName} at Step: {step}.");
+            }
+            else
+            {
+                Debug.LogWarning($"No TileData found for Sprite: {spriteName} at Step: {step}.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning($"Sprite: {spriteName} not found in tileDataGroups.");
+        }
+
+        // Optionally: Save the updated tile data to a file
+        DataManager.SaveTileDataToFile(tileDataGroups);
+    }
+
 
 }

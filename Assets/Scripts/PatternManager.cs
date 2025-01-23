@@ -51,6 +51,8 @@ public class PatternManager : MonoBehaviour
     public bool isBoardUpdateRequired = false;
     public string currentProjectFilename; // Keep track of the current project filename
 
+    private bool isClearingPattern = false; // Flag to track if a pattern is being cleared
+
     private void Awake()
     {
         // Ensure this is the only instance
@@ -79,87 +81,76 @@ public class PatternManager : MonoBehaviour
 
     void Update()
     {
-        // Assuming you have a way to get the current index, e.g., from a clock or sequencer
-        int currentIndex = GetCurrentIndex(); // Placeholder for getting the current step index
+        // Skip updates if a pattern is being cleared
+        if (isClearingPattern)
+        {
+            return;
+        }
+
+        // Get the current step index (e.g., from a clock or sequencer)
+        int currentIndex = GetCurrentIndex();
 
         // Define the number of steps per pattern
         int stepsPerPattern = 16;
 
-        // Determine the current pattern number based on the index and round up
+        // Determine the current pattern number based on the index
         int currentPattern = (int)Math.Ceiling((double)currentIndex / stepsPerPattern);
 
-        // Ensure currentPattern is never 0 by setting the minimum value to 1
+        // Ensure currentPattern is at least 1
         currentPattern = Math.Max(currentPattern, 1);
 
-        // Update the pattern display if the pattern has changed
+        // If the current pattern changes, flag a board update
         if (currentPattern != previousPattern)
         {
-            isBoardUpdateRequired = true;
-
             previousPattern = currentPattern;
             currentPatternIndex = currentPattern;
             isBoardUpdateRequired = true;
-            UpdatePatternDisplay();
-        }
-        
-        if (currentPatternIndex == 1)
-        {
-            isBoardUpdateRequired = true;
-
-            // Check if board update is required
-            if (isBoardUpdateRequired)
-            {
-                var componentButtonScript = componentButton.GetComponent<ComponentButton>();
-
-                if (componentButtonScript.currentPatternGroup == 1)
-                {
-                    Debug.Log("Updating board for Group 1 (Helm/Standard)");
-                    UpdateBoardManager();
-                }
-                else if (componentButtonScript.currentPatternGroup == 2)
-                {
-                    Debug.Log("Updating board for Group 2 (Samples)");
-                    UpdateBoardManageForSamples();
-                }
-                else if (componentButtonScript.currentPatternGroup == 3) {
-                    ExecuteDrumDisplay();
-                }              
-                else if (componentButtonScript.currentPatternGroup == 0) {
-                    ExecuteDrumDisplay();
-                }  
-
-                currentPatternIndex = currentPattern;
-                isBoardUpdateRequired = true;
-                UpdatePatternDisplay();
-
-                // Reset the flag indicating a board update is required
-                isBoardUpdateRequired = false;
-            }            
+            Debug.Log($"Pattern changed to {currentPattern}. Marking board update required.");
         }
 
-        // Check if board update is required
+        // Only update the board if explicitly required
         if (isBoardUpdateRequired)
         {
             var componentButtonScript = componentButton.GetComponent<ComponentButton>();
 
-            if (componentButtonScript.currentPatternGroup == 1)
+            if (componentButtonScript == null)
             {
-                Debug.Log("Updating board for Group 1 (Helm/Standard)");
-                UpdateBoardManager();
+                Debug.LogError("ComponentButton script is missing on componentButton.");
+                return;
             }
-            else if (componentButtonScript.currentPatternGroup == 2)
+
+            switch (componentButtonScript.currentPatternGroup)
             {
-                Debug.Log("Updating board for Group 2 (Samples)");
-                UpdateBoardManageForSamples();
+                case 1: // Helm (keys)
+                    Debug.Log("Updating board for Helm/Keys group.");
+                    UpdateBoardManager();
+                    break;
+
+                case 2: // Samples
+                    Debug.Log("Updating board for Samples group.");
+                    UpdateBoardManageForSamples();
+                    break;
+
+                case 3: // Drums
+                    Debug.Log("Updating board for Drums group.");
+                    ExecuteDrumDisplay();
+                    break;
+
+                case 0: // Drums (alternative group)
+                    Debug.Log("Updating board for Drums group.");
+                    ExecuteDrumDisplay();
+                    break;
+
+                default:
+                    Debug.LogWarning($"Unhandled pattern group: {componentButtonScript.currentPatternGroup}");
+                    break;
             }
-            else if (componentButtonScript.currentPatternGroup == 3) {
-                ExecuteDrumDisplay();
-            }      
-            else if (componentButtonScript.currentPatternGroup == 0) {
-                ExecuteDrumDisplay();
-            }               
-            // Reset the flag indicating a board update is required
+
+            UpdatePatternDisplay();
+
+            // Reset the flag after updating the board
             isBoardUpdateRequired = false;
+            Debug.Log("Board update completed. Resetting update flag.");
         }
     }
 
@@ -248,7 +239,7 @@ public class PatternManager : MonoBehaviour
         sequencersLength = newLength;
 
         // Update UI and save patterns
-        //UpdateBoardManager();
+        UpdateBoardManager();
         UpdatePatternDisplay();
         SavePatterns();
 
@@ -387,7 +378,7 @@ public class PatternManager : MonoBehaviour
         SavePatterns(); // Save the updated list of patterns
     }
 
-    private void UpdateBoardManager()
+    public void UpdateBoardManager()
     {
         if (boardManager == null)
         {
@@ -458,7 +449,7 @@ public class PatternManager : MonoBehaviour
         }
     }
 
-    private void UpdateBoardManageForSamples()
+    public void UpdateBoardManageForSamples()
     {
         if (boardManager == null)
         {
@@ -1255,51 +1246,203 @@ public class PatternManager : MonoBehaviour
             return;
         }
 
+        // Set the clearing flag to true
+        isClearingPattern = true;
+
         // Define the range of steps based on the currentPatternIndex
         int stepsPerPattern = 16; // Assuming each pattern is 16 steps long
         int startStep = (currentPatternIndex - 1) * stepsPerPattern;
         int endStep = startStep + stepsPerPattern;
 
-        // Clear the notes in the specified range for HelmSequencer
-        var helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
-        if (helmSequencer != null)
+        Debug.Log($"Starting to clear current pattern. Group: {componentButton.GetComponent<ComponentButton>()?.currentPatternGroup}, Start Step: {startStep}, End Step: {endStep}");
+
+        // Get the current pattern group (Helm, Samples, or Drums) from the ComponentButton script
+        var componentButtonScript = componentButton.GetComponent<ComponentButton>();
+        if (componentButtonScript == null)
         {
-            for (int noteValue = 0; noteValue <= 127; noteValue++)
-            {
-                helmSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
-            }
-            Debug.Log($"Helm pattern notes cleared from step {startStep} to {endStep}.");
+            Debug.LogError("ComponentButton script not found on componentButton.");
+            isClearingPattern = false; // Reset flag if there's an error
+            return;
         }
 
-        // Clear the notes in the specified range for SampleSequencer
-        var sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
-        if (sampleSequencer != null)
-        {
-            for (int noteValue = 0; noteValue <= 127; noteValue++)
-            {
-                sampleSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
-            }
-            Debug.Log($"Sample pattern notes cleared from step {startStep} to {endStep}.");
-        }
+        // Check which group is currently visible
+        int currentPatternGroup = componentButtonScript.currentPatternGroup;
+        Debug.Log($"Current Pattern Group: {currentPatternGroup}");
 
-        // Clear the notes in the specified range for DrumSequencer
-        var drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
-        if (drumSequencer != null)
-        {
-            for (int noteValue = 0; noteValue <= 127; noteValue++)
-            {
-                drumSequencer.RemoveNotesInRange(noteValue, startStep, endStep);
-            }
-            Debug.Log($"Drum pattern notes cleared from step {startStep} to {endStep}.");
-        }
-
-        // Reset the board and update the UI to reflect the cleared patterns
+        // Reset the board to ensure the UI reflects changes
         BoardManager.Instance.ResetBoard();
-        UpdatePatternDisplay();
+        Debug.Log("Board has been reset.");
+
+        // Handle clearing notes for the current pattern group
+        switch (currentPatternGroup)
+        {
+            case 1: // Helm (keys)
+                Debug.Log("Clearing notes for Helm/Keys.");
+                ClearVisibleNotesOnSequencer(sequencerPrefab.GetComponent<HelmSequencer>(), startStep, endStep, "Helm");
+                break;
+
+            case 2: // Samples
+                Debug.Log("Clearing notes for Samples.");
+                ClearVisibleNotesOnSequencer(sampleSequencerPrefab.GetComponent<SampleSequencer>(), startStep, endStep, "Samples");
+                break;
+
+            case 3: // Drums
+                Debug.Log("Clearing notes for Drums (Group 3).");
+                ClearVisibleNotesOnSequencer(drumSequencerPrefab.GetComponent<SampleSequencer>(), startStep, endStep, "Drums");
+                break;
+
+            case 0: // Drums (for group 0 as well)
+                Debug.Log("Clearing notes for Drums (Group 0).");
+                ClearVisibleNotesOnSequencer(drumSequencerPrefab.GetComponent<SampleSequencer>(), startStep, endStep, "Drums");
+                break;
+
+            default:
+                Debug.LogWarning($"No valid pattern group selected for clearing. Group: {currentPatternGroup}");
+                break;
+        }
+
+        // Save the cleared pattern
+        Debug.Log("Saving patterns after clearing.");
         SavePatterns();
 
-        Debug.Log("Board reset, pattern updated, and patterns saved.");
+        // Update the UI to reflect the cleared notes
+        Debug.Log("Updating pattern display after clearing.");
+        UpdatePatternDisplay();
+
+        // Reset the clearing flag
+        isClearingPattern = false;
+
+        Debug.Log($"Successfully cleared notes for visible group {currentPatternGroup} between steps {startStep} and {endStep}.");
     }
+
+    private void ClearVisibleNotesOnSequencer(AudioHelm.Sequencer sequencer, int startStep, int endStep, string groupName)
+    {
+        if (sequencer == null)
+        {
+            Debug.LogWarning($"{groupName} sequencer is null, cannot clear visible notes.");
+            return;
+        }
+
+        // Get visible cells
+        var visibleCells = GetVisibleCells();
+        if (visibleCells == null || visibleCells.Count == 0)
+        {
+            Debug.LogWarning("No visible cells found on the board manager.");
+            return;
+        }
+
+        // Clear notes based on the group name
+        switch (groupName)
+        {
+            case "Helm": // Keys
+                foreach (var cell in visibleCells)
+                {
+                    int noteValue = KeyManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name); // Get the note value from the sprite
+                    if (noteValue >= 0)
+                    {
+                        sequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+                        KeyManager.Instance.RemoveKeyTileData(cell.CurrentSprite, (int)cell.step);
+                        Debug.Log($"Cleared {groupName} key note {noteValue} from step {startStep} to {endStep}.");
+                    }
+                }
+                break;
+
+            case "Samples": // Sample Manager
+                foreach (var cell in visibleCells)
+                {
+                    int noteValue = SampleManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name); // Get the note value from the sprite
+                    if (noteValue >= 0)
+                    {
+                        sequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+                        SampleManager.Instance.RemoveSampleTileData(cell.CurrentSprite, (int)cell.step);
+                        Debug.Log($"Cleared {groupName} sample note {noteValue} from step {startStep} to {endStep}.");
+                    }
+                }
+                break;
+
+            case "Drums": // Drum Manager
+                foreach (var cell in visibleCells)
+                {
+                    int noteValue = PadManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name); // Get the note value from the sprite
+                    if (noteValue >= 0)
+                    {
+                        sequencer.RemoveNotesInRange(noteValue, startStep, endStep);
+                        PadManager.Instance.RemovePadTileData(cell.CurrentSprite, (int)cell.step);
+                        Debug.Log($"Cleared {groupName} drum note {noteValue} from step {startStep} to {endStep}.");
+                    }
+                }
+                break;
+
+            default:
+                Debug.LogWarning($"No valid group name provided: {groupName}");
+                break;
+        }
+
+        // Refresh the board visually
+        BoardManager.Instance.ResetBoard();
+    }
+
+
+    public List<Cell> GetVisibleCells()
+    {
+        List<Cell> visibleCells = new List<Cell>();
+
+        // Get the current pattern group to filter visibility
+        var componentButtonScript = PatternManager.Instance.componentButton.GetComponent<ComponentButton>();
+        if (componentButtonScript == null)
+        {
+            Debug.LogError("ComponentButton script not found on componentButton.");
+            return visibleCells; // Return an empty list
+        }
+
+        int currentPatternGroup = componentButtonScript.currentPatternGroup;
+
+        // Define the step range based on the current pattern index
+        int stepsPerPattern = 16;
+        int currentPatternIndex = PatternManager.Instance.currentPatternIndex;
+        int patternStartStep = (currentPatternIndex - 1) * stepsPerPattern;
+        int patternEndStep = patternStartStep + stepsPerPattern;
+
+        // Loop through all cells to find visible ones
+        foreach (Cell cell in BoardManager.Instance.boardCells)
+        {
+            if (cell == null)
+                continue;
+
+            // Determine visibility based on pattern group and cell's step
+            bool isCellVisible = false;
+
+            if (currentPatternGroup == 1) // Keys (HelmSequencer)
+            {
+                isCellVisible = PatternManager.Instance.sequencerPrefab.GetComponent<HelmSequencer>() != null
+                                && cell.step >= patternStartStep && cell.step < patternEndStep;
+            }
+            else if (currentPatternGroup == 2) // Samples (SampleSequencer)
+            {
+                isCellVisible = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>() != null
+                                && cell.step >= patternStartStep && cell.step < patternEndStep;
+            }
+            else if (currentPatternGroup == 3 || currentPatternGroup == 0) // Drums (SampleSequencer for drums)
+            {
+                isCellVisible = PatternManager.Instance.drumSequencerPrefab.GetComponent<SampleSequencer>() != null
+                                && cell.step >= patternStartStep && cell.step < patternEndStep;
+            }
+            else
+            {
+                Debug.LogWarning($"Unhandled pattern group: {currentPatternGroup}");
+            }
+
+            // Add visible cells to the list
+            if (isCellVisible)
+            {
+                visibleCells.Add(cell);
+            }
+        }
+
+        Debug.Log($"Found {visibleCells.Count} visible cells for Pattern Group {currentPatternGroup}.");
+        return visibleCells;
+    }
+
 
 
     public void ClearLast16Steps()

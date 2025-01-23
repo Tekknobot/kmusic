@@ -509,7 +509,7 @@ public class KeyManager : MonoBehaviour
         return null;
     }
 
-    private int GetMidiNoteForSprite(string spriteName)
+    public int GetMidiNoteForSprite(string spriteName)
     {
         // Try to extract the number from the sprite name and use it to calculate the MIDI note
         if (int.TryParse(spriteName.Replace("key_", ""), out int keyNumber) && keyNumber >= 1 && keyNumber <= 36)

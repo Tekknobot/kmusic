@@ -530,14 +530,36 @@ public class SampleManager : MonoBehaviour
         return null;
     }
 
-    private int GetMidiNoteForSprite(string spriteName)
+    public int GetNoteFromSprite(Sprite sprite)
+    {
+        if (sprite == null)
+        {
+            Debug.LogError("Sprite is null. Cannot determine MIDI note.");
+            return -1; // Return -1 for invalid input
+        }
+
+        // Iterate through the dictionary to find the corresponding MIDI note
+        foreach (var entry in midiNoteToSpriteMap)
+        {
+            if (entry.Value == sprite) // Compare the sprite
+            {
+                return entry.Key; // Return the MIDI note
+            }
+        }
+
+        Debug.LogWarning($"No MIDI note found for sprite {sprite.name}.");
+        return -1; // Return -1 if the sprite is not mapped to a MIDI note
+    }
+
+
+    public int GetMidiNoteForSprite(string spriteName)
     {
         // Try to extract the number from the sprite name and use it to calculate the MIDI note
         if (int.TryParse(spriteName.Replace("sample_", ""), out int keyNumber) && keyNumber >= 0 && keyNumber <= 15)
         {
-            return 60 + keyNumber; // MIDI note calculation: 33 (A0) + (keyNumber - 1)
+            return 48 + keyNumber; // MIDI note calculation: 33 (A0) + (keyNumber - 1)
         }
-        return 60;
+        return 48;
     }   
 
     public void SaveSampleTileData(Sprite sprite, int step)
