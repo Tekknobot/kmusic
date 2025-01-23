@@ -445,7 +445,7 @@ public class PatternManager : MonoBehaviour
         {
             // Handle the case where currentPattern is null
             Debug.LogWarning("Current pattern is not available.");
-            //boardManager.ResetBoard();
+            boardManager.ResetBoard();
         }
     }
 
@@ -1269,10 +1269,6 @@ public class PatternManager : MonoBehaviour
         int currentPatternGroup = componentButtonScript.currentPatternGroup;
         Debug.Log($"Current Pattern Group: {currentPatternGroup}");
 
-        // Reset the board to ensure the UI reflects changes
-        BoardManager.Instance.ResetBoard();
-        Debug.Log("Board has been reset.");
-
         // Handle clearing notes for the current pattern group
         switch (currentPatternGroup)
         {
@@ -1323,8 +1319,12 @@ public class PatternManager : MonoBehaviour
             return;
         }
 
+        Debug.Log($"Starting to clear visible notes for group: {groupName}, startStep: {startStep}, endStep: {endStep}");
+
         // Get visible cells
         var visibleCells = GetVisibleCells();
+        Debug.Log($"Visible cells count: {visibleCells.Count}");
+
         if (visibleCells == null || visibleCells.Count == 0)
         {
             Debug.LogWarning("No visible cells found on the board manager.");
@@ -1337,12 +1337,20 @@ public class PatternManager : MonoBehaviour
             case "Helm": // Keys
                 foreach (var cell in visibleCells)
                 {
-                    int noteValue = KeyManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name); // Get the note value from the sprite
+                    if (cell.CurrentSprite == null)
+                    {
+                        Debug.LogWarning("Cell has no CurrentSprite. Skipping.");
+                        continue;
+                    }
+
+                    int noteValue = KeyManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name);
+                    Debug.Log($"Processing Helm note. Cell: {cell.name}, NoteValue: {noteValue}");
+
                     if (noteValue >= 0)
                     {
                         sequencer.RemoveNotesInRange(noteValue, startStep, endStep);
                         KeyManager.Instance.RemoveKeyTileData(cell.CurrentSprite, (int)cell.step);
-                        Debug.Log($"Cleared {groupName} key note {noteValue} from step {startStep} to {endStep}.");
+                        Debug.Log($"Cleared Helm key note {noteValue} from step {startStep} to {endStep}.");
                     }
                 }
                 break;
@@ -1350,12 +1358,20 @@ public class PatternManager : MonoBehaviour
             case "Samples": // Sample Manager
                 foreach (var cell in visibleCells)
                 {
-                    int noteValue = SampleManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name); // Get the note value from the sprite
+                    if (cell.CurrentSprite == null)
+                    {
+                        Debug.LogWarning("Cell has no CurrentSprite. Skipping.");
+                        continue;
+                    }
+
+                    int noteValue = SampleManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name);
+                    Debug.Log($"Processing Sample note. Cell: {cell.name}, NoteValue: {noteValue}");
+
                     if (noteValue >= 0)
                     {
                         sequencer.RemoveNotesInRange(noteValue, startStep, endStep);
                         SampleManager.Instance.RemoveSampleTileData(cell.CurrentSprite, (int)cell.step);
-                        Debug.Log($"Cleared {groupName} sample note {noteValue} from step {startStep} to {endStep}.");
+                        Debug.Log($"Cleared Sample note {noteValue} from step {startStep} to {endStep}.");
                     }
                 }
                 break;
@@ -1363,12 +1379,20 @@ public class PatternManager : MonoBehaviour
             case "Drums": // Drum Manager
                 foreach (var cell in visibleCells)
                 {
-                    int noteValue = PadManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name); // Get the note value from the sprite
+                    if (cell.CurrentSprite == null)
+                    {
+                        Debug.LogWarning("Cell has no CurrentSprite. Skipping.");
+                        continue;
+                    }
+
+                    int noteValue = PadManager.Instance.GetMidiNoteForSprite(cell.CurrentSprite.name);
+                    Debug.Log($"Processing Drum note. Cell: {cell.name}, NoteValue: {noteValue}");
+
                     if (noteValue >= 0)
                     {
                         sequencer.RemoveNotesInRange(noteValue, startStep, endStep);
                         PadManager.Instance.RemovePadTileData(cell.CurrentSprite, (int)cell.step);
-                        Debug.Log($"Cleared {groupName} drum note {noteValue} from step {startStep} to {endStep}.");
+                        Debug.Log($"Cleared Drum note {noteValue} from step {startStep} to {endStep}.");
                     }
                 }
                 break;
@@ -1379,71 +1403,56 @@ public class PatternManager : MonoBehaviour
         }
 
         // Refresh the board visually
-        BoardManager.Instance.ResetBoard();
+        Debug.Log("Resetting the board after clearing visible notes.");
+        StartCoroutine(DelayedResetBoard());
     }
 
+    IEnumerator DelayedResetBoard()
+    {
+        yield return new WaitForSeconds(0.1f); // Wait for one frame
+        BoardManager.Instance.ResetBoard();
+    }
 
     public List<Cell> GetVisibleCells()
     {
         List<Cell> visibleCells = new List<Cell>();
 
-        // Get the current pattern group to filter visibility
-        var componentButtonScript = PatternManager.Instance.componentButton.GetComponent<ComponentButton>();
-        if (componentButtonScript == null)
-        {
-            Debug.LogError("ComponentButton script not found on componentButton.");
-            return visibleCells; // Return an empty list
-        }
-
-        int currentPatternGroup = componentButtonScript.currentPatternGroup;
-
-        // Define the step range based on the current pattern index
-        int stepsPerPattern = 16;
-        int currentPatternIndex = PatternManager.Instance.currentPatternIndex;
-        int patternStartStep = (currentPatternIndex - 1) * stepsPerPattern;
-        int patternEndStep = patternStartStep + stepsPerPattern;
-
-        // Loop through all cells to find visible ones
+        // Loop through all cells
         foreach (Cell cell in BoardManager.Instance.boardCells)
         {
             if (cell == null)
+            {
+                Debug.LogWarning("Null cell found. Skipping.");
                 continue;
-
-            // Determine visibility based on pattern group and cell's step
-            bool isCellVisible = false;
-
-            if (currentPatternGroup == 1) // Keys (HelmSequencer)
-            {
-                isCellVisible = PatternManager.Instance.sequencerPrefab.GetComponent<HelmSequencer>() != null
-                                && cell.step >= patternStartStep && cell.step < patternEndStep;
-            }
-            else if (currentPatternGroup == 2) // Samples (SampleSequencer)
-            {
-                isCellVisible = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>() != null
-                                && cell.step >= patternStartStep && cell.step < patternEndStep;
-            }
-            else if (currentPatternGroup == 3 || currentPatternGroup == 0) // Drums (SampleSequencer for drums)
-            {
-                isCellVisible = PatternManager.Instance.drumSequencerPrefab.GetComponent<SampleSequencer>() != null
-                                && cell.step >= patternStartStep && cell.step < patternEndStep;
-            }
-            else
-            {
-                Debug.LogWarning($"Unhandled pattern group: {currentPatternGroup}");
             }
 
-            // Add visible cells to the list
-            if (isCellVisible)
+            var spriteRenderer = cell.GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null)
+            {
+                Debug.LogWarning($"Cell {cell.name} has no SpriteRenderer. Skipping.");
+                continue;
+            }
+
+            if (spriteRenderer.sprite == null)
+            {
+                Debug.LogWarning($"Cell {cell.name} has a SpriteRenderer but no sprite assigned. Skipping.");
+                continue;
+            }
+
+            string spriteName = spriteRenderer.sprite.name;
+            Debug.Log($"Checking cell {cell.name} with sprite {spriteName}");
+
+            if (spriteName != "cell_default")
             {
                 visibleCells.Add(cell);
+                Debug.Log($"Cell {cell.name} added to visible cells.");
             }
         }
 
-        Debug.Log($"Found {visibleCells.Count} visible cells for Pattern Group {currentPatternGroup}.");
+
+        Debug.Log($"Found {visibleCells.Count} visible cells.");
         return visibleCells;
     }
-
-
 
     public void ClearLast16Steps()
     {

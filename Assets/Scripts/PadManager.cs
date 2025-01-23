@@ -374,21 +374,21 @@ public class PadManager : MonoBehaviour
         switch (sprite.name)
         {
             case "cell_babyblue": // Kick
-                return 48; // MIDI note for kick drum
+                return 60; // MIDI note for kick drum
             case "cell_blue": // Snare
-                return 49; // MIDI note for snare drum
+                return 61; // MIDI note for snare drum
             case "cell_green": // Closed hi-hat
-                return 50; // MIDI note for closed hi-hat
+                return 62; // MIDI note for closed hi-hat
             case "cell_orange": // Open hi-hat
-                return 51; // MIDI note for open hi-hat
+                return 63; // MIDI note for open hi-hat
             case "cell_pink": // Clap
-                return 52; // MIDI note for hand clap
+                return 64; // MIDI note for hand clap
             case "cell_purple": // Crash
-                return 53; // MIDI note for crash cymbal
+                return 65; // MIDI note for crash cymbal
             case "cell_red": // Ride
-                return 54; // MIDI note for ride cymbal
+                return 66; // MIDI note for ride cymbal
             case "cell_yellow": // Rim
-                return 55; // MIDI note for rimshot
+                return 67; // MIDI note for rimshot
             default:
                 Debug.LogWarning($"No MIDI note found for sprite '{sprite.name}'.");
                 return -1; // Return -1 if no match is found
@@ -407,21 +407,21 @@ public class PadManager : MonoBehaviour
         switch (spriteName)
         {
             case "cell_babyblue": // Kick
-                return 48; // MIDI note for kick drum
+                return 60; // MIDI note for kick drum
             case "cell_blue": // Snare
-                return 49; // MIDI note for snare drum
+                return 61; // MIDI note for snare drum
             case "cell_green": // Closed hi-hat
-                return 50; // MIDI note for closed hi-hat
+                return 62; // MIDI note for closed hi-hat
             case "cell_orange": // Open hi-hat
-                return 51; // MIDI note for open hi-hat
+                return 63; // MIDI note for open hi-hat
             case "cell_pink": // Clap
-                return 52; // MIDI note for hand clap
+                return 64; // MIDI note for hand clap
             case "cell_purple": // Crash
-                return 53; // MIDI note for crash cymbal
+                return 65; // MIDI note for crash cymbal
             case "cell_red": // Ride
-                return 54; // MIDI note for ride cymbal
+                return 66; // MIDI note for ride cymbal
             case "cell_yellow": // Rim
-                return 55; // MIDI note for rimshot
+                return 67; // MIDI note for rimshot
             default:
                 Debug.LogWarning($"No MIDI note found for sprite name '{spriteName}'.");
                 return -1; // Return -1 if no match is found
