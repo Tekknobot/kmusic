@@ -62,15 +62,40 @@ public class HelmPatchController : MonoBehaviour
         {
             // Load the patch based on the current index
             helmController.LoadPatch(patches[currentPatchIndex]);
+
             // Update the patch name label
             UpdatePatchNameLabel();
-            
+
             // Sync the parameter sliders with HelmController parameter values
             SyncSlidersWithParameters();
+
+            // Nudge all parameters to force a refresh in the synth engine
+            NudgeParameters();
         }
         else
         {
             Debug.LogError("HelmController or patches array is not assigned properly.");
+        }
+    }
+
+    private void NudgeParameters()
+    {
+        if (helmController != null && helmParams != null && parameterSliders != null)
+        {
+            for (int i = 0; i < helmParams.Length; i++)
+            {
+                // Get the current parameter value from the slider
+                float currentValue = parameterSliders[i].value;
+
+                // Force HelmController to reapply the value
+                helmController.SetParameterValue(helmParams[i], currentValue);
+            }
+
+            Debug.Log("All parameters nudged to refresh Helm Synth state.");
+        }
+        else
+        {
+            Debug.LogError("HelmController, helmParams, or parameterSliders is not properly assigned.");
         }
     }
 
@@ -237,7 +262,11 @@ public class HelmPatchController : MonoBehaviour
 
         // Load slider values and update Helm parameters
         SetAllSliderValues(projectData.sliderValues);
+
+        // Nudge all parameters to ensure Helm Synth refreshes
+        NudgeParameters();
     }
+
 
     public void SetAllSliderValues(List<float> values)
     {

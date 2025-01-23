@@ -24360,34 +24360,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1049349259}
   m_CullTransparentMesh: 1
---- !u!83 &1054705958
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 44100
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &1056911142
 GameObject:
   m_ObjectHideFlags: 0
@@ -54473,6 +54445,10 @@ PrefabInstance:
       objectReference: {fileID: 2119059805}
     - target: {fileID: 2449331208316368850, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
       propertyPath: helmParams.Array.data[51]
+      value: 142
+      objectReference: {fileID: 0}
+    - target: {fileID: 2449331208316368850, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
+      propertyPath: helmParams.Array.data[52]
       value: 142
       objectReference: {fileID: 0}
     - target: {fileID: 2449331208316368850, guid: b40db17465b143c4a9a98cf66c6078a5, type: 3}
