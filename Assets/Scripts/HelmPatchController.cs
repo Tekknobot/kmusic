@@ -69,14 +69,22 @@ public class HelmPatchController : MonoBehaviour
             // Sync the parameter sliders with HelmController parameter values
             SyncSlidersWithParameters();
 
-            // Nudge all parameters to force a refresh in the synth engine
-            NudgeParameters();
+            // Start coroutine to nudge parameters after a short delay
+            StartCoroutine(DelayedNudgeParameters(0.1f)); // 0.1-second delay
         }
         else
         {
             Debug.LogError("HelmController or patches array is not assigned properly.");
         }
     }
+
+    private IEnumerator DelayedNudgeParameters(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        NudgeParameters();
+    }
+
 
     private void NudgeParameters()
     {
