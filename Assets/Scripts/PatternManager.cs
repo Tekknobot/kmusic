@@ -7,6 +7,8 @@ using System;
 using System.Linq;
 using TMPro;
 using UnityEngine.UI;
+using Sanford.Multimedia.Midi;
+using kmusic.kmusicMIDI;
 
 public class PatternManager : MonoBehaviour
 {
@@ -734,33 +736,66 @@ public class PatternManager : MonoBehaviour
         boardManager.ResetBoard();
     }
 
-
-
     public void SaveProject(string filename)
     {
         try
         {
+            // Check for null dependencies
+            if (PatternManager.Instance == null)
+            {
+                Debug.LogError("PatternManager.Instance is null!");
+                return;
+            }
+
+            if (clock == null)
+            {
+                Debug.LogError("Clock is not assigned!");
+                return;
+            }
+
+            if (PatternManager.Instance.sequencerPrefab == null || 
+                PatternManager.Instance.sampleSequencerPrefab == null || 
+                PatternManager.Instance.drumSequencerPrefab == null)
+            {
+                Debug.LogError("One or more sequencer prefabs are not assigned!");
+                return;
+            }
+
+            if (chopButton == null || chopButton.GetComponent<Chop>() == null)
+            {
+                Debug.LogError("chopButton or Chop component is not assigned!");
+                return;
+            }
+
             // Create a new ProjectData object and populate its fields
             ProjectData projectData = new ProjectData
             {
                 HelmPattern = GetPatternDataForSequencer(PatternManager.Instance.sequencerPrefab),
                 SamplePattern = GetPatternDataForSequencer(PatternManager.Instance.sampleSequencerPrefab),
                 DrumPattern = GetPatternDataForSequencer(PatternManager.Instance.drumSequencerPrefab),
-                songIndex = MultipleAudioLoader.Instance.currentIndex,
+                songIndex = MultipleAudioLoader.Instance != null ? MultipleAudioLoader.Instance.currentIndex : 0,
                 bpm = clock.bpm,
                 timestamps = chopButton.GetComponent<Chop>().timestamps,
                 HelmSequencerLength = GetSequencerLength(PatternManager.Instance.sequencerPrefab),
                 SampleSequencerLength = GetSequencerLength(PatternManager.Instance.sampleSequencerPrefab),
                 DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),
-                patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex,
-                sliderValues = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().GetAllSliderValues() // Save slider values
+                patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>() != null
+                    ? PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex
+                    : -1,
+                sliderValues = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>() != null
+                    ? PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().GetAllSliderValues()
+                    : new List<float>()
             };
 
             // Serialize to JSON
             string json = JsonUtility.ToJson(projectData, true);
-            File.WriteAllText(Path.Combine(Application.persistentDataPath, filename), json);
+            string projectPath = Path.Combine(Application.persistentDataPath, filename);
+            File.WriteAllText(projectPath, json);
 
-            Debug.Log("Project saved successfully.");
+            Debug.Log($"Project saved successfully to: {projectPath}");
+
+            // Export the MIDI file
+            ExportMidi(filename);
         }
         catch (Exception ex)
         {
@@ -768,6 +803,75 @@ public class PatternManager : MonoBehaviour
         }
     }
 
+    private void ExportMidi(string filename)
+    {
+        try
+        {
+            // Ensure dependencies are valid
+            if (clock == null || sequencerPrefab == null || sampleSequencerPrefab == null || drumSequencerPrefab == null)
+            {
+                Debug.LogError("One or more dependencies are null. Cannot export MIDI.");
+                return;
+            }
+
+            // Extract data from Unity objects
+            var bpm = clock.bpm;
+            var helmNotes = sequencerPrefab.GetComponent<HelmSequencer>()?.GetAllNotes();
+            var sampleNotes = sampleSequencerPrefab.GetComponent<SampleSequencer>()?.GetAllNotes();
+            var drumNotes = drumSequencerPrefab.GetComponent<SampleSequencer>()?.GetAllNotes();
+
+            if (helmNotes == null || sampleNotes == null || drumNotes == null)
+            {
+                Debug.LogError("Failed to retrieve notes from one or more sequencers.");
+                return;
+            }
+
+            // Convert notes to simple data structures (if needed)
+            var helmNoteData = ConvertNotesToPlainData(helmNotes);
+            var sampleNoteData = ConvertNotesToPlainData(sampleNotes);
+            var drumNoteData = ConvertNotesToPlainData(drumNotes);
+
+            // Pass the data to the MIDI exporter
+            var midiExporter = new MidiExporter();
+            midiExporter.ExportMidiWithSanford(
+                filename,
+                bpm,
+                helmNoteData,
+                sampleNoteData,
+                drumNoteData
+            );
+
+            Debug.Log($"MIDI file exported successfully as: {filename}.mid");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error exporting MIDI: {ex.Message}");
+        }
+    }
+
+    private List<kMidiNote> ConvertNotesToPlainData(IEnumerable<AudioHelm.Note> notes)
+    {
+        var midiNotes = new List<kMidiNote>();
+        foreach (var note in notes)
+        {
+            midiNotes.Add(new kMidiNote
+            {
+                Start = note.start,
+                End = note.end,
+                Note = note.note,
+                Velocity = note.velocity
+            });
+        }
+        return midiNotes;
+    }
+
+
+
+    private void SaveProjectAndExportMidi(string filename)
+    {
+        SaveProject(filename); // Save the project as JSON
+        ExportMidi(filename);  // Export the project as MIDI
+    }
 
     public void LoadProject(string filename)
     {
