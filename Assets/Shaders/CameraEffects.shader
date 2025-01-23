@@ -18,7 +18,7 @@ Shader "Custom/CameraEffects"
             #pragma fragment frag
 
             sampler2D _MainTex;
-            fixed _EffectType;
+            float _EffectType;
 
             struct appdata_t
             {
@@ -44,41 +44,46 @@ Shader "Custom/CameraEffects"
             {
                 fixed4 col = tex2D(_MainTex, i.uv);
 
-                // Define a tolerance for "close enough to white"
-                const fixed epsilon = 0.2;
-
-                // Check if the color is close to white
-                if (col.r > 1.0 - epsilon && col.g > 1.0 - epsilon && col.b > 1.0 - epsilon)
-                {
-                    return col; // Skip effect processing for near-white colors
-                }
-
                 // Convert color to grayscale for intensity calculation
-                fixed grayscale = dot(col.rgb, fixed3(0.3, 0.59, 0.11));
+                float grayscale = dot(col.rgb, float3(0.3, 0.59, 0.11));
 
-                // Night Vision Effects
-                if (_EffectType == 1) // Grey Theme Night Mode
+                // Black background setup
+                fixed4 background = fixed4(0.0, 0.0, 0.0, 1.0);
+
+                // Effect 1: Heat Map (Red to Yellow Gradient)
+                if (_EffectType == 1)
                 {
-                    // Apply a blue-gray tint for night vision
-                    col.rgb = lerp(fixed3(0.0, 0.0, 0.2), fixed3(0.3, 0.3, 0.4), grayscale * 1.5); 
+                    float heatIntensity = pow(grayscale, 1.5); // Emphasize brightness
+                    col.rgb = lerp(float3(0.2, 0.0, 0.0), float3(1.0, 0.0, 0.0), heatIntensity); // Dark red to bright red
+                    col.rgb = lerp(col.rgb, float3(1.0, 1.0, 0.0), heatIntensity * 2.0); // Transition to yellow
+                    col.rgb = lerp(background.rgb, col.rgb, grayscale);
                 }
-                else if (_EffectType == 2) // Red Theme Night Mode
+                // Effect 2: Cool Heat Map (Blue to Cyan Gradient)
+                else if (_EffectType == 2)
                 {
-                    // Apply a deep red tint for night vision
-                    col.rgb = lerp(fixed3(0.2, 0.0, 0.0), fixed3(0.8, 0.1, 0.1), grayscale * 1.5);
+                    float coolIntensity = pow(grayscale, 1.5); // Emphasize brightness
+                    col.rgb = lerp(float3(0.0, 0.0, 0.2), float3(0.0, 0.0, 1.0), coolIntensity); // Dark blue to bright blue
+                    col.rgb = lerp(col.rgb, float3(0.0, 1.0, 1.0), coolIntensity * 2.0); // Transition to cyan
+                    col.rgb = lerp(background.rgb, col.rgb, grayscale);
                 }
-                else if (_EffectType == 3) // Black Theme Night Mode
+                // Effect 3: Sunset Map (Purple to Orange Gradient)
+                else if (_EffectType == 3)
                 {
-                    // Apply a black-tinted night mode
-                    col.rgb = lerp(fixed3(0.0, 0.0, 0.0), fixed3(0.2, 0.2, 0.2), grayscale * 1.5);
+                    float sunsetIntensity = pow(grayscale, 1.5); // Emphasize brightness
+                    col.rgb = lerp(float3(0.3, 0.0, 0.5), float3(1.0, 0.2, 0.5), sunsetIntensity); // Deep purple to magenta
+                    col.rgb = lerp(col.rgb, float3(1.0, 0.5, 0.0), sunsetIntensity * 2.0); // Transition to orange
+                    col.rgb = lerp(background.rgb, col.rgb, grayscale);
                 }
-                else if (_EffectType == 4) // Cyan Theme Night Mode
+                // Effect 4: Green Glow Map (Dark Green to Bright Lime)
+                else if (_EffectType == 4)
                 {
-                    // Apply a cyan tint for night vision
-                    col.rgb = lerp(fixed3(0.0, 0.2, 0.2), fixed3(0.0, 0.8, 0.8), grayscale * 1.5);
+                    float glowIntensity = pow(grayscale, 1.5); // Emphasize brightness
+                    col.rgb = lerp(float3(0.0, 0.2, 0.0), float3(0.0, 1.0, 0.0), glowIntensity); // Dark green to bright green
+                    col.rgb = lerp(col.rgb, float3(0.5, 1.0, 0.2), glowIntensity * 2.0); // Transition to lime
+                    col.rgb = lerp(background.rgb, col.rgb, grayscale);
                 }
 
-                // Clamp colors to ensure they remain within valid range
+                // Ensure the output color stays within valid bounds
                 col.rgb = saturate(col.rgb);
 
                 return col;
