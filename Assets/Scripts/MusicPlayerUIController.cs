@@ -14,7 +14,6 @@ public class MusicPlayerUIController : MonoBehaviour
 
     public GameObject waveform;     // Reference to the waveform visualizer GameObject
 
-    private int currentTrackIndex = 0; // Index of the currently selected track
     private Coroutine currentTrackCoroutine; // Reference to the currently running track coroutine
     private bool isOperationInProgress = false; // Lock to prevent overlapping operations
     private float debounceTime = 0.5f; // Debounce time in seconds
@@ -43,52 +42,86 @@ public class MusicPlayerUIController : MonoBehaviour
         // Wait until audio files are loaded
         yield return new WaitUntil(() => MultipleAudioLoader.Instance.clipFileNames.Count > 0);
 
-        // Initialize the waveform visualizer
-        waveform.GetComponent<WaveformVisualizer>().CreateWave();
+        Debug.Log("Audio files loaded.");
 
-        // Optionally play the first track
-        // PlayTrack();
+        // Initialize the waveform visualizer, if available
+        if (waveform != null)
+        {
+            var visualizer = waveform.GetComponent<WaveformVisualizer>();
+            if (visualizer != null)
+            {
+                visualizer.CreateWave();
+            }
+        }
+
+        // Optionally play the first track or update the UI
+        UpdateTrackName();
     }
 
     private void PlayTrack()
     {
         if (isOperationInProgress) return;
+
+        if (MultipleAudioLoader.Instance.clipFileNames.Count == 0)
+        {
+            Debug.LogWarning("No audio files available to play.");
+            return;
+        }
+
         isOperationInProgress = true;
 
-        currentTrackIndex = MultipleAudioLoader.Instance.currentIndex;
+        // Ensure currentIndex is synchronized
+        int currentTrackIndex = MultipleAudioLoader.Instance.currentIndex;
 
-        // Play the current track if one is loaded
         if (currentTrackIndex >= 0 && currentTrackIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
         {
             StartNewCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
         }
-        UpdateTrackName();
+
         StartCoroutine(ResetOperationLock());
     }
 
     private IEnumerator PlayTrackCoroutine(string clipFileName)
     {
+        Debug.Log($"Playing track: {clipFileName}");
+
         // Load and play the clip
         yield return StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(clipFileName));
 
-        // Delay slightly to ensure the clip has started playing
-        yield return new WaitForSeconds(0.1f);
+        // Start the waveform visualization, if available
+        if (waveform != null)
+        {
+            var visualizer = waveform.GetComponent<WaveformVisualizer>();
+            if (visualizer != null)
+            {
+                visualizer.StartWave();
+            }
+        }
 
-        // Start the waveform visualization
-        waveform.GetComponent<WaveformVisualizer>().StartWave();
+        UpdateTrackName();
     }
 
     private void StopTrack()
     {
         if (isOperationInProgress) return;
+
         isOperationInProgress = true;
 
-        // Stop the current track and reset the AudioSource
         if (MultipleAudioLoader.Instance.audioSource.isPlaying)
         {
             MultipleAudioLoader.Instance.audioSource.Stop();
-            waveform.GetComponent<WaveformVisualizer>().StopWave();
-            UpdateTrackName();
+
+            // Stop waveform visualization, if available
+            if (waveform != null)
+            {
+                var visualizer = waveform.GetComponent<WaveformVisualizer>();
+                if (visualizer != null)
+                {
+                    visualizer.StopWave();
+                }
+            }
+
+            UpdateTrackName("Playback Stopped");
         }
 
         StartCoroutine(ResetOperationLock());
@@ -96,34 +129,42 @@ public class MusicPlayerUIController : MonoBehaviour
 
     private void PlayNextTrack()
     {
-        // Increment the current track index and wrap around if necessary
-        currentTrackIndex = (currentTrackIndex + 1) % MultipleAudioLoader.Instance.clipFileNames.Count;
+        if (MultipleAudioLoader.Instance.clipFileNames.Count == 0) return;
 
-        // Play the next track and update the UI
-        StartNewCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
-        UpdateTrackName();
+        // Increment the current track index and wrap around if necessary
+        MultipleAudioLoader.Instance.currentIndex = 
+            (MultipleAudioLoader.Instance.currentIndex + 1) % MultipleAudioLoader.Instance.clipFileNames.Count;
+
+        StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[MultipleAudioLoader.Instance.currentIndex]));
     }
 
     private void PlayPreviousTrack()
     {
+        if (MultipleAudioLoader.Instance.clipFileNames.Count == 0) return;
+
         // Decrement the current track index and wrap around if necessary
-        currentTrackIndex--;
-        if (currentTrackIndex < 0)
+        MultipleAudioLoader.Instance.currentIndex--;
+        if (MultipleAudioLoader.Instance.currentIndex < 0)
         {
-            currentTrackIndex = MultipleAudioLoader.Instance.clipFileNames.Count - 1;
+            MultipleAudioLoader.Instance.currentIndex = MultipleAudioLoader.Instance.clipFileNames.Count - 1;
         }
 
-        // Play the previous track and update the UI
-        StartNewCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
-        UpdateTrackName();
+        StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[MultipleAudioLoader.Instance.currentIndex]));
     }
 
-    private void UpdateTrackName()
+    private void UpdateTrackName(string customMessage = null)
     {
-        // Update the UI text to show the current track name
-        if (currentTrackIndex >= 0 && currentTrackIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
+        if (trackNameText == null) return;
+
+        if (!string.IsNullOrEmpty(customMessage))
         {
-            trackNameText.text = "Now Playing: " + MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex];
+            trackNameText.text = customMessage;
+        }
+        else if (MultipleAudioLoader.Instance.currentIndex >= 0 && 
+                 MultipleAudioLoader.Instance.currentIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
+        {
+            string trackName = MultipleAudioLoader.Instance.clipFileNames[MultipleAudioLoader.Instance.currentIndex];
+            trackNameText.text = $"Now Playing: {trackName}";
         }
         else
         {
@@ -133,13 +174,11 @@ public class MusicPlayerUIController : MonoBehaviour
 
     private void StartNewCoroutine(IEnumerator coroutine)
     {
-        // Stop the currently running coroutine if any
         if (currentTrackCoroutine != null)
         {
             StopCoroutine(currentTrackCoroutine);
         }
 
-        // Start the new coroutine and store its reference
         currentTrackCoroutine = StartCoroutine(coroutine);
     }
 
@@ -151,7 +190,6 @@ public class MusicPlayerUIController : MonoBehaviour
 
         trackChangeAction();
 
-        // Debounce to prevent rapid clicking
         yield return new WaitForSeconds(debounceTime);
 
         isOperationInProgress = false;
@@ -159,7 +197,6 @@ public class MusicPlayerUIController : MonoBehaviour
 
     private IEnumerator ResetOperationLock()
     {
-        // Ensure there's a short delay before the next operation can begin
         yield return new WaitForSeconds(0.1f);
         isOperationInProgress = false;
     }

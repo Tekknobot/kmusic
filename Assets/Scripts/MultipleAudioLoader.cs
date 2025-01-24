@@ -10,24 +10,20 @@ public class MultipleAudioLoader : MonoBehaviour
 {
     public static MultipleAudioLoader Instance { get; private set; }
 
-    public string directoryPath = "AudioFiles";
-    private string fullPath;
+    public string directoryPath = "AudioFiles"; // Default for other platforms
+    private string fullPath; // Complete path to the directory
     public AudioSource audioSource;
     public TMP_Text statusText;
 
     private Dictionary<string, AudioClip> clipDictionary = new Dictionary<string, AudioClip>();
     public List<string> clipFileNames = new List<string>();
-    private string[] allFilePaths;
-    public AudioClip currentClip;
-    public GameObject waveform;
-    public int currentIndex = -1; // To keep track of the current clip index
-
     public Slider songTimeline;
+    public GameObject waveform;
 
-    private const string LastLoadedClipKey = "LastLoadedClip"; // Key for saving the last loaded clip name
-
-    private bool isUserDragging = false; // To keep track if the user is dragging the slider
-    private Coroutine currentLoadCoroutine; // To keep track of the currently running load coroutine
+    public int currentIndex = -1; // To track the current audio clip
+    private bool isUserDragging = false;
+    private Coroutine currentLoadCoroutine;
+    private const string LastLoadedClipKey = "LastLoadedClip";
 
     private void Awake()
     {
@@ -44,29 +40,40 @@ public class MultipleAudioLoader : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("Start method called.");
-        fullPath = Path.Combine(Application.persistentDataPath, directoryPath);
-        Debug.Log("Audio directory path: " + fullPath);
+#if UNITY_ANDROID
+        if (AndroidVersionIsAtLeast30())
+        {
+            directoryPath = "/storage/emulated/0/Music"; // Android Music folder for API 30+
+        }
+        else
+        {
+            directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Scoped storage for API 29
+        }
+#else
+        directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Default for non-Android platforms
+#endif
 
-        // Add listener for slider value changes
+        fullPath = directoryPath;
+
+        Debug.Log($"Audio directory path: {fullPath}");
+
         songTimeline.onValueChanged.AddListener(OnTimelineSliderChanged);
-        songTimeline.onValueChanged.AddListener(delegate { isUserDragging = true; });
-
         StartCoroutine(InitializeAudioFiles());
     }
 
-    private void Update()
+    private bool AndroidVersionIsAtLeast30()
     {
-        if (audioSource.isPlaying && !isUserDragging)
+    #if UNITY_ANDROID && !UNITY_EDITOR
+        using (var versionClass = new AndroidJavaClass("android.os.Build$VERSION"))
         {
-            songTimeline.value = audioSource.time; // Update slider to reflect the current playback time
+            int sdkInt = versionClass.GetStatic<int>("SDK_INT");
+            return sdkInt >= 30;
         }
-
-        if (!audioSource.isPlaying && isUserDragging)
-        {
-            isUserDragging = false;
-        }
+    #else
+        return false; // Assume false when not on Android or in the Unity Editor
+    #endif
     }
+
 
     private IEnumerator InitializeAudioFiles()
     {
@@ -77,82 +84,10 @@ public class MultipleAudioLoader : MonoBehaviour
         string lastLoadedClip = PlayerPrefs.GetString(LastLoadedClipKey, null);
         if (!string.IsNullOrEmpty(lastLoadedClip))
         {
-            yield return LoadClip(lastLoadedClip); // Directly use the LoadClip coroutine
+            yield return LoadClip(lastLoadedClip);
         }
     }
 
-    private void LoadAllAudioFiles()
-    {
-        if (Directory.Exists(fullPath))
-        {
-            string[] files = Directory.GetFiles(fullPath);
-            allFilePaths = files;
-
-            foreach (string file in files)
-            {
-                string fileName = Path.GetFileName(file);
-                clipFileNames.Add(fileName);
-                Debug.Log("Found file: " + fileName);
-            }
-        }
-        else
-        {
-            Debug.LogError("Directory does not exist: " + fullPath);
-        }
-    }
-
-    public IEnumerator LoadAndPlayClip(string fileName)
-    {
-        Debug.Log("Starting to load and play clip: " + fileName);
-
-        // Stop any ongoing loading coroutine
-        if (currentLoadCoroutine != null)
-        {
-            StopCoroutine(currentLoadCoroutine);
-        }
-
-        if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
-        {
-            Debug.Log("Clip found in dictionary.");
-            audioSource.clip = loadedClip;
-            PlayAudioClip(loadedClip, fileName);
-            yield break;
-        }
-
-        string filePath = Path.Combine(fullPath, fileName);
-        string fileUrl = "file://" + filePath;
-        string extension = Path.GetExtension(fileName).ToLower();
-
-        Debug.Log("Loading audio clip from: " + fileUrl);
-
-        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(fileUrl, GetAudioType(extension)))
-        {
-            yield return www.SendWebRequest();
-
-            if (www.result == UnityWebRequest.Result.Success)
-            {
-                Debug.Log("Successfully loaded audio clip.");
-                
-                AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
-                if (newClip == null)
-                {
-                    Debug.LogError("AudioClip is null. Failed to load: " + fileName);
-                    UpdateStatusText("Failed to load: " + fileName);
-                    yield break;
-                }
-
-                clipDictionary[fileName] = newClip;
-                currentClip = newClip;
-                PlayAudioClip(newClip, fileName);
-            }
-            else
-            {
-                Debug.LogError("Failed to load audio file: " + www.error);
-                UpdateStatusText("Failed to play: " + fileName);
-            }
-        }
-    }
-    
     public IEnumerator LoadClip(string fileName)
     {
         if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
@@ -165,9 +100,16 @@ public class MultipleAudioLoader : MonoBehaviour
             yield break;
         }
 
-        string filePath = Path.Combine(fullPath, fileName);
+        string filePath = Path.Combine(directoryPath, fileName); // Resolve full path
         string fileUrl = "file://" + filePath;
         string extension = Path.GetExtension(fileName).ToLower();
+
+        if (!File.Exists(filePath))
+        {
+            Debug.LogError($"File not found: {filePath}");
+            UpdateStatusText($"File not found: {fileName}");
+            yield break;
+        }
 
         using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(fileUrl, GetAudioType(extension)))
         {
@@ -185,8 +127,83 @@ public class MultipleAudioLoader : MonoBehaviour
             }
             else
             {
-                Debug.LogError("Failed to load audio file: " + www.error);
-                UpdateStatusText("Failed to load: " + fileName);
+                Debug.LogError($"Failed to load audio file: {www.error}");
+                UpdateStatusText($"Failed to load: {fileName}");
+            }
+        }
+    }
+
+
+    private void LoadAllAudioFiles()
+    {
+        if (Directory.Exists(directoryPath))
+        {
+            // Get all files recursively
+            string[] files = Directory.GetFiles(directoryPath, "*.*", SearchOption.AllDirectories);
+
+            foreach (string file in files)
+            {
+                string extension = Path.GetExtension(file).ToLower();
+                if (extension == ".mp3" || extension == ".wav") // Filter supported formats
+                {
+                    string relativePath = file.Replace(directoryPath + Path.DirectorySeparatorChar, ""); // Get relative path
+                    clipFileNames.Add(relativePath); // Store the relative path
+                    Debug.Log($"Found file: {relativePath}");
+                }
+            }
+
+            if (clipFileNames.Count == 0)
+            {
+                Debug.LogError("No audio files found in directory: " + directoryPath);
+            }
+        }
+        else
+        {
+            Debug.LogError("Directory does not exist: " + directoryPath);
+        }
+    }
+
+
+
+    public IEnumerator LoadAndPlayClip(string fileName)
+    {
+        Debug.Log($"Loading and playing clip: {fileName}");
+
+        // Stop any ongoing load coroutine
+        if (currentLoadCoroutine != null)
+        {
+            StopCoroutine(currentLoadCoroutine);
+        }
+
+        if (clipDictionary.TryGetValue(fileName, out AudioClip cachedClip))
+        {
+            Debug.Log("Clip found in cache.");
+            audioSource.clip = cachedClip;
+            PlayAudioClip(cachedClip, fileName);
+            yield break;
+        }
+
+        string filePath = Path.Combine(fullPath, fileName);
+        string fileUrl = "file://" + filePath;
+        string extension = Path.GetExtension(fileName).ToLower();
+
+        Debug.Log($"Loading audio clip from: {fileUrl}");
+
+        using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(fileUrl, GetAudioType(extension)))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                Debug.Log("Audio clip loaded successfully.");
+                AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
+                clipDictionary[fileName] = newClip;
+                PlayAudioClip(newClip, fileName);
+            }
+            else
+            {
+                Debug.LogError($"Failed to load audio clip: {www.error}");
+                UpdateStatusText($"Failed to play: {fileName}");
             }
         }
     }
@@ -195,17 +212,17 @@ public class MultipleAudioLoader : MonoBehaviour
     {
         audioSource.clip = clip;
         audioSource.Play();
-        UpdateStatusText("Playing: " + fileName);
+        UpdateStatusText($"Playing: {fileName}");
         SaveCurrentClip(fileName);
         currentIndex = clipFileNames.IndexOf(fileName);
-        SetTimelineSliderValues(clip); // Set the slider min/max values
+        SetTimelineSliderValues(clip);
     }
 
     private void SetTimelineSliderValues(AudioClip clip)
     {
         songTimeline.minValue = 0;
         songTimeline.maxValue = clip.length;
-        songTimeline.value = 0; // Reset the slider to the start
+        songTimeline.value = 0; // Reset slider
     }
 
     private void OnTimelineSliderChanged(float value)
@@ -219,16 +236,12 @@ public class MultipleAudioLoader : MonoBehaviour
 
     private AudioType GetAudioType(string extension)
     {
-        switch (extension)
+        return extension switch
         {
-            case ".wav":
-                return AudioType.WAV;
-            case ".mp3":
-                return AudioType.MPEG;
-            default:
-                Debug.LogError("Unsupported audio file type: " + extension);
-                return AudioType.UNKNOWN;
-        }
+            ".mp3" => AudioType.MPEG,
+            ".wav" => AudioType.WAV,
+            _ => AudioType.UNKNOWN
+        };
     }
 
     private void UpdateStatusText(string text)
