@@ -11,7 +11,11 @@ public class CameraEffectSelector : MonoBehaviour
         Effect_A,
         Effect_B,
         Effect_C,
-        Effect_D
+        Effect_D,
+        Effect_E,
+        Effect_F,
+        Effect_G,
+        Effect_H        
     }
 
     public EffectType selectedEffect = EffectType.None;

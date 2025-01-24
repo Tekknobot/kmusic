@@ -82,6 +82,38 @@ Shader "Custom/CameraEffects"
                     col.rgb = lerp(col.rgb, float3(0.5, 1.0, 0.2), glowIntensity * 2.0); // Transition to lime
                     col.rgb = lerp(background.rgb, col.rgb, grayscale);
                 }
+                // Effect 5: Midnight Glow (Dark Blue to Purple)
+                else if (_EffectType == 5)
+                {
+                    float glowIntensity = pow(grayscale, 1.5); // Emphasize brightness
+                    col.rgb = lerp(float3(0.0, 0.0, 0.1), float3(0.3, 0.0, 0.5), glowIntensity); // Deep blue to purple
+                    col.rgb = lerp(col.rgb, float3(0.7, 0.3, 0.9), glowIntensity * 2.0); // Purple transition
+                    col.rgb = lerp(background.rgb, col.rgb, grayscale);
+                }
+                // Effect 6: Electric Neon (Pink to Blue Gradient)
+                else if (_EffectType == 6)
+                {
+                    float neonIntensity = pow(grayscale, 1.5); // Emphasize brightness
+                    col.rgb = lerp(float3(0.8, 0.0, 0.8), float3(0.4, 0.0, 1.0), neonIntensity); // Vibrant pink to blue
+                    col.rgb = lerp(col.rgb, float3(0.2, 0.6, 1.0), neonIntensity * 2.0); // Bright blue transition
+                    col.rgb = lerp(background.rgb, col.rgb, grayscale);
+                }
+                // Effect 7: Fire Glow (Deep Red to Bright Orange)
+                else if (_EffectType == 7)
+                {
+                    float fireIntensity = pow(grayscale, 1.5); // Emphasize brightness
+                    col.rgb = lerp(float3(0.4, 0.0, 0.0), float3(1.0, 0.2, 0.0), fireIntensity); // Dark red to orange
+                    col.rgb = lerp(col.rgb, float3(1.0, 0.8, 0.2), fireIntensity * 2.0); // Bright orange
+                    col.rgb = lerp(background.rgb, col.rgb, grayscale);
+                }
+                // Effect 8: Arctic Frost (Light Blue to White)
+                else if (_EffectType == 8)
+                {
+                    float frostIntensity = pow(grayscale, 1.5); // Emphasize brightness
+                    col.rgb = lerp(float3(0.2, 0.4, 0.6), float3(0.6, 0.8, 1.0), frostIntensity); // Light blue transition
+                    col.rgb = lerp(col.rgb, float3(1.0, 1.0, 1.0), frostIntensity * 2.0); // Bright white
+                    col.rgb = lerp(background.rgb, col.rgb, grayscale);
+                }
 
                 // Ensure the output color stays within valid bounds
                 col.rgb = saturate(col.rgb);
