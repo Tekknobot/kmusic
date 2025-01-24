@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine.Networking;
 using TMPro;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class MultipleAudioLoader : MonoBehaviour
 {
@@ -40,7 +41,7 @@ public class MultipleAudioLoader : MonoBehaviour
 
     private void Start()
     {
-#if UNITY_ANDROID
+    #if UNITY_ANDROID
         if (AndroidVersionIsAtLeast30())
         {
             directoryPath = "/storage/emulated/0/Music"; // Android Music folder for API 30+
@@ -49,31 +50,72 @@ public class MultipleAudioLoader : MonoBehaviour
         {
             directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Scoped storage for API 29
         }
-#else
+    #else
         directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Default for non-Android platforms
-#endif
+    #endif
 
         fullPath = directoryPath;
 
         Debug.Log($"Audio directory path: {fullPath}");
 
         songTimeline.onValueChanged.AddListener(OnTimelineSliderChanged);
+
+        // Add dragging listeners
+        EventTrigger trigger = songTimeline.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = songTimeline.gameObject.AddComponent<EventTrigger>();
+        }
+
+        // Add OnDragStart
+        EventTrigger.Entry dragStartEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerDown
+        };
+        dragStartEntry.callback.AddListener((data) => { isUserDragging = true; });
+        trigger.triggers.Add(dragStartEntry);
+
+        // Add OnDragEnd
+        EventTrigger.Entry dragEndEntry = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerUp
+        };
+        dragEndEntry.callback.AddListener((data) =>
+        {
+            isUserDragging = false;
+            if (audioSource.clip != null)
+            {
+                audioSource.time = songTimeline.value; // Update playback position
+            }
+        });
+        trigger.triggers.Add(dragEndEntry);
+
+        // Initialize audio file loading
         StartCoroutine(InitializeAudioFiles());
     }
 
+    private void Update()
+    {
+        if (audioSource.clip != null && !isUserDragging)
+        {
+            // Update the slider value based on the current playback position
+            songTimeline.value = audioSource.time;
+        }
+    }
+
+
     private bool AndroidVersionIsAtLeast30()
     {
-    #if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
         using (var versionClass = new AndroidJavaClass("android.os.Build$VERSION"))
         {
             int sdkInt = versionClass.GetStatic<int>("SDK_INT");
             return sdkInt >= 30;
         }
-    #else
+#else
         return false; // Assume false when not on Android or in the Unity Editor
-    #endif
+#endif
     }
-
 
     private IEnumerator InitializeAudioFiles()
     {
@@ -82,9 +124,14 @@ public class MultipleAudioLoader : MonoBehaviour
 
         // Load the last played clip if it exists
         string lastLoadedClip = PlayerPrefs.GetString(LastLoadedClipKey, null);
-        if (!string.IsNullOrEmpty(lastLoadedClip))
+        if (!string.IsNullOrEmpty(lastLoadedClip) && clipFileNames.Contains(lastLoadedClip))
         {
-            yield return LoadClip(lastLoadedClip);
+            yield return LoadClip(lastLoadedClip); // Keep LoadClip method
+        }
+        else if (clipFileNames.Count > 0)
+        {
+            // Start with the first available track if no previous track exists
+            // yield return LoadAndPlayClip(clipFileNames[0]);
         }
     }
 
@@ -133,7 +180,6 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
-
     private void LoadAllAudioFiles()
     {
         if (Directory.Exists(directoryPath))
@@ -162,8 +208,6 @@ public class MultipleAudioLoader : MonoBehaviour
             Debug.LogError("Directory does not exist: " + directoryPath);
         }
     }
-
-
 
     public IEnumerator LoadAndPlayClip(string fileName)
     {

@@ -10,8 +10,9 @@ public class KMusicPlayer : MonoBehaviour
 
     public AudioSource audioSource; // AudioSource to play audio clips
     public TMP_Text trackNameText;  // TextMesh Pro text to display the current track name
+    public TMP_Text logText;        // TextMesh Pro text to display logs
 
-    public List<string> clipFileNames = new List<string>(); // List to store filenames
+    public List<string> clipFileNames = new List<string>(); // List to store relative paths of filenames
     public int currentIndex = -1; // Index of the currently playing track
 
     private string directoryPath; // Path to the music files
@@ -32,52 +33,47 @@ public class KMusicPlayer : MonoBehaviour
 
     private void Start()
     {
-        // Determine the music directory path
-#if UNITY_ANDROID
-        if (AndroidVersionIsAtLeast30())
+        Log("Starting KMusicPlayer...");
+        LoadAudioFileNames();
+
+        if (clipFileNames.Count > 0)
         {
-            directoryPath = "/storage/emulated/0/Music"; // Android Music folder for API 30+
+            currentIndex = 0; // Start with the first track
+            Log($"Found {clipFileNames.Count} tracks. Ready to play.");
         }
         else
         {
-            directoryPath = Application.persistentDataPath + "/AudioFiles"; // Fallback for older APIs
+            Log("No tracks available to play.");
         }
-#else
-        directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Default for other platforms
-#endif
+    }
 
-        Debug.Log("Music directory: " + directoryPath);
-
-        // Ensure the AudioSource is set
-        if (audioSource == null)
+    private void UpdateTrackName(string trackPath)
+    {
+        if (trackNameText != null)
         {
-            Debug.LogError("AudioSource is not assigned.");
-            return;
+            string trackName = Path.GetFileNameWithoutExtension(trackPath); // Extract file name
+            trackNameText.text = "Now Playing: " + trackName;
+            Log($"Track name updated: {trackName}");
         }
-
-        // Load all audio file names
-        LoadAudioFileNames();
     }
 
     private bool AndroidVersionIsAtLeast30()
     {
-    #if UNITY_ANDROID && !UNITY_EDITOR
+#if UNITY_ANDROID && !UNITY_EDITOR
         using (var versionClass = new AndroidJavaClass("android.os.Build$VERSION"))
         {
             int sdkInt = versionClass.GetStatic<int>("SDK_INT");
             return sdkInt >= 30;
         }
-    #else
+#else
         return false; // Assume false when not on Android or in the Unity Editor
-    #endif
+#endif
     }
 
-
-    // Load all audio file names from the directory
+    // Load all audio file names from the directory, including subfolders
     private void LoadAudioFileNames()
     {
     #if UNITY_ANDROID
-        // Use Android's Music folder path
         if (AndroidVersionIsAtLeast30())
         {
             directoryPath = "/storage/emulated/0/Music"; // Android Music folder for API 30+
@@ -87,37 +83,44 @@ public class KMusicPlayer : MonoBehaviour
             directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Fallback for older APIs
         }
     #else
-        // Default path for other platforms
         directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles");
     #endif
 
+        Debug.Log($"Scanning directory: {directoryPath}");
+
         if (Directory.Exists(directoryPath))
         {
-            // Recursively find all files with supported extensions
-            string[] files = Directory.GetFiles(directoryPath, "*.*", SearchOption.AllDirectories);
+            string[] files = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
+            Debug.Log($"Found {files.Length} total files in directory.");
 
             foreach (string file in files)
             {
                 string extension = Path.GetExtension(file).ToLower();
-                if (extension == ".mp3" || extension == ".wav") // Supported formats
+                Debug.Log($"File found: {file}, Extension: {extension}");
+
+                if (extension == ".mp3" || extension == ".wav")
                 {
-                    string fileName = Path.GetFileName(file);
-                    clipFileNames.Add(fileName);
-                    Debug.Log($"Found file: {fileName} in {file}");
+                    string relativePath = file.Replace(directoryPath + Path.DirectorySeparatorChar, "");
+                    relativePath = relativePath.Replace("\\", "/"); // Normalize for cross-platform
+                    clipFileNames.Add(relativePath);
+                    Debug.Log($"Added audio file: {relativePath}");
+                }
+                else
+                {
+                    Debug.Log($"Skipped unsupported file: {file}");
                 }
             }
 
             if (clipFileNames.Count == 0)
             {
-                Debug.LogError("No audio files found in the Music folder or subdirectories.");
+                Debug.LogError("No audio files found with supported extensions (.mp3, .wav).");
             }
         }
         else
         {
-            Debug.LogError($"Directory does not exist: {directoryPath}");
+            Debug.LogError($"Directory does not exist or is inaccessible: {directoryPath}");
         }
     }
-
 
     // Get the type of audio file
     private AudioType GetAudioType(string extension)
@@ -130,12 +133,13 @@ public class KMusicPlayer : MonoBehaviour
         };
     }
 
-    // Update the track name text
-    private void UpdateTrackName(string trackName)
+    // Log messages to the TMP logText object
+    private void Log(string message)
     {
-        if (trackNameText != null)
+        Debug.Log(message); // Always log to the Unity console as well
+        if (logText != null)
         {
-            trackNameText.text = "Now Playing: " + trackName;
+            logText.text += message + "\n"; // Append the message to the TMP_Text
         }
     }
 }
