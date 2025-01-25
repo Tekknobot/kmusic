@@ -1,9 +1,11 @@
-using System;
-using System.IO;
-using AudioHelm;
-using TMPro;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using AudioHelm;
+using TMPro;
+using System.IO;
+using System;
 
 public class AudioBPMAdjuster : MonoBehaviour
 {
@@ -19,7 +21,7 @@ public class AudioBPMAdjuster : MonoBehaviour
     public float originalBPM = 120f; // Detected dynamically
     public float targetBPM = 150f;  // Updated dynamically based on the slider
 
-    private bool isSliderInitialized = false; // Tracks whether the slider is initialized for the current project
+    private bool isTrackChanged = false; // Tracks if a new track has been selected
 
     private void Awake()
     {
@@ -49,31 +51,22 @@ public class AudioBPMAdjuster : MonoBehaviour
             Debug.LogError("AudioSource is not assigned or could not be fetched from MultipleAudioLoader.");
         }
 
-        // Fetch the original BPM from the BPMDetector
+        // Initialize slider after original BPM is fetched
         if (bpmDetector != null)
         {
             FetchOriginalBPM();
         }
         else if (clockController != null)
         {
-            // Fallback to the clock controller if BPMDetector is not available
-            originalBPM = clockController.bpm;
+            originalBPM = clockController.bpm; // Fallback
         }
-        else
-        {
-            Debug.LogError("Neither BPMDetector nor ClockController is assigned!");
-        }
+
+        InitializeSlider();
     }
 
     public void InitializeSlider()
     {
-        if (isSliderInitialized)
-        {
-            Debug.Log("Slider is already initialized for the current project. Skipping reinitialization.");
-            return;
-        }
-
-        // Check for saved project data
+        // Check if there's saved project data
         float savedTargetBPM = originalBPM; // Default to original BPM
 
         if (PatternManager.Instance != null)
@@ -121,15 +114,8 @@ public class AudioBPMAdjuster : MonoBehaviour
         // Update the BPM display text
         if (bpmText != null)
         {
-            bpmText.text = $"{savedTargetBPM:F0}";
+            bpmText.text = $"{savedTargetBPM:F0} : {originalBPM:F0}";
         }
-
-        isSliderInitialized = true; // Mark the slider as initialized
-    }
-
-    public void ResetSliderInitialization()
-    {
-        isSliderInitialized = false; // Allow reinitialization for the next project
     }
 
     private void OnSliderValueChanged(float newValue)
@@ -141,7 +127,7 @@ public class AudioBPMAdjuster : MonoBehaviour
         // Update the BPM text display
         if (bpmText != null)
         {
-            bpmText.text = $"{targetBPM:F0}";
+            bpmText.text = $"{targetBPM:F0} : {originalBPM:F0}";
         }
     }
 
@@ -193,5 +179,26 @@ public class AudioBPMAdjuster : MonoBehaviour
 
         audioSource.pitch = speedFactor; // Adjust pitch
         Debug.Log($"AudioSource pitch adjusted to: {audioSource.pitch}");
+    }
+
+    public void OnTrackChanged()
+    {
+        // Reset pitch and reload the original BPM for the new track
+        if (audioSource != null)
+        {
+            audioSource.pitch = 1.0f; // Reset pitch to normal
+        }
+
+        if (bpmDetector != null)
+        {
+            FetchOriginalBPM(); // Fetch the original BPM for the new track
+        }
+        else
+        {
+            Debug.LogWarning("BPMDetector is not assigned. Unable to fetch BPM for the new track.");
+        }
+
+        InitializeSlider(); // Reinitialize the slider for the new track
+        Debug.Log("Track changed. Pitch reset and slider reinitialized.");
     }
 }

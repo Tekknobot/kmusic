@@ -867,7 +867,7 @@ public class PatternManager : MonoBehaviour
     }
 
     public void LoadProject(string filename)
-    {
+    {   
         string path = Path.Combine(Application.persistentDataPath, filename);
         if (File.Exists(path))
         {
@@ -959,16 +959,27 @@ public class PatternManager : MonoBehaviour
                     StartCoroutine(MultipleAudioLoader.Instance.LoadClip(songToLoad));
                 }
 
-                // Restore the BPM and pitch
+                // Restore the BPM
                 if (projectData.bpm > 0)
                 {
                     clock.bpm = projectData.bpm;
+                    var bpmSlider = GameObject.Find("BPM")?.GetComponent<Slider>();
+                    if (bpmSlider != null)
+                    {
+                        bpmSlider.value = clock.bpm;
+                    }
                 }
 
+                // Restore pitch
                 if (projectData.pitch > 0 && AudioBPMAdjuster.Instance != null && AudioBPMAdjuster.Instance.originalBPM > 0)
                 {
                     AudioBPMAdjuster.Instance.targetBPM = AudioBPMAdjuster.Instance.originalBPM * projectData.pitch;
                     AudioBPMAdjuster.Instance.AdjustPlaybackSpeed(); // Apply the pitch
+                    var pitchSlider = GameObject.Find("PitchBPM")?.GetComponent<Slider>();
+                    if (pitchSlider != null)
+                    {
+                        AudioBPMAdjuster.Instance.InitializeSlider();
+                    }                    
                 }
 
                 // Restore timestamps
@@ -1008,6 +1019,7 @@ public class PatternManager : MonoBehaviour
                 currentPatternIndex = 1;
 
                 Debug.Log($"Project loaded from file: {filename}");
+
                 UpdatePatternDisplay(); // Update UI to reflect loaded patterns
             }
             catch (Exception ex)
