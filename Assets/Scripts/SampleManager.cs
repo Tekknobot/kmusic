@@ -557,9 +557,9 @@ public class SampleManager : MonoBehaviour
         // Try to extract the number from the sprite name and use it to calculate the MIDI note
         if (int.TryParse(spriteName.Replace("sample_", ""), out int keyNumber) && keyNumber >= 0 && keyNumber <= 15)
         {
-            return 48 + keyNumber; // MIDI note calculation: 33 (A0) + (keyNumber - 1)
+            return 60 + keyNumber; // MIDI note calculation: 33 (A0) + (keyNumber - 1)
         }
-        return 48;
+        return 60;
     }   
 
     public void SaveSampleTileData(Sprite sprite, int step)
