@@ -26,6 +26,8 @@ public class MultipleAudioLoader : MonoBehaviour
     private Coroutine currentLoadCoroutine;
     private const string LastLoadedClipKey = "LastLoadedClip";
 
+    public AudioBPMAdjuster audioBPMAdjuster;
+
     private void Awake()
     {
         if (Instance == null)
@@ -178,6 +180,8 @@ public class MultipleAudioLoader : MonoBehaviour
                 UpdateStatusText($"Failed to load: {fileName}");
             }
         }
+
+        audioBPMAdjuster.FetchOriginalBPM();
     }
 
     private void LoadAllAudioFiles()
@@ -254,13 +258,23 @@ public class MultipleAudioLoader : MonoBehaviour
 
     private void PlayAudioClip(AudioClip clip, string fileName)
     {
+        if (audioSource == null)
+        {
+            Debug.LogError("AudioSource is not assigned in MultipleAudioLoader.");
+            return;
+        }
+
         audioSource.clip = clip;
         audioSource.Play();
+
+        Debug.Log($"Now playing: {fileName}");
         UpdateStatusText($"Playing: {fileName}");
         SaveCurrentClip(fileName);
+
         currentIndex = clipFileNames.IndexOf(fileName);
         SetTimelineSliderValues(clip);
     }
+
 
     private void SetTimelineSliderValues(AudioClip clip)
     {

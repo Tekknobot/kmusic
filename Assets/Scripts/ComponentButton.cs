@@ -127,6 +127,7 @@ public class ComponentButton : MonoBehaviour
                     currentPatternGroup = 2;
                     PatternManager.Instance.UpdateBoardManageForSamples();
                     TrimmerUI.SetActive(true);
+                    AudioBPMAdjuster.Instance.InitializeSlider();
                     GameObject.Find("AudioVisualizer").GetComponent<AudioVisualizer>().StartRender();
                 }
                 break;

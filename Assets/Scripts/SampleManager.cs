@@ -379,6 +379,7 @@ public class SampleManager : MonoBehaviour
     {
         Debug.Log($"PlaySampleAudio called with sampleName: {sampleName}");
 
+        // Find the index of the sample in the sprites array
         int index = System.Array.FindIndex(samples, sprite => sprite.name == sampleName);
         Debug.Log($"Sample '{sampleName}' found at index: {index}");
 
@@ -393,26 +394,35 @@ public class SampleManager : MonoBehaviour
                 Debug.LogError("No AudioClip found in MultipleAudioLoader.Instance.audioSource.");
                 return;
             }
-            else
-            {
-                Debug.Log($"AudioClip '{clip.name}' successfully assigned.");
-            }
 
+            Debug.Log($"AudioClip '{clip.name}' successfully assigned.");
+
+            // Stop the audio source and prepare to play from the new timestamp
             audioSource.Stop();
             audioSource.clip = clip;
 
+            // Validate the timestamp
             if (timestamp < 0 || timestamp > clip.length)
             {
                 Debug.LogError($"Timestamp {timestamp} is out of bounds for the audio clip length {clip.length}.");
                 return;
             }
+
             Debug.Log($"Timestamp {timestamp} is within bounds.");
 
-            float durationToNextTimestamp = (index + 1 < chopScript.timestamps.Count) ? 
-                                            chopScript.timestamps[index + 1] - timestamp : 
-                                            clip.length - (float)timestamp;
+            // Adjust playback speed based on pitch
+            float speedFactor = AudioBPMAdjuster.Instance.targetBPM / AudioBPMAdjuster.Instance.originalBPM;
+            audioSource.pitch = speedFactor; // Adjust pitch dynamically
+            Debug.Log($"AudioSource pitch set to: {audioSource.pitch} (Speed Factor: {speedFactor})");
 
-            Debug.Log($"audioSource.time set to {timestamp}, calling Play().");
+            // Calculate the adjusted duration based on pitch
+            float durationToNextTimestamp = (index + 1 < chopScript.timestamps.Count) 
+                ? (chopScript.timestamps[index + 1] - timestamp) / speedFactor 
+                : (clip.length - timestamp) / speedFactor;
+
+            Debug.Log($"Duration to next timestamp: {durationToNextTimestamp}");
+
+            // Play the audio from the adjusted timestamp
             audioSource.time = timestamp;
             audioSource.Play();
 
@@ -425,7 +435,7 @@ public class SampleManager : MonoBehaviour
             Debug.LogError($"Sample name '{sampleName}' not found or index is out of bounds.");
         }
     }
-
+    
     public Sprite GetCurrentSprite()
     {
         return currentSample;
