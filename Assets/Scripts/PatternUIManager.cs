@@ -81,7 +81,7 @@ public class PatternUIManager : MonoBehaviour
         UpdatePatternDisplay();
     }
 
-    void SaveOver() {
+    public void SaveOver() {
         patternManager.SaveOver(); // Clear all patterns
         UpdatePatternDisplay();
     }

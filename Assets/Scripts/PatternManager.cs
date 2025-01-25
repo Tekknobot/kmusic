@@ -741,21 +741,13 @@ public class PatternManager : MonoBehaviour
         try
         {
             // Check for null dependencies
-            if (PatternManager.Instance == null)
+            if (PatternManager.Instance == null || clock == null)
             {
-                Debug.LogError("PatternManager.Instance is null!");
+                Debug.LogError("PatternManager or Clock is not assigned!");
                 return;
             }
 
-            if (clock == null)
-            {
-                Debug.LogError("Clock is not assigned!");
-                return;
-            }
-
-            if (PatternManager.Instance.sequencerPrefab == null || 
-                PatternManager.Instance.sampleSequencerPrefab == null || 
-                PatternManager.Instance.drumSequencerPrefab == null)
+            if (sequencerPrefab == null || sampleSequencerPrefab == null || drumSequencerPrefab == null)
             {
                 Debug.LogError("One or more sequencer prefabs are not assigned!");
                 return;
@@ -763,28 +755,32 @@ public class PatternManager : MonoBehaviour
 
             if (chopButton == null || chopButton.GetComponent<Chop>() == null)
             {
-                Debug.LogError("chopButton or Chop component is not assigned!");
+                Debug.LogError("ChopButton or Chop component is not assigned!");
                 return;
+            }
+
+            // Calculate the pitch based on AudioBPMAdjuster
+            float pitch = 1.0f;
+            if (AudioBPMAdjuster.Instance != null && AudioBPMAdjuster.Instance.originalBPM > 0)
+            {
+                pitch = AudioBPMAdjuster.Instance.targetBPM / AudioBPMAdjuster.Instance.originalBPM;
             }
 
             // Create a new ProjectData object and populate its fields
             ProjectData projectData = new ProjectData
             {
-                HelmPattern = GetPatternDataForSequencer(PatternManager.Instance.sequencerPrefab),
-                SamplePattern = GetPatternDataForSequencer(PatternManager.Instance.sampleSequencerPrefab),
-                DrumPattern = GetPatternDataForSequencer(PatternManager.Instance.drumSequencerPrefab),
+                HelmPattern = GetPatternDataForSequencer(sequencerPrefab),
+                SamplePattern = GetPatternDataForSequencer(sampleSequencerPrefab),
+                DrumPattern = GetPatternDataForSequencer(drumSequencerPrefab),
                 songIndex = MultipleAudioLoader.Instance != null ? MultipleAudioLoader.Instance.currentIndex : 0,
                 bpm = clock.bpm,
                 timestamps = chopButton.GetComponent<Chop>().timestamps,
-                HelmSequencerLength = GetSequencerLength(PatternManager.Instance.sequencerPrefab),
-                SampleSequencerLength = GetSequencerLength(PatternManager.Instance.sampleSequencerPrefab),
-                DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),
-                patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>() != null
-                    ? PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex
-                    : -1,
-                sliderValues = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>() != null
-                    ? PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().GetAllSliderValues()
-                    : new List<float>()
+                HelmSequencerLength = GetSequencerLength(sequencerPrefab),
+                SampleSequencerLength = GetSequencerLength(sampleSequencerPrefab),
+                DrumSequencerLength = GetSequencerLength(drumSequencerPrefab),
+                patch = sequencerPrefab.GetComponent<HelmPatchController>()?.currentPatchIndex ?? -1,
+                sliderValues = sequencerPrefab.GetComponent<HelmPatchController>()?.GetAllSliderValues(),
+                pitch = pitch // Save pitch
             };
 
             // Serialize to JSON
@@ -793,9 +789,6 @@ public class PatternManager : MonoBehaviour
             File.WriteAllText(projectPath, json);
 
             Debug.Log($"Project saved successfully to: {projectPath}");
-
-            // Export the MIDI file
-            ExportMidi(filename);
         }
         catch (Exception ex)
         {
@@ -966,15 +959,16 @@ public class PatternManager : MonoBehaviour
                     StartCoroutine(MultipleAudioLoader.Instance.LoadClip(songToLoad));
                 }
 
-                // Restore the BPM
+                // Restore the BPM and pitch
                 if (projectData.bpm > 0)
                 {
                     clock.bpm = projectData.bpm;
-                    var bpmSlider = GameObject.Find("BPM")?.GetComponent<Slider>();
-                    if (bpmSlider != null)
-                    {
-                        bpmSlider.value = clock.bpm;
-                    }
+                }
+
+                if (projectData.pitch > 0 && AudioBPMAdjuster.Instance != null && AudioBPMAdjuster.Instance.originalBPM > 0)
+                {
+                    AudioBPMAdjuster.Instance.targetBPM = AudioBPMAdjuster.Instance.originalBPM * projectData.pitch;
+                    AudioBPMAdjuster.Instance.AdjustPlaybackSpeed(); // Apply the pitch
                 }
 
                 // Restore timestamps
@@ -1722,5 +1716,7 @@ public class ProjectData
     public int DrumSequencerLength;
 
     public List<float> sliderValues; // List to store slider values
+
+    public float pitch;
 
 }

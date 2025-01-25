@@ -1,9 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+using System;
+using System.IO;
 using AudioHelm;
 using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class AudioBPMAdjuster : MonoBehaviour
 {
@@ -18,6 +18,8 @@ public class AudioBPMAdjuster : MonoBehaviour
 
     public float originalBPM = 120f; // Detected dynamically
     public float targetBPM = 150f;  // Updated dynamically based on the slider
+
+    private bool isSliderInitialized = false; // Tracks whether the slider is initialized for the current project
 
     private void Awake()
     {
@@ -61,18 +63,56 @@ public class AudioBPMAdjuster : MonoBehaviour
         {
             Debug.LogError("Neither BPMDetector nor ClockController is assigned!");
         }
-
-        // Initialize slider after original BPM is fetched
-        InitializeSlider();
     }
 
     public void InitializeSlider()
     {
+        if (isSliderInitialized)
+        {
+            Debug.Log("Slider is already initialized for the current project. Skipping reinitialization.");
+            return;
+        }
+
+        // Check for saved project data
+        float savedTargetBPM = originalBPM; // Default to original BPM
+
+        if (PatternManager.Instance != null)
+        {
+            var lastProject = PatternManager.LastProjectFilename;
+            if (!string.IsNullOrEmpty(lastProject))
+            {
+                string path = Path.Combine(Application.persistentDataPath, lastProject);
+                if (File.Exists(path))
+                {
+                    try
+                    {
+                        string json = File.ReadAllText(path);
+                        ProjectData projectData = JsonUtility.FromJson<ProjectData>(json);
+
+                        if (projectData != null && projectData.pitch > 0 && originalBPM > 0)
+                        {
+                            savedTargetBPM = originalBPM * projectData.pitch;
+                            Debug.Log($"Loaded saved target BPM from project data: {savedTargetBPM}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"Error loading saved project data: {ex.Message}");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("No project data file found. Initializing with default BPM.");
+                }
+            }
+        }
+
+        // Initialize the slider
         if (bpmSlider != null)
         {
-            bpmSlider.value = originalBPM; // Set the slider's initial value to the original BPM
+            bpmSlider.value = savedTargetBPM; // Set the slider's initial value
 
-            targetBPM = originalBPM; // Set the target BPM to match the original BPM initially
+            targetBPM = savedTargetBPM; // Set the target BPM to the saved value or original BPM
             bpmSlider.onValueChanged.AddListener(OnSliderValueChanged);
 
             Debug.Log($"Slider initialized. Min: {bpmSlider.minValue}, Max: {bpmSlider.maxValue}, Initial Value: {bpmSlider.value}");
@@ -81,8 +121,15 @@ public class AudioBPMAdjuster : MonoBehaviour
         // Update the BPM display text
         if (bpmText != null)
         {
-            bpmText.text = $"{originalBPM:F0}";
+            bpmText.text = $"{savedTargetBPM:F0}";
         }
+
+        isSliderInitialized = true; // Mark the slider as initialized
+    }
+
+    public void ResetSliderInitialization()
+    {
+        isSliderInitialized = false; // Allow reinitialization for the next project
     }
 
     private void OnSliderValueChanged(float newValue)
