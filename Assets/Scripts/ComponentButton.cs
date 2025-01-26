@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -97,7 +98,7 @@ public class ComponentButton : MonoBehaviour
         currentObjectIndex = (currentObjectIndex + 1) % 4; // Cycle through the objects
     }
 
-    private void MoveCurrentObjectOnScreen()
+    public void MoveCurrentObjectOnScreen()
     {
         switch (currentObjectIndex)
         {
@@ -143,6 +144,55 @@ public class ComponentButton : MonoBehaviour
                 break;
         }
     }
+
+    public void ShowCorrectPanel(bool isSampleMissing)
+    {
+        if (isSampleMissing)
+        {
+            // Ensure the music player panel is visible
+            if (musicPlayerObject != null)
+            {
+                musicPlayerObject.SetActive(true);
+                musicPlayerObject.transform.position = initialPositionMusicPlayer;
+                Debug.Log("Music player panel is now visible due to missing sample.");
+
+                // Reset `currentObjectIndex` to the index of the mixer panel
+                currentObjectIndex = 0; // Assuming `3` is the index for the mixer panel
+                MoveCurrentObjectOnScreen();
+                MoveOtherObjectsOffscreen();
+                return; // Exit after successfully switching to the music player panel
+            }
+            else
+            {
+                Debug.LogError("MusicPlayerObject is not assigned in ComponentButton.");
+                return; // Exit early as the required panel is not available
+            }
+        }
+        else
+        {
+            // Ensure the mixer panel is visible
+            if (mixerGroupObject != null)
+            {
+                mixerGroupObject.SetActive(true);
+                mixerGroupObject.transform.position = initialPositionMixerGroup;
+                Debug.Log("Mixer panel is now visible because the sample exists.");
+
+                // Reset `currentObjectIndex` to the index of the mixer panel
+                currentObjectIndex = 3; // Assuming `3` is the index for the mixer panel
+                MoveCurrentObjectOnScreen();
+                MoveOtherObjectsOffscreen();
+                return; // Exit after successfully switching to the mixer panel
+            }
+            else
+            {
+                Debug.LogError("MixerGroupObject is not assigned in ComponentButton.");
+            }
+        }
+
+        // Default fallback, if no condition is met or both objects are null
+        Debug.LogError("No valid panel could be shown. Both musicPlayerObject and mixerGroupObject are null.");
+    }
+
 
     private void MoveOtherObjectsOffscreen()
     {

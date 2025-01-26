@@ -537,25 +537,51 @@ public class PatternManager : MonoBehaviour
 
     public void SavePatterns()
     {
-        // Create a new ProjectData instance to hold all pattern data
-        ProjectData projectData = new ProjectData
+        try
         {
-            HelmPattern = GetPatternDataForSequencer(PatternManager.Instance.sequencerPrefab),
-            SamplePattern = GetPatternDataForSequencer(PatternManager.Instance.sampleSequencerPrefab),
-            DrumPattern = GetPatternDataForSequencer(PatternManager.Instance.drumSequencerPrefab),
-            HelmSequencerLength = GetSequencerLength(PatternManager.Instance.sequencerPrefab),
-            SampleSequencerLength = GetSequencerLength(PatternManager.Instance.sampleSequencerPrefab),
-            DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),
-            songIndex = MultipleAudioLoader.Instance.currentIndex,
-            bpm = clock.bpm,
-            timestamps = chopButton.GetComponent<Chop>().timestamps,
-            patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex,
-        };
+            // Ensure MultipleAudioLoader and other required components are available
+            if (MultipleAudioLoader.Instance == null || clock == null)
+            {
+                Debug.LogError("MultipleAudioLoader or Clock is not assigned.");
+                return;
+            }
 
-        // Save all pattern data to file
-        DataManager.SaveProjectToFile(projectData);
-        Debug.Log("Patterns saved to file.");
+            // Retrieve the current song file name
+            string songFileName = null;
+            if (MultipleAudioLoader.Instance.clipFileNames != null && MultipleAudioLoader.Instance.currentIndex >= 0)
+            {
+                songFileName = MultipleAudioLoader.Instance.clipFileNames[MultipleAudioLoader.Instance.currentIndex];
+            }
+            else
+            {
+                Debug.LogWarning("No valid song file name found. Saving patterns without a song file.");
+            }
+
+            // Create a new ProjectData instance to hold all pattern data
+            ProjectData projectData = new ProjectData
+            {
+                HelmPattern = GetPatternDataForSequencer(PatternManager.Instance.sequencerPrefab),
+                SamplePattern = GetPatternDataForSequencer(PatternManager.Instance.sampleSequencerPrefab),
+                DrumPattern = GetPatternDataForSequencer(PatternManager.Instance.drumSequencerPrefab),
+                HelmSequencerLength = GetSequencerLength(PatternManager.Instance.sequencerPrefab),
+                SampleSequencerLength = GetSequencerLength(PatternManager.Instance.sampleSequencerPrefab),
+                DrumSequencerLength = GetSequencerLength(PatternManager.Instance.drumSequencerPrefab),
+                songFileName = songFileName, // Use songFileName instead of songIndex
+                bpm = clock.bpm,
+                timestamps = chopButton.GetComponent<Chop>()?.timestamps ?? new List<float>(), // Handle null Chop component
+                patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>()?.currentPatchIndex ?? -1,
+            };
+
+            // Save all pattern data to file
+            DataManager.SaveProjectToFile(projectData);
+            Debug.Log("Patterns saved to file.");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error saving patterns: {ex.Message}");
+        }
     }
+
 
     public void LoadPatterns()
     {
@@ -648,37 +674,56 @@ public class PatternManager : MonoBehaviour
 
     private string CreateNewProjectFile(string customName)
     {
-        // Generate a unique filename for the new project using the custom name
-        string newFilename = UserGenerateUniqueFilename(customName);
-
-        // Create a new ProjectData object with default values
-        ProjectData newProjectData = new ProjectData
+        try
         {
-            HelmPattern = null,
-            SamplePattern = null,
-            DrumPattern = null,
-            HelmSequencerLength = 0,  // Default length for new project
-            SampleSequencerLength = 0,
-            DrumSequencerLength = 0,
-            songIndex = 0,
-            bpm = 120f,
-            timestamps = new List<float>(),
-            patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>().currentPatchIndex,
-        };
+            // Generate a unique filename for the new project using the custom name
+            string newFilename = UserGenerateUniqueFilename(customName);
 
-        // Convert the ProjectData object to JSON
-        string json = JsonUtility.ToJson(newProjectData, true);
+            // Get the current song file name
+            string songFileName = null;
+            if (MultipleAudioLoader.Instance != null && MultipleAudioLoader.Instance.clipFileNames != null && MultipleAudioLoader.Instance.clipFileNames.Count > 0)
+            {
+                songFileName = MultipleAudioLoader.Instance.clipFileNames[0]; // Default to the first song in the list for a new project
+            }
+            else
+            {
+                Debug.LogWarning("No valid song file names found. Creating project without a song file.");
+            }
 
-        // Define the path to save the new project file
-        string path = Path.Combine(Application.persistentDataPath, newFilename);
+            // Create a new ProjectData object with default values
+            ProjectData newProjectData = new ProjectData
+            {
+                HelmPattern = null,
+                SamplePattern = null,
+                DrumPattern = null,
+                HelmSequencerLength = 0, // Default length for new project
+                SampleSequencerLength = 0,
+                DrumSequencerLength = 0,
+                songFileName = songFileName, // Use songFileName instead of songIndex
+                bpm = 120f, // Default BPM for new project
+                timestamps = new List<float>(), // Initialize an empty list for timestamps
+                patch = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>()?.currentPatchIndex ?? -1, // Use current patch index or default to -1
+            };
 
-        // Write the JSON to the file
-        File.WriteAllText(path, json);
+            // Convert the ProjectData object to JSON
+            string json = JsonUtility.ToJson(newProjectData, true);
 
-        Debug.Log($"New project file created: {newFilename}");
+            // Define the path to save the new project file
+            string path = Path.Combine(Application.persistentDataPath, newFilename);
 
-        // Return the filename for immediate loading
-        return newFilename;
+            // Write the JSON to the file
+            File.WriteAllText(path, json);
+
+            Debug.Log($"New project file created: {newFilename}");
+
+            // Return the filename for immediate loading
+            return newFilename;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Error creating new project file: {ex.Message}");
+            return null; // Return null if there is an error
+        }
     }
 
     public void CreateAndLoadNewProject(string customName)
@@ -772,7 +817,9 @@ public class PatternManager : MonoBehaviour
                 HelmPattern = GetPatternDataForSequencer(sequencerPrefab),
                 SamplePattern = GetPatternDataForSequencer(sampleSequencerPrefab),
                 DrumPattern = GetPatternDataForSequencer(drumSequencerPrefab),
-                songIndex = MultipleAudioLoader.Instance != null ? MultipleAudioLoader.Instance.currentIndex : 0,
+                songFileName = MultipleAudioLoader.Instance != null && MultipleAudioLoader.Instance.clipFileNames.Count > 0 
+                               ? MultipleAudioLoader.Instance.clipFileNames[MultipleAudioLoader.Instance.currentIndex] 
+                               : null,
                 bpm = clock.bpm,
                 timestamps = chopButton.GetComponent<Chop>().timestamps,
                 HelmSequencerLength = GetSequencerLength(sequencerPrefab),
@@ -795,6 +842,219 @@ public class PatternManager : MonoBehaviour
             Debug.LogError($"Error saving project: {ex.Message}");
         }
     }
+
+    public void LoadProject(string filename)
+    {
+        string path = Path.Combine(Application.persistentDataPath, filename);
+        if (File.Exists(path))
+        {
+            try
+            {
+                string json = File.ReadAllText(path);
+                ProjectData projectData = JsonUtility.FromJson<ProjectData>(json);
+
+                if (projectData == null)
+                {
+                    Debug.LogError("Failed to load project: projectData is null.");
+                    return;
+                }
+
+                // Load HelmSequencer pattern
+                if (projectData.HelmPattern != null)
+                {
+                    var helmSequencer = sequencerPrefab.GetComponent<HelmSequencer>();
+                    if (helmSequencer != null)
+                    {
+                        helmSequencer.Clear();
+                        helmSequencer.length = projectData.HelmSequencerLength;
+                        PopulateSequencerFromPatternData(helmSequencer, projectData.HelmPattern);
+                        sequencersLength = helmSequencer.length;
+                        UpdatePatternDisplay();
+                        Debug.Log($"Loaded HelmSequencer pattern: {projectData.HelmPattern.Type}");
+                    }
+                }
+
+                // Load SampleSequencer pattern
+                if (projectData.SamplePattern != null)
+                {
+                    var sampleSequencer = sampleSequencerPrefab.GetComponent<SampleSequencer>();
+                    if (sampleSequencer != null)
+                    {
+                        sampleSequencer.Clear();
+                        sampleSequencer.length = projectData.SampleSequencerLength;
+                        PopulateSampleSequencerFromPatternData(sampleSequencer, projectData.SamplePattern);
+                        sequencersLength = sampleSequencer.length;
+                        UpdatePatternDisplay();
+                        Debug.Log($"Loaded SampleSequencer pattern: {projectData.SamplePattern.Type}");
+                    }
+                }
+
+                // Load DrumSequencer pattern
+                if (projectData.DrumPattern != null)
+                {
+                    var drumSequencer = drumSequencerPrefab.GetComponent<SampleSequencer>();
+                    if (drumSequencer != null)
+                    {
+                        drumSequencer.Clear();
+                        drumSequencer.length = projectData.DrumSequencerLength;
+                        PopulateDrumSequencerFromPatternData(drumSequencer, projectData.DrumPattern);
+                        sequencersLength = drumSequencer.length;
+                        UpdatePatternDisplay();
+                        Debug.Log($"Loaded DrumSequencer pattern: {projectData.DrumPattern.Type}");
+                    }
+                }
+
+                // Restore the song file name
+                if (!string.IsNullOrEmpty(projectData.songFileName))
+                {
+                    int songIndex = MultipleAudioLoader.Instance.clipFileNames.IndexOf(projectData.songFileName);
+                    if (songIndex >= 0)
+                    {
+                        // Song file exists, load it
+                        MultipleAudioLoader.Instance.currentIndex = songIndex;
+                        StartCoroutine(MultipleAudioLoader.Instance.LoadClip(projectData.songFileName));
+                        GameObject.Find("ComponentButton").GetComponent<ComponentButton>().ShowCorrectPanel(false);
+                    }
+                    else
+                    {
+                        // Song file is missing
+                        Debug.LogWarning($"Song file '{projectData.songFileName}' not found in clip list.");
+
+                        // Show the music player panel explicitly
+                        GameObject.Find("ComponentButton").GetComponent<ComponentButton>().ShowCorrectPanel(true);
+
+                        // Display a missing song message
+                        StartCoroutine(ShowMissingSongMessageWithDelay("Sample does not exist anymore. Another sample in folder used!", 0.1f));
+                    }
+                }
+                else
+                {
+                    // Handle the case where projectData.songFileName is null or empty
+                    Debug.LogWarning("Project data song file name is empty or null.");
+
+                    // Show the music player panel explicitly
+                    GameObject.Find("ComponentButton").GetComponent<ComponentButton>().ShowCorrectPanel(true);
+
+                    // Display a missing song message
+                    StartCoroutine(ShowMissingSongMessageWithDelay("No song file specified in the project data!", 0.1f));
+                }
+
+
+                // Restore the BPM
+                if (projectData.bpm > 0)
+                {
+                    clock.bpm = projectData.bpm;
+                    var bpmSlider = GameObject.Find("BPM")?.GetComponent<Slider>();
+                    if (bpmSlider != null)
+                    {
+                        bpmSlider.value = clock.bpm;
+                    }
+                }
+
+                // Restore pitch
+                if (projectData.pitch > 0 && AudioBPMAdjuster.Instance != null && AudioBPMAdjuster.Instance.originalBPM > 0)
+                {
+                    AudioBPMAdjuster.Instance.targetBPM = AudioBPMAdjuster.Instance.originalBPM * projectData.pitch;
+                    AudioBPMAdjuster.Instance.AdjustPlaybackSpeed(); // Apply the pitch
+                    var pitchSlider = GameObject.Find("PitchBPM")?.GetComponent<Slider>();
+                    if (pitchSlider != null)
+                    {
+                        AudioBPMAdjuster.Instance.InitializeSlider();
+                    }
+                }
+
+                // Restore timestamps
+                var chopComponent = chopButton.GetComponent<Chop>();
+                if (chopComponent != null)
+                {
+                    chopComponent.timestamps = projectData.timestamps;
+                }
+
+                // Restore patch and slider values
+                var helmPatchController = sequencerPrefab.GetComponent<HelmPatchController>();
+                if (helmPatchController != null)
+                {
+                    helmPatchController.currentPatchIndex = projectData.patch;
+                    helmPatchController.LoadCurrentPatch();
+
+                    if (projectData.sliderValues != null && projectData.sliderValues.Count > 0)
+                    {
+                        helmPatchController.SetAllSliderValues(projectData.sliderValues);
+                    }
+                }
+
+                currentPatternIndex = 1;
+
+                Debug.Log($"Project loaded from file: {filename}");
+                UpdatePatternDisplay();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Error loading project: {ex.Message}");
+            }
+        }
+    }
+
+    private bool IsSampleMissing(string songFileName)
+    {
+        if (string.IsNullOrEmpty(songFileName))
+        {
+            Debug.LogWarning("Song file name is empty or null.");
+            return true; // Treat as missing
+        }
+
+        if (MultipleAudioLoader.Instance == null || MultipleAudioLoader.Instance.clipFileNames == null)
+        {
+            Debug.LogError("MultipleAudioLoader or clipFileNames is null.");
+            return true; // Treat as missing
+        }
+
+        // Check if the song file name exists in the list and also verify the actual file's existence
+        bool existsInList = MultipleAudioLoader.Instance.clipFileNames.Contains(songFileName);
+        string filePath = Path.Combine(Application.persistentDataPath, songFileName);
+        bool fileExists = File.Exists(filePath);
+
+        if (!existsInList || !fileExists)
+        {
+            Debug.LogWarning($"Song file '{songFileName}' is missing or does not exist on disk.");
+            return true;
+        }
+
+        return false; // File exists and is valid
+    }
+
+
+    private IEnumerator ShowMissingSongMessageWithDelay(string message, float delay)
+    {
+        // Find the 'SongFileName' GameObject
+        GameObject songFileNameObject = GameObject.Find("SongFileName");
+
+        if (songFileNameObject != null)
+        {
+            // Get the TextMeshProUGUI component
+            TextMeshProUGUI songFileText = songFileNameObject.GetComponent<TextMeshProUGUI>();
+
+            if (songFileText != null)
+            {
+                // Wait for the specified delay
+                yield return new WaitForSeconds(delay);
+
+                // Display the missing song message
+                songFileText.text = message;
+
+                Debug.Log($"Displayed missing song message: {message}");
+            }
+            else
+            {
+                Debug.LogError("TextMeshProUGUI component is missing on 'SongFileName' GameObject.");
+            }
+        }
+        else
+        {
+            Debug.LogError("GameObject 'SongFileName' not found.");
+        }
+    }
+
 
     private void ExportMidi(string filename)
     {
@@ -865,170 +1125,6 @@ public class PatternManager : MonoBehaviour
         SaveProject(filename); // Save the project as JSON
         ExportMidi(filename);  // Export the project as MIDI
     }
-
-    public void LoadProject(string filename)
-    {   
-        string path = Path.Combine(Application.persistentDataPath, filename);
-        if (File.Exists(path))
-        {
-            try
-            {
-                string json = File.ReadAllText(path);
-                ProjectData projectData = JsonUtility.FromJson<ProjectData>(json);
-
-                if (projectData == null)
-                {
-                    Debug.LogError("Failed to load project: projectData is null.");
-                    return;
-                }
-
-                // Load HelmSequencer pattern
-                if (projectData.HelmPattern != null)
-                {
-                    var helmSequencer = PatternManager.Instance.sequencerPrefab.GetComponent<HelmSequencer>();
-                    if (helmSequencer != null)
-                    {
-                        helmSequencer.Clear();
-                        helmSequencer.length = projectData.HelmSequencerLength;
-                        PopulateSequencerFromPatternData(helmSequencer, projectData.HelmPattern);
-                        sequencersLength = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>().length;
-                        UpdatePatternDisplay();
-                        Debug.Log($"Loaded HelmSequencer pattern: {projectData.HelmPattern.Type}");
-                    }
-                    else
-                    {
-                        Debug.LogError("HelmSequencer not found.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Failed to load project: projectData.HelmPattern is null.");
-                }
-
-                // Load SampleSequencer pattern
-                if (projectData.SamplePattern != null)
-                {
-                    var sampleSequencer = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>();
-                    if (sampleSequencer != null)
-                    {
-                        sampleSequencer.Clear();
-                        sampleSequencer.length = projectData.SampleSequencerLength;
-                        PopulateSampleSequencerFromPatternData(sampleSequencer, projectData.SamplePattern);
-                        sequencersLength = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>().length;
-                        UpdatePatternDisplay();
-                        Debug.Log($"Loaded SampleSequencer pattern: {projectData.SamplePattern.Type}");
-                    }
-                    else
-                    {
-                        Debug.LogError("SampleSequencer not found.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Failed to load project: projectData.SamplePattern is null.");
-                }
-
-                // Load DrumSequencer pattern
-                if (projectData.DrumPattern != null)
-                {
-                    var drumSequencer = PatternManager.Instance.drumSequencerPrefab.GetComponent<SampleSequencer>();
-                    if (drumSequencer != null)
-                    {
-                        drumSequencer.Clear();
-                        drumSequencer.length = projectData.DrumSequencerLength;
-                        PopulateDrumSequencerFromPatternData(drumSequencer, projectData.DrumPattern);
-                        sequencersLength = PatternManager.Instance.sampleSequencerPrefab.GetComponent<SampleSequencer>().length;
-                        UpdatePatternDisplay();
-                        Debug.Log($"Loaded DrumSequencer pattern: {projectData.DrumPattern.Type}");
-                    }
-                    else
-                    {
-                        Debug.LogError("DrumSequencer not found.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Failed to load project: projectData.DrumPattern is null.");
-                }
-
-                // Restore the song index
-                if (projectData.songIndex >= 0 && projectData.songIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
-                {
-                    MultipleAudioLoader.Instance.currentIndex = projectData.songIndex;
-                    string songToLoad = MultipleAudioLoader.Instance.clipFileNames[projectData.songIndex];
-                    StartCoroutine(MultipleAudioLoader.Instance.LoadClip(songToLoad));
-                }
-
-                // Restore the BPM
-                if (projectData.bpm > 0)
-                {
-                    clock.bpm = projectData.bpm;
-                    var bpmSlider = GameObject.Find("BPM")?.GetComponent<Slider>();
-                    if (bpmSlider != null)
-                    {
-                        bpmSlider.value = clock.bpm;
-                    }
-                }
-
-                // Restore pitch
-                if (projectData.pitch > 0 && AudioBPMAdjuster.Instance != null && AudioBPMAdjuster.Instance.originalBPM > 0)
-                {
-                    AudioBPMAdjuster.Instance.targetBPM = AudioBPMAdjuster.Instance.originalBPM * projectData.pitch;
-                    AudioBPMAdjuster.Instance.AdjustPlaybackSpeed(); // Apply the pitch
-                    var pitchSlider = GameObject.Find("PitchBPM")?.GetComponent<Slider>();
-                    if (pitchSlider != null)
-                    {
-                        AudioBPMAdjuster.Instance.InitializeSlider();
-                    }                    
-                }
-
-                // Restore timestamps
-                var chopComponent = chopButton.GetComponent<Chop>();
-                if (chopComponent != null)
-                {
-                    chopComponent.timestamps = projectData.timestamps;
-                }
-                else
-                {
-                    Debug.LogError("Chop component not found on chopButton.");
-                }
-
-                // Restore patch and slider values
-                var helmPatchController = PatternManager.Instance.sequencerPrefab.GetComponent<HelmPatchController>();
-                if (helmPatchController != null)
-                {
-                    // Restore the patch
-                    helmPatchController.currentPatchIndex = projectData.patch;
-                    helmPatchController.LoadCurrentPatch();
-
-                    // Restore the slider values
-                    if (projectData.sliderValues != null && projectData.sliderValues.Count > 0)
-                    {
-                        helmPatchController.SetAllSliderValues(projectData.sliderValues);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("No slider values found in project data.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("HelmPatchController not found in sequencerPrefab.");
-                }
-
-                currentPatternIndex = 1;
-
-                Debug.Log($"Project loaded from file: {filename}");
-
-                UpdatePatternDisplay(); // Update UI to reflect loaded patterns
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Error loading project: {ex.Message}");
-            }
-        }
-    }
-
 
     private PatternData GetPatternDataForSequencer(GameObject sequencerPrefab)
     {
@@ -1719,7 +1815,7 @@ public class ProjectData
     public PatternData HelmPattern;
     public PatternData SamplePattern;
     public PatternData DrumPattern;
-    public int songIndex;
+    public string songFileName; // Replacing songIndex with songFileName
     public float bpm;
     public List<float> timestamps;
     public int patch;
