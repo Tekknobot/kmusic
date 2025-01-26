@@ -96,10 +96,25 @@ public class Cell : MonoBehaviour
         // Check if the last clicked manager is SampleManager
         if (ManagerHandler.Instance.IsSampleManagerLastClicked())
         {
-            if (lastClickedSprite != null)
+            if (lastClickedSprite != null && lastClickedSprite != defaultSprite)
             {
-                newSprite = lastClickedSprite;
-                Debug.Log($"ReplaceSprite using last clicked sprite from SampleManager: {newSprite.name}");
+                // If the current sprite is default, allow replacing it
+                if (spriteRenderer.sprite == defaultSprite || spriteRenderer.sprite == lastClickedSprite)
+                {
+                    newSprite = lastClickedSprite;
+                    Debug.Log($"ReplaceSprite using last clicked sprite from SampleManager: {newSprite.name}");
+                }
+                else
+                {
+                    // Return early if the current sprite doesn't match the last clicked sprite and is not default
+                    Debug.LogWarning($"Returning early: Current sprite ({spriteRenderer.sprite?.name ?? "None"}) does not match the last clicked sprite ({lastClickedSprite?.name ?? "None"}), and it's not default.");
+                    return;
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"ReplaceSprite skipped: Last clicked sprite is either null or the default sprite.");
+                return; // Skip replacement logic for SampleManager
             }
         }
         else
