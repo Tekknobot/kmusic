@@ -87,15 +87,17 @@ public class ComponentButton : MonoBehaviour
         // Optionally, you can add a longer wait time:
         // yield return new WaitForSeconds(0.1f); // Wait for 0.1 seconds
 
-        OnButtonClick(); // Call OnButtonClick after initialization
+        currentObjectIndex = 3; // Start with the mixer (index 3)
+        MoveCurrentObjectOnScreen(); // Ensure the mixer is displayed on initialization
+        MoveOtherObjectsOffscreen(); // Move all other objects offscreen
     }
 
     // Method to be called when the button is clicked
     public void OnButtonClick()
     {
+        currentObjectIndex = (currentObjectIndex + 1) % 4; // Cycle through the objects
         MoveCurrentObjectOnScreen();
         MoveOtherObjectsOffscreen();
-        currentObjectIndex = (currentObjectIndex + 1) % 4; // Cycle through the objects
     }
 
     public void MoveCurrentObjectOnScreen()
@@ -157,7 +159,7 @@ public class ComponentButton : MonoBehaviour
                 Debug.Log("Music player panel is now visible due to missing sample.");
 
                 // Reset `currentObjectIndex` to the index of the mixer panel
-                currentObjectIndex = 0; // Assuming `3` is the index for the mixer panel
+                currentObjectIndex = 0; 
                 MoveCurrentObjectOnScreen();
                 MoveOtherObjectsOffscreen();
                 return; // Exit after successfully switching to the music player panel
@@ -178,7 +180,7 @@ public class ComponentButton : MonoBehaviour
                 Debug.Log("Mixer panel is now visible because the sample exists.");
 
                 // Reset `currentObjectIndex` to the index of the mixer panel
-                currentObjectIndex = 3; // Assuming `3` is the index for the mixer panel
+                currentObjectIndex = 3; 
                 MoveCurrentObjectOnScreen();
                 MoveOtherObjectsOffscreen();
                 return; // Exit after successfully switching to the mixer panel
