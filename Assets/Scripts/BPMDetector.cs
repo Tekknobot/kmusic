@@ -3,10 +3,25 @@ using UnityEngine;
 
 public class BPMDetector : MonoBehaviour
 {
+    public static BPMDetector Instance { get; private set; }
+
     public int sampleRate = 44100; // Default sample rate for most audio clips
 
     // Fetch the audio clip dynamically from MultipleAudioLoader
     public AudioClip audioClip => MultipleAudioLoader.Instance?.audioSource?.clip;
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("Another instance of BPMDetector already exists. Destroying this one.");
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+        DontDestroyOnLoad(gameObject); // Optional: Makes this singleton persist across scenes
+    }
 
     public float DetectBPM()
     {
