@@ -76,6 +76,7 @@ public class MusicPlayerUIController : MonoBehaviour
         if (currentTrackIndex >= 0 && currentTrackIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
         {
             StartNewCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[currentTrackIndex]));
+            AudioBPMAdjuster.Instance.InitializeSlider();
         }
 
         StartCoroutine(ResetOperationLock());
@@ -136,6 +137,7 @@ public class MusicPlayerUIController : MonoBehaviour
             (MultipleAudioLoader.Instance.currentIndex + 1) % MultipleAudioLoader.Instance.clipFileNames.Count;
 
         StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[MultipleAudioLoader.Instance.currentIndex]));
+        AudioBPMAdjuster.Instance.InitializeSlider();
     }
 
     private void PlayPreviousTrack()
@@ -150,6 +152,7 @@ public class MusicPlayerUIController : MonoBehaviour
         }
 
         StartCoroutine(PlayTrackCoroutine(MultipleAudioLoader.Instance.clipFileNames[MultipleAudioLoader.Instance.currentIndex]));
+        AudioBPMAdjuster.Instance.InitializeSlider();
     }
 
     private void UpdateTrackName(string customMessage = null)
