@@ -137,19 +137,24 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
+    // Inside MultipleAudioLoader.LoadClip:
     public IEnumerator LoadClip(string fileName)
     {
         if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
         {
             audioSource.clip = loadedClip;
+            // Set the current clip on PatternManager as well.
+            if(PatternManager.Instance != null)
+                PatternManager.Instance.songClip = loadedClip;
+
             UpdateStatusText("Loaded: " + fileName);
-            SaveCurrentClip(fileName); // Save the currently loaded clip
-            currentIndex = clipFileNames.IndexOf(fileName); // Update the index
-            SetTimelineSliderValues(loadedClip); // Set the slider min/max values
+            SaveCurrentClip(fileName);
+            currentIndex = clipFileNames.IndexOf(fileName);
+            SetTimelineSliderValues(loadedClip);
             yield break;
         }
 
-        string filePath = Path.Combine(directoryPath, fileName); // Resolve full path
+        string filePath = Path.Combine(directoryPath, fileName);
         string fileUrl = "file://" + filePath;
         string extension = Path.GetExtension(fileName).ToLower();
 
@@ -169,10 +174,14 @@ public class MultipleAudioLoader : MonoBehaviour
                 AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
                 clipDictionary[fileName] = newClip;
                 audioSource.clip = newClip;
+                // Also assign the loaded clip to PatternManager.songClip:
+                if (PatternManager.Instance != null)
+                    PatternManager.Instance.songClip = newClip;
+
                 UpdateStatusText("Loaded: " + fileName);
-                SaveCurrentClip(fileName); // Save the currently loaded clip
-                currentIndex = clipFileNames.IndexOf(fileName); // Update the index
-                SetTimelineSliderValues(newClip); // Set the slider min/max values
+                SaveCurrentClip(fileName);
+                currentIndex = clipFileNames.IndexOf(fileName);
+                SetTimelineSliderValues(newClip);
             }
             else
             {
@@ -181,7 +190,10 @@ public class MultipleAudioLoader : MonoBehaviour
             }
         }
 
-        audioBPMAdjuster.FetchOriginalBPM();
+        if (audioBPMAdjuster != null)
+        {
+            audioBPMAdjuster.FetchOriginalBPM();
+        }
     }
 
     private void LoadAllAudioFiles()

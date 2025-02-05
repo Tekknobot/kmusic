@@ -54,7 +54,11 @@ public class PatternManager : MonoBehaviour
     public string currentProjectFilename; // Keep track of the current project filename
 
     private bool isClearingPattern = false; // Flag to track if a pattern is being cleared
-
+    // Reference to the source AudioClip (the song) you wish to chop.
+    public AudioClip songClip;
+    // Reference to the Chop component which holds the chop timestamps.
+    public Chop chopComponent;
+    
     private void Awake()
     {
         // Ensure this is the only instance
@@ -1758,21 +1762,42 @@ public class PatternManager : MonoBehaviour
         Debug.Log("Board reset, pattern updated, and patterns saved.");
     }
 
-
     public void SaveOver()
     {
+        // Ensure songClip is set (if not, try to get it from MultipleAudioLoader)
+        if (songClip == null && MultipleAudioLoader.Instance != null)
+        {
+            songClip = MultipleAudioLoader.Instance.audioSource.clip;
+        }        
         // Check if there is a filename for the current project
         if (!string.IsNullOrEmpty(LastProjectFilename))
         {
             Debug.Log("About to save.");
             SaveProject(LastProjectFilename);
             Debug.Log("Project Saved.");
+
+            // Now also save the rendered chops.
+            // Use the project filename (without extension) as the base filename for the chops.
+            string baseFileName = Path.GetFileNameWithoutExtension(LastProjectFilename);
+            
+            // Ensure that both the AudioClip and the Chop component are assigned.
+            if (songClip != null && chopComponent != null)
+            {
+                // This method will create (if needed) a folder at:
+                // Application.persistentDataPath/Music/Chops
+                // and save each chop as [baseFileName]_chop0.wav, [baseFileName]_chop1.wav, etc.
+                ChopSaver.SaveRenderedChops(songClip, chopComponent.timestamps, baseFileName);
+            }
+            else
+            {
+                Debug.LogWarning("Either songClip or chopComponent is not assigned. Rendered chops not saved.");
+            }
         }
         else
         {
             Debug.LogWarning("No project filename specified. Patterns will not be saved.");
         }
-    }    
+    }
 }
 
 
