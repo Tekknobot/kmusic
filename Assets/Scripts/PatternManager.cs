@@ -1764,29 +1764,19 @@ public class PatternManager : MonoBehaviour
 
     public void SaveOver()
     {
-        // Ensure songClip is set (if not, try to get it from MultipleAudioLoader)
-        if (songClip == null && MultipleAudioLoader.Instance != null)
-        {
-            songClip = MultipleAudioLoader.Instance.audioSource.clip;
-        }        
-        // Check if there is a filename for the current project
         if (!string.IsNullOrEmpty(LastProjectFilename))
         {
             Debug.Log("About to save.");
             SaveProject(LastProjectFilename);
             Debug.Log("Project Saved.");
 
-            // Now also save the rendered chops.
-            // Use the project filename (without extension) as the base filename for the chops.
+            // Use the project filename (without extension) as the base filename.
             string baseFileName = Path.GetFileNameWithoutExtension(LastProjectFilename);
-            
-            // Ensure that both the AudioClip and the Chop component are assigned.
+
             if (songClip != null && chopComponent != null)
             {
-                // This method will create (if needed) a folder at:
-                // Application.persistentDataPath/Music/Chops
-                // and save each chop as [baseFileName]_chop0.wav, [baseFileName]_chop1.wav, etc.
-                ChopSaver.SaveRenderedChops(songClip, chopComponent.timestamps, baseFileName);
+                // Start the coroutine to save chops asynchronously.
+                StartCoroutine(ChopSaver.SaveRenderedChopsCoroutine(songClip, chopComponent.timestamps, baseFileName));
             }
             else
             {
@@ -1798,6 +1788,7 @@ public class PatternManager : MonoBehaviour
             Debug.LogWarning("No project filename specified. Patterns will not be saved.");
         }
     }
+
 }
 
 
