@@ -831,7 +831,10 @@ public class PatternManager : MonoBehaviour
                 DrumSequencerLength = GetSequencerLength(drumSequencerPrefab),
                 patch = sequencerPrefab.GetComponent<HelmPatchController>()?.currentPatchIndex ?? -1,
                 sliderValues = sequencerPrefab.GetComponent<HelmPatchController>()?.GetAllSliderValues(),
-                pitch = pitch // Save pitch
+                pitch = pitch, // Save pitch
+
+                // Save the current kit name from PlayerPrefs (set in KitButton)
+                currentDrumKit = PlayerPrefs.GetString("CurrentDrumKit", "None")                
             };
 
             // Serialize to JSON
@@ -985,6 +988,26 @@ public class PatternManager : MonoBehaviour
                     {
                         helmPatchController.SetAllSliderValues(projectData.sliderValues);
                     }
+                }
+
+                // NEW: Load the saved drum kit
+                if (!string.IsNullOrEmpty(projectData.currentDrumKit) && projectData.currentDrumKit != "None")
+                {
+                    // Find the KitButton instance in the scene (assumes only one exists)
+                    KitButton kitButton = FindObjectOfType<KitButton>();
+                    if (kitButton != null)
+                    {
+                        kitButton.LoadKit(projectData.currentDrumKit);
+                        Debug.Log($"Loaded drum kit: {projectData.currentDrumKit}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("No KitButton found in scene to load drum kit.");
+                    }
+                }
+                else
+                {
+                    Debug.Log("No drum kit was saved in the project data.");
                 }
 
                 currentPatternIndex = 1;
@@ -1837,9 +1860,10 @@ public class ProjectData
     public int HelmSequencerLength;    
     public int SampleSequencerLength;    
     public int DrumSequencerLength;
-
     public List<float> sliderValues; // List to store slider values
-
     public float pitch;
 
+    // NEW: Save the current drum kit name
+    public string currentDrumKit;
 }
+
