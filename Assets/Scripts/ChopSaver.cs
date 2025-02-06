@@ -9,7 +9,6 @@ public static class ChopSaver
     /// Saves rendered audio segments (chops) based on provided timestamps.
     /// On Android, this saves into the device’s Music/Chops folder via MediaStore integration.
     /// On other platforms, it saves to Application.persistentDataPath/Chops.
-    /// If a file already exists for a given chop, it is overwritten.
     /// </summary>
     /// <param name="sourceClip">The source AudioClip.</param>
     /// <param name="chopTimestamps">A sorted list of timestamps (in seconds) defining chop boundaries.</param>
@@ -80,7 +79,6 @@ public static class ChopSaver
 #endif
 
         // Process each chop (segment) defined by successive timestamps.
-        // (Remember: if you want 16 segments, you must have 17 timestamps.)
         for (int i = 0; i < chopTimestamps.Count - 1; i++)
         {
             float startTime = chopTimestamps[i];
@@ -110,7 +108,7 @@ public static class ChopSaver
                 continue;
             }
 
-            // Use the MediaStore helper to delete an existing file (if any) and then write the new file.
+            // Use the MediaStore helper to write the file into the Music folder.
             try
             {
                 using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
@@ -118,15 +116,6 @@ public static class ChopSaver
                     AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
                     using (AndroidJavaObject mediaStoreHelper = new AndroidJavaObject("com.example.mediastorehelper.MediaStoreHelper", activity))
                     {
-                        // Check if a file with the same name already exists.
-                        bool fileExists = mediaStoreHelper.Call<bool>("fileExists", folderPath, fileName);
-                        if (fileExists)
-                        {
-                            mediaStoreHelper.Call("deleteFile", folderPath, fileName);
-                            Debug.Log("ChopSaver: Existing file " + fileName + " deleted.");
-                        }
-
-                        // Now write the new file.
                         mediaStoreHelper.Call("writeToMusicDirectory", folderPath, fileName, wavData);
                         Debug.Log($"ChopSaver: Successfully wrote chop {i} to MediaStore.");
                     }
@@ -137,14 +126,9 @@ public static class ChopSaver
                 Debug.LogError($"ChopSaver: Exception writing chop {i} via MediaStore helper: {ex.Message}");
             }
 #else
-            // On non-Android platforms, delete the file if it exists and then save the chop.
+            // On non-Android platforms, save the chop using the AudioExporter helper.
             try
             {
-                if (File.Exists(fullFilePath))
-                {
-                    File.Delete(fullFilePath);
-                    Debug.Log("ChopSaver: Existing file " + fullFilePath + " deleted.");
-                }
                 AudioExporter.SaveAudioSegmentToWav(sourceClip, startTime, endTime, fullFilePath);
                 Debug.Log($"ChopSaver: Successfully saved chop {i} to {fullFilePath}");
             }
