@@ -415,7 +415,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 663989235}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.3991667}
+  m_AnchorMin: {x: 0, y: 0.8555646}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
@@ -2646,6 +2646,50 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sampler: {fileID: 1983356396}
   drumSamples: {fileID: 255873515}
+--- !u!1 &93274689
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 93274691}
+  - component: {fileID: 93274690}
+  m_Layer: 0
+  m_Name: MediaStoreManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &93274690
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93274689}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8bec9bf4f4634d45b0c5e0a1066f3e9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &93274691
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 93274689}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.239006, y: -0.94182, z: 1.4842402}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &98460520
 GameObject:
   m_ObjectHideFlags: 0
@@ -7556,34 +7600,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 355211877}
   m_CullTransparentMesh: 1
---- !u!83 &358074907
-AudioClip:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: helm
-  m_LoadType: 0
-  m_Channels: 1
-  m_Frequency: 44100
-  m_BitsPerSample: 32
-  m_Length: 0
-  m_IsTrackerFormat: 0
-  m_Ambisonic: 0
-  m_SubsoundIndex: 0
-  m_PreloadAudioData: 1
-  m_LoadInBackground: 0
-  m_Legacy3D: 0
-  m_Resource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_CompressionFormat: 0
-  m_EditorResource:
-    m_Source: 
-    m_Offset: 0
-    m_Size: 0
-  m_EditorCompressionFormat: 0
 --- !u!1 &358207432
 GameObject:
   m_ObjectHideFlags: 0
@@ -12609,6 +12625,34 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 594590335}
   m_CullTransparentMesh: 1
+--- !u!83 &595009208
+AudioClip:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: helm
+  m_LoadType: 0
+  m_Channels: 1
+  m_Frequency: 44100
+  m_BitsPerSample: 32
+  m_Length: 0
+  m_IsTrackerFormat: 0
+  m_Ambisonic: 0
+  m_SubsoundIndex: 0
+  m_PreloadAudioData: 1
+  m_LoadInBackground: 0
+  m_Legacy3D: 0
+  m_Resource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_CompressionFormat: 0
+  m_EditorResource:
+    m_Source: 
+    m_Offset: 0
+    m_Size: 0
+  m_EditorCompressionFormat: 0
 --- !u!1 &597182282
 GameObject:
   m_ObjectHideFlags: 0
@@ -27571,7 +27615,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 300}
+  m_SizeDelta: {x: 0, y: 825.49}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1152376527
 GameObject:
@@ -39657,8 +39701,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.32, y: -351.9445}
-  m_SizeDelta: {x: 250.77, y: 50}
+  m_AnchoredPosition: {x: 1.72, y: -345.74}
+  m_SizeDelta: {x: 300.49, y: 54.14}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1625288055
 MonoBehaviour:
@@ -39769,6 +39813,7 @@ GameObject:
   - component: {fileID: 1625483581}
   - component: {fileID: 1625483580}
   - component: {fileID: 1625483579}
+  - component: {fileID: 1625483582}
   m_Layer: 5
   m_Name: LogView
   m_TagString: Untagged
@@ -39795,8 +39840,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -0.0000047684, y: -281.44}
-  m_SizeDelta: {x: 364.58, y: 197.25}
+  m_AnchoredPosition: {x: 8.4644, y: -253.52}
+  m_SizeDelta: {x: 347.65, y: 136.23}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1625483579
 MonoBehaviour:
@@ -39841,7 +39886,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.31132078, g: 0.31132078, b: 0.31132078, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -39866,6 +39911,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1625483577}
   m_CullTransparentMesh: 1
+--- !u!114 &1625483582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1625483577}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e92c5852ce0d485bbee239e89657466, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logText: {fileID: 1054705959}
+  maxLogLines: 1000
 --- !u!1 &1626415276
 GameObject:
   m_ObjectHideFlags: 0
@@ -46364,7 +46423,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2085444881}
   m_Direction: 0
   m_Value: 1
-  m_Size: 0.99999994
+  m_Size: 0.9999999
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -50759,7 +50818,7 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1218423827}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.000000059604645, y: 0}
+  m_AnchorMin: {x: 0.00000011920929, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 20, y: 20}
@@ -54459,7 +54518,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 15110148}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.6008333
+  m_Size: 0.14443542
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -56401,3 +56460,4 @@ SceneRoots:
   - {fileID: 652808349}
   - {fileID: 1183420015}
   - {fileID: 1455967770}
+  - {fileID: 93274691}

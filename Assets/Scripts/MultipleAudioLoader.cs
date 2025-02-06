@@ -47,7 +47,7 @@ public class MultipleAudioLoader : MonoBehaviour
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (AndroidVersionIsAtLeast30())
         {
-            // When using MediaStore, we do not need to set directoryPath
+            // When using MediaStore integration, fullPath is not used.
             fullPath = "";
         }
         else
@@ -151,8 +151,7 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
-#if UNITY_ANDROID && !UNITY_EDITOR
-    // Query MediaStore for audio file paths.
+    #if UNITY_ANDROID && !UNITY_EDITOR
     private void QueryMediaStoreAudioFiles()
     {
         try
@@ -161,13 +160,28 @@ public class MultipleAudioLoader : MonoBehaviour
             AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
             AndroidJavaObject contentResolver = activity.Call<AndroidJavaObject>("getContentResolver");
 
+            // Get the external audio MediaStore URI.
             AndroidJavaClass mediaStoreAudioMedia = new AndroidJavaClass("android.provider.MediaStore$Audio$Media");
             AndroidJavaObject uri = mediaStoreAudioMedia.GetStatic<AndroidJavaObject>("EXTERNAL_CONTENT_URI");
 
+            // Define a projection that returns the file path.
             string[] projection = new string[] { "_data" };
 
+            // Define a selection clause to filter:
+            // 1. Only files in a path that contains "/Music/"
+            // 2. Exclude any files in a path that contains "/Chops/"
+            string selection = "_data LIKE ? AND _data NOT LIKE ?";
+            string musicFolder = "/Music/";
+            string chopsFolder = "/Chops/";
+            string[] selectionArgs = new string[]
+            {
+                "%" + musicFolder + "%",
+                "%" + chopsFolder + "%"
+            };
+
+            // Query the MediaStore with the selection arguments.
             AndroidJavaObject cursor = contentResolver.Call<AndroidJavaObject>(
-                "query", uri, projection, null, null, null);
+                "query", uri, projection, selection, selectionArgs, null);
 
             if (cursor != null)
             {
@@ -178,7 +192,6 @@ public class MultipleAudioLoader : MonoBehaviour
                     string extension = Path.GetExtension(filePath).ToLower();
                     if (extension == ".mp3" || extension == ".wav")
                     {
-                        // With MediaStore, store the full path.
                         clipFileNames.Add(filePath);
                         Debug.Log($"Found file from MediaStore: {filePath}");
                     }
@@ -195,7 +208,7 @@ public class MultipleAudioLoader : MonoBehaviour
             Debug.LogError("Error querying MediaStore: " + ex);
         }
     }
-#endif
+    #endif
 
     private void LoadAllAudioFiles()
     {
@@ -227,13 +240,14 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
-    // Load a clip from the given fileName (which may be a full path if coming from MediaStore)
+    // Load a clip from the given fileName.
+    // When using MediaStore integration on Android API 30+, the fileName is already a full path.
     public IEnumerator LoadClip(string fileName)
     {
         if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
         {
             audioSource.clip = loadedClip;
-            if(PatternManager.Instance != null)
+            if (PatternManager.Instance != null)
                 PatternManager.Instance.songClip = loadedClip;
 
             UpdateStatusText("Loaded: " + fileName);
@@ -243,11 +257,16 @@ public class MultipleAudioLoader : MonoBehaviour
             yield break;
         }
 
-        // If we are using MediaStore integration, fileName is a full path.
+        // Determine filePath based on whether we are using MediaStore integration.
         string filePath = fileName;
-        if (Application.platform != RuntimePlatform.Android || Application.isEditor || !AndroidVersionIsAtLeast30())
+        if (Application.platform == RuntimePlatform.Android && !Application.isEditor && AndroidVersionIsAtLeast30())
         {
-            // For non-MediaStore mode, combine with directory path.
+            // MediaStore integration: fileName is already a full path.
+            // No further modification is needed.
+        }
+        else
+        {
+            // For non-MediaStore mode, combine the directory (or fullPath) with the fileName.
             filePath = Path.Combine(directoryPath, fileName);
         }
 
@@ -291,6 +310,8 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
+    // Load and play a clip from the given fileName.
+    // When using MediaStore integration, the fileName is already a full path.
     public IEnumerator LoadAndPlayClip(string fileName)
     {
         Debug.Log($"Loading and playing clip: {fileName}");
@@ -308,11 +329,17 @@ public class MultipleAudioLoader : MonoBehaviour
             yield break;
         }
 
+        // Determine filePath based on whether we are using MediaStore integration.
         string filePath = fileName;
-        if (Application.platform != RuntimePlatform.Android || Application.isEditor || !AndroidVersionIsAtLeast30())
+        if (Application.platform == RuntimePlatform.Android && !Application.isEditor && AndroidVersionIsAtLeast30())
+        {
+            // Using MediaStore: fileName is already a full path.
+        }
+        else
         {
             filePath = Path.Combine(fullPath, fileName);
         }
+
         string fileUrl = "file://" + filePath;
         string extension = Path.GetExtension(fileName).ToLower();
 

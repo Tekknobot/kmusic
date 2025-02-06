@@ -5,8 +5,19 @@ using System.IO;
 
 public static class ChopSaver
 {
+    /// <summary>
+    /// Saves rendered audio segments (chops) based on provided timestamps.
+    /// On Android, this saves into the device’s Music/Chops folder via MediaStore integration.
+    /// On other platforms, it saves to Application.persistentDataPath/Chops.
+    /// If a file already exists for a given chop, it is overwritten.
+    /// </summary>
+    /// <param name="sourceClip">The source AudioClip.</param>
+    /// <param name="chopTimestamps">A sorted list of timestamps (in seconds) defining chop boundaries.</param>
+    /// <param name="baseFileName">Base filename for the chops.</param>
     public static IEnumerator SaveRenderedChopsCoroutine(AudioClip sourceClip, List<float> chopTimestamps, string baseFileName)
     {
+        Debug.Log("ChopSaver: SaveRenderedChopsCoroutine started.");
+        
         if (sourceClip == null)
         {
             Debug.LogError("ChopSaver: Source clip is null.");
@@ -18,52 +29,140 @@ public static class ChopSaver
             yield break;
         }
 
-        // Ensure timestamps are sorted.
+        // Ensure the timestamps are sorted.
         chopTimestamps.Sort();
+        Debug.Log("ChopSaver: Timestamps sorted. Count: " + chopTimestamps.Count);
 
-        // Set the folder path based on platform.
+        // Determine the target folder path.
         string folderPath;
 #if UNITY_ANDROID && !UNITY_EDITOR
-        folderPath = System.IO.Path.Combine(GetAndroidMusicFolder(), "Chops");
+        // Use the Android Music folder and a "Chops" subfolder.
+        folderPath = Path.Combine(GetAndroidMusicFolder(), "Chops");
 #else
-        folderPath = System.IO.Path.Combine(Application.persistentDataPath, "Chops");
+        folderPath = Path.Combine(Application.persistentDataPath, "Chops");
 #endif
-        if (!Directory.Exists(folderPath))
-        {
-            Directory.CreateDirectory(folderPath);
-            Debug.Log("ChopSaver: Created folder " + folderPath);
-        }
+        Debug.Log("ChopSaver: Target folder path: " + folderPath);
 
-        // Loop through timestamps and process one chop per iteration.
-        for (int i = 0; i < chopTimestamps.Count - 1; i++)
-        {
-            float startTime = chopTimestamps[i];
-            float endTime = chopTimestamps[i + 1];
-
-            // Construct filename.
-            string fileName = $"{baseFileName}_chop{i}.wav";
-            string filePath = Path.Combine(folderPath, fileName);
-
-            // Process and save this chop.
+        // Ensure the folder exists.
 #if UNITY_ANDROID && !UNITY_EDITOR
+        // Use the MediaStore helper to check and create the folder if needed.
+        try
+        {
             using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
             {
                 AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
                 using (AndroidJavaObject mediaStoreHelper = new AndroidJavaObject("com.example.mediastorehelper.MediaStoreHelper", activity))
                 {
-                    mediaStoreHelper.Call("writeToMusicDirectory", fileName, "Chopped audio data");
+                    bool folderExists = mediaStoreHelper.Call<bool>("folderExists", folderPath);
+                    Debug.Log("ChopSaver: MediaStore helper reports folderExists: " + folderExists);
+                    if (!folderExists)
+                    {
+                        mediaStoreHelper.Call("createFolder", folderPath);
+                        Debug.Log("ChopSaver: Created folder " + folderPath + " via MediaStore helper.");
+                    }
+                    else
+                    {
+                        Debug.Log("ChopSaver: Folder " + folderPath + " already exists.");
+                    }
                 }
             }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("ChopSaver: Exception during folder check/creation on Android: " + ex.Message);
+        }
 #else
-            AudioExporter.SaveAudioSegmentToWav(sourceClip, startTime, endTime, filePath);
+        if (!Directory.Exists(folderPath))
+        {
+            Directory.CreateDirectory(folderPath);
+            Debug.Log("ChopSaver: Created folder " + folderPath);
+        }
 #endif
-            
-            // Optionally yield to avoid blocking.
+
+        // Process each chop (segment) defined by successive timestamps.
+        // (Remember: if you want 16 segments, you must have 17 timestamps.)
+        for (int i = 0; i < chopTimestamps.Count - 1; i++)
+        {
+            float startTime = chopTimestamps[i];
+            float endTime = chopTimestamps[i + 1];
+
+            // Construct a file name for this chop.
+            string fileName = $"{baseFileName}_chop{i}.wav";
+            string fullFilePath = Path.Combine(folderPath, fileName);
+            Debug.Log($"ChopSaver: Processing chop {i}: startTime={startTime}, endTime={endTime}, fileName={fileName}");
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+            // Convert the audio segment into WAV byte data.
+            byte[] wavData = null;
+            try
+            {
+                wavData = AudioExporter.ExportAudioSegmentToWavBytes(sourceClip, startTime, endTime);
+                if (wavData == null || wavData.Length == 0)
+                {
+                    Debug.LogError($"ChopSaver: ExportAudioSegmentToWavBytes returned no data for chop {i}.");
+                    continue;
+                }
+                Debug.Log($"ChopSaver: WAV data for chop {i} has {wavData.Length} bytes.");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"ChopSaver: Exception exporting WAV data for chop {i}: {ex.Message}");
+                continue;
+            }
+
+            // Use the MediaStore helper to delete an existing file (if any) and then write the new file.
+            try
+            {
+                using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+                {
+                    AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                    using (AndroidJavaObject mediaStoreHelper = new AndroidJavaObject("com.example.mediastorehelper.MediaStoreHelper", activity))
+                    {
+                        // Check if a file with the same name already exists.
+                        bool fileExists = mediaStoreHelper.Call<bool>("fileExists", folderPath, fileName);
+                        if (fileExists)
+                        {
+                            mediaStoreHelper.Call("deleteFile", folderPath, fileName);
+                            Debug.Log("ChopSaver: Existing file " + fileName + " deleted.");
+                        }
+
+                        // Now write the new file.
+                        mediaStoreHelper.Call("writeToMusicDirectory", folderPath, fileName, wavData);
+                        Debug.Log($"ChopSaver: Successfully wrote chop {i} to MediaStore.");
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"ChopSaver: Exception writing chop {i} via MediaStore helper: {ex.Message}");
+            }
+#else
+            // On non-Android platforms, delete the file if it exists and then save the chop.
+            try
+            {
+                if (File.Exists(fullFilePath))
+                {
+                    File.Delete(fullFilePath);
+                    Debug.Log("ChopSaver: Existing file " + fullFilePath + " deleted.");
+                }
+                AudioExporter.SaveAudioSegmentToWav(sourceClip, startTime, endTime, fullFilePath);
+                Debug.Log($"ChopSaver: Successfully saved chop {i} to {fullFilePath}");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"ChopSaver: Exception saving chop {i}: {ex.Message}");
+            }
+#endif
+            // Yield control to avoid blocking.
             yield return null;
         }
+        Debug.Log("ChopSaver: SaveRenderedChopsCoroutine completed.");
     }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
+    /// <summary>
+    /// Returns the absolute path to the Android Music folder.
+    /// </summary>
     private static string GetAndroidMusicFolder()
     {
         using (AndroidJavaClass env = new AndroidJavaClass("android.os.Environment"))
@@ -73,6 +172,9 @@ public static class ChopSaver
         }
     }
 #else
+    /// <summary>
+    /// Fallback method for non-Android platforms.
+    /// </summary>
     private static string GetAndroidMusicFolder()
     {
         return Application.persistentDataPath;

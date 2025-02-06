@@ -1,41 +1,82 @@
 using UnityEngine;
-using System.IO;
 using System.Collections;
 
 public class PermissionHandler : MonoBehaviour
 {
-    private const string ReadStoragePermission = "android.permission.READ_EXTERNAL_STORAGE";
-    private const string WriteStoragePermission = "android.permission.WRITE_EXTERNAL_STORAGE";
+    // Define permission strings for both legacy and new permissions.
+    private const string LegacyReadPermission = "android.permission.READ_EXTERNAL_STORAGE";
+    private const string NewReadPermission = "android.permission.READ_MEDIA_AUDIO";
+    private const string LegacyWritePermission = "android.permission.WRITE_EXTERNAL_STORAGE";
+    private const string ManageStoragePermission = "android.permission.MANAGE_EXTERNAL_STORAGE";
+
+    private string GetReadPermission()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        using (var versionClass = new AndroidJavaClass("android.os.Build$VERSION"))
+        {
+            int sdkInt = versionClass.GetStatic<int>("SDK_INT");
+            // For API 33 (Android 13) and above, use the new read permission.
+            if (sdkInt >= 33)
+                return NewReadPermission;
+            else
+                return LegacyReadPermission;
+        }
+#else
+        return "";
+#endif
+    }
+
+    private string GetWritePermission()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        using (var versionClass = new AndroidJavaClass("android.os.Build$VERSION"))
+        {
+            int sdkInt = versionClass.GetStatic<int>("SDK_INT");
+            // For API 30+ (Android 11 and above), request MANAGE_EXTERNAL_STORAGE.
+            if (sdkInt >= 30)
+                return ManageStoragePermission;
+            else
+                return LegacyWritePermission;
+        }
+#else
+        return "";
+#endif
+    }
 
     private void Start()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
         Debug.Log("Checking permissions on start...");
         RequestStoragePermissions();
+        StartCoroutine(WaitForPermissionsThenDoMediaStoreOperation());
 #endif
     }
 
     private void RequestStoragePermissions()
     {
-        if (!HasPermission(ReadStoragePermission))
+#if UNITY_ANDROID && !UNITY_EDITOR
+        string readPermission = GetReadPermission();
+        if (!HasPermission(readPermission))
         {
-            Debug.Log("READ_EXTERNAL_STORAGE permission is not granted. Requesting now...");
-            RequestPermission(ReadStoragePermission);
+            Debug.Log($"{readPermission} is not granted. Requesting now...");
+            RequestPermission(readPermission);
         }
         else
         {
-            Debug.Log("READ_EXTERNAL_STORAGE permission is already granted.");
+            Debug.Log($"{readPermission} is already granted.");
         }
 
-        if (!HasPermission(WriteStoragePermission))
+        string writePermission = GetWritePermission();
+        if (!HasPermission(writePermission))
         {
-            Debug.Log("WRITE_EXTERNAL_STORAGE permission is not granted. Requesting now...");
-            RequestPermission(WriteStoragePermission);
+            Debug.Log($"{writePermission} is not granted. Requesting now...");
+            RequestPermission(writePermission);
         }
         else
         {
-            Debug.Log("WRITE_EXTERNAL_STORAGE permission is already granted.");
+            Debug.Log($"{writePermission} is already granted.");
         }
+#endif
     }
 
     private bool HasPermission(string permission)
@@ -52,7 +93,7 @@ public class PermissionHandler : MonoBehaviour
             }
         }
 #else
-        return true; // Assume permission is granted on non-Android platforms.
+        return true;
 #endif
     }
 
@@ -66,6 +107,18 @@ public class PermissionHandler : MonoBehaviour
             activity.Call("requestPermissions", new string[] { permission }, 0);
         }
 #endif
+    }
+
+    private IEnumerator WaitForPermissionsThenDoMediaStoreOperation()
+    {
+        // Wait until both read and write permissions are granted
+        while (!HasPermission(GetReadPermission()) || !HasPermission(GetWritePermission()))
+        {
+            Debug.Log("Waiting for permissions...");
+            yield return new WaitForSeconds(0.5f);
+        }
+        Debug.Log("Permissions granted. Proceeding with MediaStore operation.");
+        PerformMediaStoreOperation();
     }
 
     private void PerformMediaStoreOperation()

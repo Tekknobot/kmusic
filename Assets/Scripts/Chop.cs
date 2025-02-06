@@ -14,7 +14,7 @@ public class Chop : MonoBehaviour
     public TextMeshProUGUI feedbackText; // Reference to the TextMeshProUGUI component for feedback
     public TextMeshProUGUI currentTimestampText; // Reference to display the current timestamp
 
-    private const int MaxChops = 16; // Maximum number of chops
+    private const int MaxChops = 17; // Maximum number of chops
     public int selectedChopIndex = 0; // Index of the currently selected chop
     public List<float> timestamps = new List<float>(); // List to store timestamps
 

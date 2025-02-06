@@ -1788,7 +1788,6 @@ public class PatternManager : MonoBehaviour
             Debug.LogWarning("No project filename specified. Patterns will not be saved.");
         }
     }
-
 }
 
 
