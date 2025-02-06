@@ -26,7 +26,7 @@ public static class ChopSaver
 #if UNITY_ANDROID && !UNITY_EDITOR
         folderPath = System.IO.Path.Combine(GetAndroidMusicFolder(), "Chops");
 #else
-        folderPath = System.IO.Path.Combine(Application.persistentDataPath, "Audio", "Chops");
+        folderPath = System.IO.Path.Combine(Application.persistentDataPath, "Chops");
 #endif
         if (!Directory.Exists(folderPath))
         {
@@ -45,8 +45,19 @@ public static class ChopSaver
             string filePath = Path.Combine(folderPath, fileName);
 
             // Process and save this chop.
+#if UNITY_ANDROID && !UNITY_EDITOR
+            using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+            {
+                AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                using (AndroidJavaObject mediaStoreHelper = new AndroidJavaObject("com.example.mediastorehelper.MediaStoreHelper", activity))
+                {
+                    mediaStoreHelper.Call("writeToMusicDirectory", fileName, "Chopped audio data");
+                }
+            }
+#else
             AudioExporter.SaveAudioSegmentToWav(sourceClip, startTime, endTime, filePath);
-
+#endif
+            
             // Optionally yield to avoid blocking.
             yield return null;
         }

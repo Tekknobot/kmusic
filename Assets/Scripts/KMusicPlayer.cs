@@ -12,10 +12,10 @@ public class KMusicPlayer : MonoBehaviour
     public TMP_Text trackNameText;  // TextMesh Pro text to display the current track name
     public TMP_Text logText;        // TextMesh Pro text to display logs
 
-    public List<string> clipFileNames = new List<string>(); // List to store relative paths of filenames
+    public List<string> clipFileNames = new List<string>(); // List to store relative or full file paths
     public int currentIndex = -1; // Index of the currently playing track
 
-    private string directoryPath; // Path to the music files
+    private string directoryPath; // Path to the music files (used on non-Android or pre-API30)
 
     private void Awake()
     {
@@ -70,21 +70,23 @@ public class KMusicPlayer : MonoBehaviour
 #endif
     }
 
-    // Load all audio file names from the directory, including subfolders
+    // Load all audio file names from MediaStore on Android API 30+; else, use file system scanning.
     private void LoadAudioFileNames()
     {
-    #if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         if (AndroidVersionIsAtLeast30())
         {
-            directoryPath = "/storage/emulated/0/Music"; // Android Music folder for API 30+
+            Log("Using MediaStore integration for Android API 30+.");
+            QueryMediaStoreAudioFiles();
+            return;
         }
-        else
-        {
-            directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Fallback for older APIs
-        }
-    #else
+#endif
+        // Fallback: use file system scanning.
+#if UNITY_ANDROID
+        directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Fallback for older APIs
+#else
         directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles");
-    #endif
+#endif
 
         Debug.Log($"Scanning directory: {directoryPath}");
 
@@ -100,6 +102,7 @@ public class KMusicPlayer : MonoBehaviour
 
                 if (extension == ".mp3" || extension == ".wav")
                 {
+                    // For file system scanning, you may choose to store the relative path.
                     string relativePath = file.Replace(directoryPath + Path.DirectorySeparatorChar, "");
                     relativePath = relativePath.Replace("\\", "/"); // Normalize for cross-platform
                     clipFileNames.Add(relativePath);
@@ -121,6 +124,54 @@ public class KMusicPlayer : MonoBehaviour
             Debug.LogError($"Directory does not exist or is inaccessible: {directoryPath}");
         }
     }
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+    // Query Android MediaStore to get audio file paths.
+    private void QueryMediaStoreAudioFiles()
+    {
+        try
+        {
+            AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            AndroidJavaObject contentResolver = activity.Call<AndroidJavaObject>("getContentResolver");
+
+            AndroidJavaClass mediaStoreAudioMedia = new AndroidJavaClass("android.provider.MediaStore$Audio$Media");
+            AndroidJavaObject uri = mediaStoreAudioMedia.GetStatic<AndroidJavaObject>("EXTERNAL_CONTENT_URI");
+
+            // We request only the _data column which contains the file path.
+            string[] projection = new string[] { "_data" };
+
+            // Query the MediaStore.
+            AndroidJavaObject cursor = contentResolver.Call<AndroidJavaObject>(
+                "query", uri, projection, null, null, null);
+
+            if (cursor != null)
+            {
+                int dataIndex = cursor.Call<int>("getColumnIndex", "_data");
+                while (cursor.Call<bool>("moveToNext"))
+                {
+                    string filePath = cursor.Call<string>("getString", dataIndex);
+                    string extension = Path.GetExtension(filePath).ToLower();
+                    if (extension == ".mp3" || extension == ".wav")
+                    {
+                        // Here, we store the full file path.
+                        clipFileNames.Add(filePath);
+                        Debug.Log($"Added audio file from MediaStore: {filePath}");
+                    }
+                }
+                cursor.Call("close");
+            }
+            else
+            {
+                Debug.LogError("MediaStore query returned null cursor.");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Error querying MediaStore: " + ex);
+        }
+    }
+#endif
 
     // Get the type of audio file
     private AudioType GetAudioType(string extension)

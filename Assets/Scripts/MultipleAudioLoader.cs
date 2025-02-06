@@ -11,7 +11,8 @@ public class MultipleAudioLoader : MonoBehaviour
 {
     public static MultipleAudioLoader Instance { get; private set; }
 
-    public string directoryPath = "AudioFiles"; // Default for other platforms
+    // For non-Android or pre-API30 platforms we use a directory path.
+    public string directoryPath = "AudioFiles"; 
     private string fullPath; // Complete path to the directory
     public AudioSource audioSource;
     public TMP_Text statusText;
@@ -43,20 +44,21 @@ public class MultipleAudioLoader : MonoBehaviour
 
     private void Start()
     {
-    #if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
         if (AndroidVersionIsAtLeast30())
         {
-            directoryPath = "/storage/emulated/0/Music"; // Android Music folder for API 30+
+            // When using MediaStore, we do not need to set directoryPath
+            fullPath = "";
         }
         else
         {
-            directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Scoped storage for API 29
+            directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles");
+            fullPath = directoryPath;
         }
-    #else
-        directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles"); // Default for non-Android platforms
-    #endif
-
+#else
+        directoryPath = Path.Combine(Application.persistentDataPath, "AudioFiles");
         fullPath = directoryPath;
+#endif
 
         Debug.Log($"Audio directory path: {fullPath}");
 
@@ -74,7 +76,7 @@ public class MultipleAudioLoader : MonoBehaviour
         {
             eventID = EventTriggerType.PointerDown
         };
-        dragStartEntry.callback.AddListener((data) => { isUserDragging = true; });
+        dragStartEntry.callback.AddListener((BaseEventData data) => { isUserDragging = true; });
         trigger.triggers.Add(dragStartEntry);
 
         // Add OnDragEnd
@@ -82,7 +84,7 @@ public class MultipleAudioLoader : MonoBehaviour
         {
             eventID = EventTriggerType.PointerUp
         };
-        dragEndEntry.callback.AddListener((data) =>
+        dragEndEntry.callback.AddListener((BaseEventData data) =>
         {
             isUserDragging = false;
             if (audioSource.clip != null)
@@ -105,7 +107,6 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
-
     private bool AndroidVersionIsAtLeast30()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -122,28 +123,116 @@ public class MultipleAudioLoader : MonoBehaviour
     private IEnumerator InitializeAudioFiles()
     {
         yield return new WaitForSeconds(1f);
+
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (AndroidVersionIsAtLeast30())
+        {
+            Debug.Log("Using MediaStore integration for Android API 30+.");
+            QueryMediaStoreAudioFiles();
+        }
+        else
+        {
+            LoadAllAudioFiles();
+        }
+#else
         LoadAllAudioFiles();
+#endif
 
         // Load the last played clip if it exists
         string lastLoadedClip = PlayerPrefs.GetString(LastLoadedClipKey, null);
         if (!string.IsNullOrEmpty(lastLoadedClip) && clipFileNames.Contains(lastLoadedClip))
         {
-            yield return LoadClip(lastLoadedClip); // Keep LoadClip method
+            yield return LoadClip(lastLoadedClip); // Use the LoadClip method
         }
         else if (clipFileNames.Count > 0)
         {
-            // Start with the first available track if no previous track exists
+            // Optionally, you can automatically load the first track
             // yield return LoadAndPlayClip(clipFileNames[0]);
         }
     }
 
-    // Inside MultipleAudioLoader.LoadClip:
+#if UNITY_ANDROID && !UNITY_EDITOR
+    // Query MediaStore for audio file paths.
+    private void QueryMediaStoreAudioFiles()
+    {
+        try
+        {
+            AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+            AndroidJavaObject activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+            AndroidJavaObject contentResolver = activity.Call<AndroidJavaObject>("getContentResolver");
+
+            AndroidJavaClass mediaStoreAudioMedia = new AndroidJavaClass("android.provider.MediaStore$Audio$Media");
+            AndroidJavaObject uri = mediaStoreAudioMedia.GetStatic<AndroidJavaObject>("EXTERNAL_CONTENT_URI");
+
+            string[] projection = new string[] { "_data" };
+
+            AndroidJavaObject cursor = contentResolver.Call<AndroidJavaObject>(
+                "query", uri, projection, null, null, null);
+
+            if (cursor != null)
+            {
+                int dataIndex = cursor.Call<int>("getColumnIndex", "_data");
+                while (cursor.Call<bool>("moveToNext"))
+                {
+                    string filePath = cursor.Call<string>("getString", dataIndex);
+                    string extension = Path.GetExtension(filePath).ToLower();
+                    if (extension == ".mp3" || extension == ".wav")
+                    {
+                        // With MediaStore, store the full path.
+                        clipFileNames.Add(filePath);
+                        Debug.Log($"Found file from MediaStore: {filePath}");
+                    }
+                }
+                cursor.Call("close");
+            }
+            else
+            {
+                Debug.LogError("MediaStore query returned null cursor.");
+            }
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("Error querying MediaStore: " + ex);
+        }
+    }
+#endif
+
+    private void LoadAllAudioFiles()
+    {
+        if (Directory.Exists(directoryPath))
+        {
+            // Get all files recursively
+            string[] files = Directory.GetFiles(directoryPath, "*.*", SearchOption.AllDirectories);
+
+            foreach (string file in files)
+            {
+                string extension = Path.GetExtension(file).ToLower();
+                if (extension == ".mp3" || extension == ".wav") // Filter supported formats
+                {
+                    // For file system scanning, store the relative path.
+                    string relativePath = file.Replace(directoryPath + Path.DirectorySeparatorChar, "");
+                    clipFileNames.Add(relativePath);
+                    Debug.Log($"Found file: {relativePath}");
+                }
+            }
+
+            if (clipFileNames.Count == 0)
+            {
+                Debug.LogError("No audio files found in directory: " + directoryPath);
+            }
+        }
+        else
+        {
+            Debug.LogError("Directory does not exist: " + directoryPath);
+        }
+    }
+
+    // Load a clip from the given fileName (which may be a full path if coming from MediaStore)
     public IEnumerator LoadClip(string fileName)
     {
         if (clipDictionary.TryGetValue(fileName, out AudioClip loadedClip))
         {
             audioSource.clip = loadedClip;
-            // Set the current clip on PatternManager as well.
             if(PatternManager.Instance != null)
                 PatternManager.Instance.songClip = loadedClip;
 
@@ -154,7 +243,14 @@ public class MultipleAudioLoader : MonoBehaviour
             yield break;
         }
 
-        string filePath = Path.Combine(directoryPath, fileName);
+        // If we are using MediaStore integration, fileName is a full path.
+        string filePath = fileName;
+        if (Application.platform != RuntimePlatform.Android || Application.isEditor || !AndroidVersionIsAtLeast30())
+        {
+            // For non-MediaStore mode, combine with directory path.
+            filePath = Path.Combine(directoryPath, fileName);
+        }
+
         string fileUrl = "file://" + filePath;
         string extension = Path.GetExtension(fileName).ToLower();
 
@@ -174,7 +270,6 @@ public class MultipleAudioLoader : MonoBehaviour
                 AudioClip newClip = DownloadHandlerAudioClip.GetContent(www);
                 clipDictionary[fileName] = newClip;
                 audioSource.clip = newClip;
-                // Also assign the loaded clip to PatternManager.songClip:
                 if (PatternManager.Instance != null)
                     PatternManager.Instance.songClip = newClip;
 
@@ -196,40 +291,10 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
-    private void LoadAllAudioFiles()
-    {
-        if (Directory.Exists(directoryPath))
-        {
-            // Get all files recursively
-            string[] files = Directory.GetFiles(directoryPath, "*.*", SearchOption.AllDirectories);
-
-            foreach (string file in files)
-            {
-                string extension = Path.GetExtension(file).ToLower();
-                if (extension == ".mp3" || extension == ".wav") // Filter supported formats
-                {
-                    string relativePath = file.Replace(directoryPath + Path.DirectorySeparatorChar, ""); // Get relative path
-                    clipFileNames.Add(relativePath); // Store the relative path
-                    Debug.Log($"Found file: {relativePath}");
-                }
-            }
-
-            if (clipFileNames.Count == 0)
-            {
-                Debug.LogError("No audio files found in directory: " + directoryPath);
-            }
-        }
-        else
-        {
-            Debug.LogError("Directory does not exist: " + directoryPath);
-        }
-    }
-
     public IEnumerator LoadAndPlayClip(string fileName)
     {
         Debug.Log($"Loading and playing clip: {fileName}");
 
-        // Stop any ongoing load coroutine
         if (currentLoadCoroutine != null)
         {
             StopCoroutine(currentLoadCoroutine);
@@ -243,7 +308,11 @@ public class MultipleAudioLoader : MonoBehaviour
             yield break;
         }
 
-        string filePath = Path.Combine(fullPath, fileName);
+        string filePath = fileName;
+        if (Application.platform != RuntimePlatform.Android || Application.isEditor || !AndroidVersionIsAtLeast30())
+        {
+            filePath = Path.Combine(fullPath, fileName);
+        }
         string fileUrl = "file://" + filePath;
         string extension = Path.GetExtension(fileName).ToLower();
 
@@ -287,7 +356,6 @@ public class MultipleAudioLoader : MonoBehaviour
         SetTimelineSliderValues(clip);
     }
 
-
     private void SetTimelineSliderValues(AudioClip clip)
     {
         songTimeline.minValue = 0;
@@ -304,14 +372,18 @@ public class MultipleAudioLoader : MonoBehaviour
         }
     }
 
+    // Replacing the C# 8.0 switch expression with a traditional switch statement
     private AudioType GetAudioType(string extension)
     {
-        return extension switch
+        switch (extension)
         {
-            ".mp3" => AudioType.MPEG,
-            ".wav" => AudioType.WAV,
-            _ => AudioType.UNKNOWN
-        };
+            case ".mp3":
+                return AudioType.MPEG;
+            case ".wav":
+                return AudioType.WAV;
+            default:
+                return AudioType.UNKNOWN;
+        }
     }
 
     private void UpdateStatusText(string text)

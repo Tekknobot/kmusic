@@ -20,31 +20,26 @@ public class MusicPlayerUIController : MonoBehaviour
 
     private void Start()
     {
-        // Ensure the MultipleAudioLoader instance is available
         if (MultipleAudioLoader.Instance == null)
         {
             Debug.LogError("MultipleAudioLoader instance is missing.");
             return;
         }
 
-        // Add listeners to buttons
         playButton.onClick.AddListener(PlayTrack);
         stopButton.onClick.AddListener(StopTrack);
         nextButton.onClick.AddListener(() => StartCoroutine(HandleTrackChange(PlayNextTrack)));
         previousButton.onClick.AddListener(() => StartCoroutine(HandleTrackChange(PlayPreviousTrack)));
 
-        // Initialize the UI
         StartCoroutine(InitializeUI());
     }
 
     private IEnumerator InitializeUI()
     {
-        // Wait until audio files are loaded
         yield return new WaitUntil(() => MultipleAudioLoader.Instance.clipFileNames.Count > 0);
 
         Debug.Log("Audio files loaded.");
 
-        // Initialize the waveform visualizer, if available
         if (waveform != null)
         {
             var visualizer = waveform.GetComponent<WaveformVisualizer>();
@@ -54,7 +49,6 @@ public class MusicPlayerUIController : MonoBehaviour
             }
         }
 
-        // Optionally play the first track or update the UI
         UpdateTrackName();
     }
 
@@ -69,8 +63,6 @@ public class MusicPlayerUIController : MonoBehaviour
         }
 
         isOperationInProgress = true;
-
-        // Ensure currentIndex is synchronized
         int currentTrackIndex = MultipleAudioLoader.Instance.currentIndex;
 
         if (currentTrackIndex >= 0 && currentTrackIndex < MultipleAudioLoader.Instance.clipFileNames.Count)
@@ -84,11 +76,8 @@ public class MusicPlayerUIController : MonoBehaviour
     private IEnumerator PlayTrackCoroutine(string clipFileName)
     {
         Debug.Log($"Playing track: {clipFileName}");
-
-        // Load and play the clip
         yield return StartCoroutine(MultipleAudioLoader.Instance.LoadAndPlayClip(clipFileName));
 
-        // Start the waveform visualization, if available
         if (waveform != null)
         {
             var visualizer = waveform.GetComponent<WaveformVisualizer>();
@@ -112,7 +101,6 @@ public class MusicPlayerUIController : MonoBehaviour
         {
             MultipleAudioLoader.Instance.audioSource.Stop();
 
-            // Stop waveform visualization, if available
             if (waveform != null)
             {
                 var visualizer = waveform.GetComponent<WaveformVisualizer>();
@@ -132,7 +120,6 @@ public class MusicPlayerUIController : MonoBehaviour
     {
         if (MultipleAudioLoader.Instance.clipFileNames.Count == 0) return;
 
-        // Increment the current track index and wrap around if necessary
         MultipleAudioLoader.Instance.currentIndex = 
             (MultipleAudioLoader.Instance.currentIndex + 1) % MultipleAudioLoader.Instance.clipFileNames.Count;
 
@@ -143,7 +130,6 @@ public class MusicPlayerUIController : MonoBehaviour
     {
         if (MultipleAudioLoader.Instance.clipFileNames.Count == 0) return;
 
-        // Decrement the current track index and wrap around if necessary
         MultipleAudioLoader.Instance.currentIndex--;
         if (MultipleAudioLoader.Instance.currentIndex < 0)
         {
@@ -188,11 +174,8 @@ public class MusicPlayerUIController : MonoBehaviour
         if (isOperationInProgress) yield break;
 
         isOperationInProgress = true;
-
         trackChangeAction();
-
         yield return new WaitForSeconds(debounceTime);
-
         isOperationInProgress = false;
     }
 

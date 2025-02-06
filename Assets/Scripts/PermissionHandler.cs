@@ -1,21 +1,21 @@
 using UnityEngine;
 using System.IO;
+using System.Collections;
 
 public class PermissionHandler : MonoBehaviour
 {
     private const string ReadStoragePermission = "android.permission.READ_EXTERNAL_STORAGE";
     private const string WriteStoragePermission = "android.permission.WRITE_EXTERNAL_STORAGE";
-    private const string ManageStoragePermission = "android.permission.MANAGE_EXTERNAL_STORAGE";
 
     private void Start()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
         Debug.Log("Checking permissions on start...");
-        RequestAllPermissions();
+        RequestStoragePermissions();
 #endif
     }
 
-    private void RequestAllPermissions()
+    private void RequestStoragePermissions()
     {
         if (!HasPermission(ReadStoragePermission))
         {
@@ -36,18 +36,6 @@ public class PermissionHandler : MonoBehaviour
         {
             Debug.Log("WRITE_EXTERNAL_STORAGE permission is already granted.");
         }
-
-        if (AndroidVersionIsAtLeast30() && !HasManageStorageAccess())
-        {
-            Debug.Log("MANAGE_EXTERNAL_STORAGE access is not granted. Opening settings...");
-            OpenManageStorageSettings();
-        }
-        else if (AndroidVersionIsAtLeast30())
-        {
-            Debug.Log("MANAGE_EXTERNAL_STORAGE access is already granted.");
-        }
-
-        PerformFileOperation(); // Attempt a file operation to confirm permissions.
     }
 
     private bool HasPermission(string permission)
@@ -68,20 +56,6 @@ public class PermissionHandler : MonoBehaviour
 #endif
     }
 
-    private bool HasManageStorageAccess()
-    {
-#if UNITY_ANDROID && !UNITY_EDITOR
-        using (var environment = new AndroidJavaClass("android.os.Environment"))
-        {
-            bool isManageStorageGranted = environment.CallStatic<bool>("isExternalStorageManager");
-            Debug.Log($"MANAGE_EXTERNAL_STORAGE access: {isManageStorageGranted}");
-            return isManageStorageGranted;
-        }
-#else
-        return true; // Assume access is granted on non-Android platforms.
-#endif
-    }
-
     private void RequestPermission(string permission)
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -94,52 +68,20 @@ public class PermissionHandler : MonoBehaviour
 #endif
     }
 
-    private void OpenManageStorageSettings()
+    private void PerformMediaStoreOperation()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
-        Debug.Log("Opening MANAGE_EXTERNAL_STORAGE settings...");
+        Debug.Log("Attempting to write to MediaStore...");
         using (var unityActivity = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         {
             var activity = unityActivity.GetStatic<AndroidJavaObject>("currentActivity");
-            using (var intentClass = new AndroidJavaClass("android.content.Intent"))
-            {
-                var intent = new AndroidJavaObject("android.content.Intent", "android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION");
-                activity.Call("startActivity", intent);
-            }
+            activity.Call("runOnUiThread", new AndroidJavaRunnable(() => {
+                using (var mediaStoreHelper = new AndroidJavaObject("com.example.mediastorehelper.MediaStoreHelper", activity))
+                {
+                    mediaStoreHelper.Call("writeToMusicDirectory", "kmusicPermissionTest.txt", "Testing permissions");
+                }
+            }));
         }
 #endif
-    }
-
-    private bool AndroidVersionIsAtLeast30()
-    {
-#if UNITY_ANDROID && !UNITY_EDITOR
-        using (var versionClass = new AndroidJavaClass("android.os.Build$VERSION"))
-        {
-            int sdkInt = versionClass.GetStatic<int>("SDK_INT");
-            Debug.Log($"Android SDK version: {sdkInt}");
-            return sdkInt >= 30;
-        }
-#else
-        return false;
-#endif
-    }
-
-    private void PerformFileOperation()
-    {
-        string path = "/storage/emulated/0/Music/kmusicPermissionTest.txt"; // Common music directory on Android
-        try
-        {
-            // Attempt to write a file
-            File.WriteAllText(path, "Testing permissions");
-            Debug.Log("Successfully wrote to file.");
-
-            // Attempt to read the file
-            string content = File.ReadAllText(path);
-            Debug.Log($"Read from file: {content}");
-        }
-        catch (System.Exception ex)
-        {
-            Debug.LogError($"File operation failed: {ex.Message}");
-        }
     }
 }
