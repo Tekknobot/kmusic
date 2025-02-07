@@ -7,7 +7,6 @@ public class PermissionHandler : MonoBehaviour
     private const string LegacyReadPermission = "android.permission.READ_EXTERNAL_STORAGE";
     private const string NewReadPermission = "android.permission.READ_MEDIA_AUDIO";
     private const string LegacyWritePermission = "android.permission.WRITE_EXTERNAL_STORAGE";
-    private const string ManageStoragePermission = "android.permission.MANAGE_EXTERNAL_STORAGE";
 
     private string GetReadPermission()
     {
@@ -26,22 +25,23 @@ public class PermissionHandler : MonoBehaviour
 #endif
     }
 
-    private string GetWritePermission()
-    {
+private string GetWritePermission()
+{
 #if UNITY_ANDROID && !UNITY_EDITOR
-        using (var versionClass = new AndroidJavaClass("android.os.Build$VERSION"))
-        {
-            int sdkInt = versionClass.GetStatic<int>("SDK_INT");
-            // For API 30+ (Android 11 and above), request MANAGE_EXTERNAL_STORAGE.
-            if (sdkInt >= 30)
-                return ManageStoragePermission;
-            else
-                return LegacyWritePermission;
-        }
-#else
-        return "";
-#endif
+    using (var versionClass = new AndroidJavaClass("android.os.Build$VERSION"))
+    {
+        int sdkInt = versionClass.GetStatic<int>("SDK_INT");
+        // For API 30+ (Android 11 and above), MediaStore API writes do not require an extra write permission.
+        if (sdkInt >= 30)
+            return ""; // No permission needed.
+        else
+            return LegacyWritePermission; // For older devices, you might still need this.
     }
+#else
+    return "";
+#endif
+}
+
 
     private void Start()
     {
@@ -52,32 +52,33 @@ public class PermissionHandler : MonoBehaviour
 #endif
     }
 
-    private void RequestStoragePermissions()
-    {
+private void RequestStoragePermissions()
+{
 #if UNITY_ANDROID && !UNITY_EDITOR
-        string readPermission = GetReadPermission();
-        if (!HasPermission(readPermission))
-        {
-            Debug.Log($"{readPermission} is not granted. Requesting now...");
-            RequestPermission(readPermission);
-        }
-        else
-        {
-            Debug.Log($"{readPermission} is already granted.");
-        }
-
-        string writePermission = GetWritePermission();
-        if (!HasPermission(writePermission))
-        {
-            Debug.Log($"{writePermission} is not granted. Requesting now...");
-            RequestPermission(writePermission);
-        }
-        else
-        {
-            Debug.Log($"{writePermission} is already granted.");
-        }
-#endif
+    string readPermission = GetReadPermission();
+    if (!string.IsNullOrEmpty(readPermission) && !HasPermission(readPermission))
+    {
+        Debug.Log($"{readPermission} is not granted. Requesting now...");
+        RequestPermission(readPermission);
     }
+    else
+    {
+        Debug.Log($"{readPermission} is already granted or not required.");
+    }
+
+    string writePermission = GetWritePermission();
+    if (!string.IsNullOrEmpty(writePermission) && !HasPermission(writePermission))
+    {
+        Debug.Log($"{writePermission} is not granted. Requesting now...");
+        RequestPermission(writePermission);
+    }
+    else
+    {
+        Debug.Log($"{writePermission} is already granted or not required.");
+    }
+#endif
+}
+
 
     private bool HasPermission(string permission)
     {
