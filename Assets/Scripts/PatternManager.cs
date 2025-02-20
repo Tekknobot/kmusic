@@ -848,6 +848,8 @@ public class PatternManager : MonoBehaviour
         {
             Debug.LogError($"Error saving project: {ex.Message}");
         }
+
+        ExportMidi(filename); // Export the project as MIDI
     }
 
     public void LoadProject(string filename)
@@ -1143,14 +1145,6 @@ public class PatternManager : MonoBehaviour
             });
         }
         return midiNotes;
-    }
-
-
-
-    private void SaveProjectAndExportMidi(string filename)
-    {
-        SaveProject(filename); // Save the project as JSON
-        ExportMidi(filename);  // Export the project as MIDI
     }
 
     private PatternData GetPatternDataForSequencer(GameObject sequencerPrefab)
